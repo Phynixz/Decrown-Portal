@@ -1,0 +1,669 @@
+<!-- <!DOCTYPE html>
+<html>
+<head>
+  <title>Delete Users</title>
+  <link rel="stylesheet" href="delete.css">
+</head>
+<body>
+
+  <div class="top-bar">
+    <a href="admin.html" class="back-btn">← Back to Admin</a>
+    <h2>Delete Users (Admin Only)</h2>
+  </div>
+
+  <div id="users"></div>
+
+  <button class="delete-btn" onclick="deleteSelected()">
+    Delete Selected Users
+  </button>
+
+  <script src="delete.js"></script>
+
+</body>
+</html> -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Delete Records — De-Crown Cottage</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Outfit:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="admin.css" />
+    <style>
+      .del-page {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 28px 24px 60px;
+      }
+
+      .del-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 28px;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+      .del-topbar h2 {
+        font-family: var(--font-h);
+        font-size: 22px;
+        color: var(--navy);
+      }
+      .del-topbar p {
+        font-size: 13px;
+        color: var(--muted);
+        margin-top: 3px;
+      }
+      .back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--navy);
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        border: 1.5px solid var(--border);
+        padding: 8px 16px;
+        border-radius: 8px;
+        transition: all 0.18s;
+        background: var(--card);
+      }
+      .back-btn:hover {
+        background: var(--navy);
+        color: #fff;
+        border-color: var(--navy);
+      }
+
+      .filter-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        background: var(--card);
+        border: 1px solid var(--border2);
+        border-radius: 12px;
+        padding: 16px 18px;
+        margin-bottom: 16px;
+        box-shadow: var(--shadow);
+      }
+      .filter-row select,
+      .filter-row input[type="text"] {
+        padding: 8px 12px;
+        border: 1.5px solid var(--border);
+        border-radius: 8px;
+        font-family: var(--font-b);
+        font-size: 13px;
+        color: var(--text);
+        background: var(--input);
+        outline: none;
+        flex: 1;
+        min-width: 140px;
+        transition: border-color 0.2s;
+      }
+      .filter-row select:focus,
+      .filter-row input:focus {
+        border-color: var(--navy);
+      }
+
+      .btn-load {
+        padding: 8px 20px;
+        background: var(--navy);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-family: var(--font-b);
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity 0.2s;
+      }
+      .btn-load:hover {
+        opacity: 0.88;
+      }
+
+      .sel-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .sel-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: var(--text2);
+        cursor: pointer;
+      }
+      .sel-label input {
+        width: 16px;
+        height: 16px;
+        accent-color: var(--danger);
+        cursor: pointer;
+      }
+      .sel-count {
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      .user-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 20px;
+      }
+
+      .urow {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        background: var(--card);
+        border: 1.5px solid var(--border2);
+        border-radius: 10px;
+        padding: 11px 16px;
+        cursor: pointer;
+        transition:
+          border-color 0.18s,
+          background 0.18s;
+      }
+      .urow:hover {
+        border-color: var(--border);
+      }
+      .urow.selected {
+        border-color: var(--danger);
+        background: var(--danger-faint);
+      }
+      .urow input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        accent-color: var(--danger);
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+      .urow-img {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--border2);
+        flex-shrink: 0;
+      }
+      .urow-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text);
+      }
+      .urow-meta {
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+
+      .danger-box {
+        background: var(--danger-faint);
+        border: 1.5px solid rgba(192, 57, 43, 0.25);
+        border-radius: 12px;
+        padding: 20px 22px;
+        display: none;
+      }
+      .danger-box h4 {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--danger);
+        margin-bottom: 8px;
+      }
+      .danger-box p {
+        font-size: 13px;
+        color: var(--text2);
+        margin-bottom: 16px;
+        line-height: 1.65;
+      }
+      .pass-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .pass-row input {
+        flex: 1;
+        min-width: 200px;
+        padding: 10px 14px;
+        border: 1.5px solid rgba(192, 57, 43, 0.3);
+        border-radius: 8px;
+        font-family: var(--font-b);
+        font-size: 13px;
+        color: var(--text);
+        background: var(--input);
+        outline: none;
+      }
+      .pass-row input:focus {
+        border-color: var(--danger);
+      }
+      .btn-delete {
+        padding: 10px 22px;
+        background: var(--danger);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-family: var(--font-b);
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: opacity 0.2s;
+      }
+      .btn-delete:hover {
+        opacity: 0.86;
+      }
+      .btn-delete:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      .list-empty {
+        text-align: center;
+        padding: 40px 20px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Topbar (reuses admin.css .topbar but no sidebar) -->
+    <header class="topbar" style="margin-left: 0">
+      <div class="topbar-title-area">
+        <div class="page-title">Delete Records</div>
+        <div class="page-sub">De-Crown Cottage — Admin</div>
+      </div>
+      <div class="topbar-right">
+        <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">
+          🌙
+        </button>
+        <button
+          class="logout-btn"
+          onclick="window.location.href = 'admin.html'"
+        >
+          ← Dashboard
+        </button>
+      </div>
+    </header>
+
+    <div class="del-page">
+      <div class="del-topbar">
+        <div>
+          <h2>Delete Tenant Records</h2>
+          <p>
+            Filter, select records, confirm with your password. This cannot be
+            undone.
+          </p>
+        </div>
+        <a href="admin.html" class="back-btn">← Back to Dashboard</a>
+      </div>
+
+      <!-- Filters -->
+      <div class="filter-row">
+        <select id="fLoc">
+          <option value="">All Locations</option>
+          <option value="Malete">Malete</option>
+          <option value="Ila-Orangun">Ila-Orangun</option>
+        </select>
+        <select id="fSess">
+          <option value="">All Sessions</option>
+        </select>
+        <input
+          type="text"
+          id="fSearch"
+          placeholder="Search name, email or phone…"
+          oninput="applySearch()"
+        />
+        <button class="btn-load" onclick="loadRecords()">Load Records</button>
+      </div>
+
+      <!-- Select all bar -->
+      <div class="sel-bar">
+        <label class="sel-label">
+          <input type="checkbox" id="selAll" onchange="toggleAll(this)" />
+          Select all visible
+        </label>
+        <span class="sel-count" id="selCount">0 selected</span>
+      </div>
+
+      <!-- List -->
+      <div class="user-list" id="userList">
+        <div class="list-empty">
+          Use the filters above and click Load Records.
+        </div>
+      </div>
+
+      <!-- Danger zone -->
+      <div class="danger-box" id="dangerBox">
+        <h4>⚠ Confirm Deletion</h4>
+        <p>
+          You are about to permanently delete
+          <strong id="delCount">0</strong> record(s). All uploaded passport
+          photos and payment receipts will also be removed. Enter your admin
+          password to confirm.
+        </p>
+        <div
+          id="deleteFilesList"
+          style="
+            font-size: 13px;
+            color: var(--text2);
+            margin-bottom: 16px;
+            max-height: 140px;
+            overflow: auto;
+            border: 1px solid rgba(192, 57, 43, 0.12);
+            padding: 10px;
+            border-radius: 10px;
+            background: rgba(255, 242, 242, 0.72);
+          "
+        ></div>
+        <div class="pass-row">
+          <input
+            type="password"
+            id="adminPass"
+            placeholder="Your admin password"
+          />
+          <input
+            id="confirmDeleteText"
+            placeholder="Type DELETE to confirm"
+            style="
+              margin-left: 8px;
+              padding: 8px;
+              border: 1.5px solid var(--border);
+              border-radius: 6px;
+              flex: 1;
+              min-width: 140px;
+            "
+          />
+          <button class="btn-delete" id="delBtn" onclick="confirmDelete()">
+            Delete Permanently
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ── Theme ──────────────────────────────────────────────────────────────────
+      (function () {
+        if ((localStorage.getItem("theme") || "light") === "dark") {
+          document.documentElement.classList.add("dark");
+          var b = document.getElementById("themeBtn");
+          if (b) b.textContent = "☀️";
+        }
+      })();
+      function toggleTheme() {
+        var dark = document.documentElement.classList.toggle("dark");
+        localStorage.setItem("theme", dark ? "dark" : "light");
+        var b = document.getElementById("themeBtn");
+        if (b) b.textContent = dark ? "☀️" : "🌙";
+      }
+
+      function getToken() {
+        return (
+          localStorage.getItem("token") || sessionStorage.getItem("token") || ""
+        );
+      }
+      if (!getToken()) window.location.href = "login.html";
+
+      var allRecords = [];
+      var filteredRecords = [];
+      var selectedIds = new Set();
+
+      // ── Load ───────────────────────────────────────────────────────────────────
+      async function loadRecords() {
+        var loc = document.getElementById("fLoc").value;
+        var sess = document.getElementById("fSess").value;
+        var url = "/users?";
+        if (loc) url += "location=" + encodeURIComponent(loc) + "&";
+        if (sess) url += "session=" + encodeURIComponent(sess) + "&";
+
+        document.getElementById("userList").innerHTML =
+          "<div class='list-empty'><div class='spinner' style='margin:0 auto 10px'></div>Loading…</div>";
+
+        try {
+          var res = await fetch(url, {
+            headers: { Authorization: getToken() },
+          });
+          if (!res.ok) throw new Error("Failed — check your login");
+          allRecords = await res.json();
+          selectedIds.clear();
+          populateSessions(allRecords);
+          applySearch();
+        } catch (err) {
+          document.getElementById("userList").innerHTML =
+            "<div class='list-empty'>Error: " + err.message + "</div>";
+        }
+      }
+
+      function populateSessions(records) {
+        var sel = document.getElementById("fSess");
+        var cur = sel.value;
+        while (sel.options.length > 1) sel.remove(1);
+        var sessions = [
+          ...new Set(
+            records
+              .map(function (r) {
+                return r.session;
+              })
+              .filter(Boolean),
+          ),
+        ];
+        sessions.sort(function (a, b) {
+          return b.localeCompare(a);
+        });
+        sessions.forEach(function (s) {
+          var o = document.createElement("option");
+          o.value = s;
+          o.textContent = s;
+          sel.appendChild(o);
+        });
+        if (
+          [...sel.options].some(function (o) {
+            return o.value === cur;
+          })
+        )
+          sel.value = cur;
+      }
+
+      function applySearch() {
+        var q = document.getElementById("fSearch").value.toLowerCase().trim();
+        filteredRecords = q
+          ? allRecords.filter(function (r) {
+              return (
+                (r.name || "").toLowerCase().includes(q) ||
+                (r.email || "").toLowerCase().includes(q) ||
+                (r.phone || "").toLowerCase().includes(q)
+              );
+            })
+          : allRecords.slice();
+        render();
+      }
+
+      function render() {
+        var list = document.getElementById("userList");
+        if (!filteredRecords.length) {
+          list.innerHTML = "<div class='list-empty'>No records found.</div>";
+          refreshDanger();
+          return;
+        }
+        list.innerHTML = filteredRecords
+          .map(function (r) {
+            var img = r.passport
+              ? "/uploads/" + r.passport
+              : "https://ui-avatars.com/api/?name=" +
+                encodeURIComponent(r.name || "?") +
+                "&background=1a3c5e&color=fff&size=80";
+            var sel = selectedIds.has(r._id);
+            return (
+              '<div class="urow' +
+              (sel ? " selected" : "") +
+              '" id="row-' +
+              r._id +
+              '" onclick="toggle(\'' +
+              r._id +
+              "')\">" +
+              '<input type="checkbox"' +
+              (sel ? " checked" : "") +
+              " onclick=\"event.stopPropagation();toggle('" +
+              r._id +
+              "')\" />" +
+              '<img src="' +
+              img +
+              '" class="urow-img" alt="" />' +
+              "<div>" +
+              '<div class="urow-name">' +
+              (r.name || "—") +
+              "</div>" +
+              '<div class="urow-meta">' +
+              (r.email || "") +
+              " · " +
+              (r.session || "") +
+              " · Room " +
+              (r.roomNo || "—") +
+              "</div>" +
+              "</div>" +
+              "</div>"
+            );
+          })
+          .join("");
+        refreshDanger();
+      }
+
+      function toggle(id) {
+        if (selectedIds.has(id)) selectedIds.delete(id);
+        else selectedIds.add(id);
+        var row = document.getElementById("row-" + id);
+        if (row) {
+          row.classList.toggle("selected", selectedIds.has(id));
+          var cb = row.querySelector("input");
+          if (cb) cb.checked = selectedIds.has(id);
+        }
+        refreshDanger();
+        syncSelectAll();
+      }
+
+      function toggleAll(cb) {
+        filteredRecords.forEach(function (r) {
+          if (cb.checked) selectedIds.add(r._id);
+          else selectedIds.delete(r._id);
+          var row = document.getElementById("row-" + r._id);
+          if (row) {
+            row.classList.toggle("selected", cb.checked);
+            var c = row.querySelector("input");
+            if (c) c.checked = cb.checked;
+          }
+        });
+        refreshDanger();
+      }
+
+      function syncSelectAll() {
+        var cb = document.getElementById("selAll");
+        if (cb && filteredRecords.length)
+          cb.checked = filteredRecords.every(function (r) {
+            return selectedIds.has(r._id);
+          });
+      }
+
+      function refreshDanger() {
+        var n = selectedIds.size;
+        document.getElementById("selCount").textContent = n + " selected";
+        document.getElementById("dangerBox").style.display = n
+          ? "block"
+          : "none";
+        document.getElementById("delCount").textContent = n;
+        updateDeleteFilesList();
+      }
+
+      function updateDeleteFilesList() {
+        var list = document.getElementById("deleteFilesList");
+        if (!list) return;
+        var selected = filteredRecords.filter(function (r) {
+          return selectedIds.has(r._id);
+        });
+        if (!selected.length) {
+          list.innerHTML =
+            "<div>No uploaded files attached to selected records.</div>";
+          return;
+        }
+        list.innerHTML = selected
+          .map(function (r) {
+            var files = [];
+            if (r.passport) files.push("Passport: " + r.passport);
+            if (r.paymentProof) files.push("Receipt: " + r.paymentProof);
+            if (!files.length) files.push("No uploaded files.");
+            return (
+              '<div style="margin-bottom:12px;">' +
+              "<strong>" +
+              (r.name || "Unnamed tenant") +
+              "</strong>" +
+              '<div style="font-size:12px;color:var(--text2);margin-top:6px;line-height:1.45;">' +
+              files.join("<br />") +
+              "</div>" +
+              "</div>"
+            );
+          })
+          .join("");
+      }
+
+      // ── Delete ─────────────────────────────────────────────────────────────────
+      async function confirmDelete() {
+        var pw = document.getElementById("adminPass").value;
+        var txt = (document.getElementById("confirmDeleteText").value || "")
+          .trim()
+          .toUpperCase();
+        var btn = document.getElementById("delBtn");
+        if (!pw) {
+          alert("Please enter your admin password.");
+          return;
+        }
+        if (txt !== "DELETE") {
+          alert("Type DELETE in the confirm box to proceed.");
+          return;
+        }
+        if (!selectedIds.size) {
+          alert("No records selected.");
+          return;
+        }
+        if (
+          !confirm(
+            "Permanently delete " +
+              selectedIds.size +
+              " record(s)? This cannot be undone.",
+          )
+        )
+          return;
+
+        btn.textContent = "Deleting…";
+        btn.disabled = true;
+        try {
+          var res = await fetch("/users/delete-bulk", {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: getToken(),
+            },
+            body: JSON.stringify({ ids: [...selectedIds], adminPassword: pw }),
+          });
+          var data = await res.json();
+          if (!res.ok) {
+            alert("Error: " + (data.error || "Deletion failed"));
+            return;
+          }
+          alert(data.message || "Deleted successfully.");
+          selectedIds.clear();
+          document.getElementById("adminPass").value = "";
+          loadRecords();
+        } catch {
+          alert("Network error. Please try again.");
+        } finally {
+          btn.textContent = "Delete Permanently";
+          btn.disabled = false;
+        }
+      }
+    </script>
+  </body>
+</html>

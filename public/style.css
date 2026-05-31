@@ -1,0 +1,295 @@
+/* ══════════════════════════════════════════════════
+   RECEIPT STYLES — De-Crown Cottage
+   Keeps original blue (#3939fd) colour scheme.
+   Fixes: global line-height:5px crash, hardcoded values.
+══════════════════════════════════════════════════ */
+
+/* ── Reset (scoped — do NOT use * for global line-height) ── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Red Hat Text", Arial, Helvetica, sans-serif;
+  background: linear-gradient(180deg, #eff2ff 0%, #f8f8ff 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding: 30px 16px;
+  color: #444;
+  line-height: 1.5; /* ← was 5px — fixed */
+}
+
+/* ── Outer wrapper ───────────────────────────────── */
+.receipt-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  width: 100%;
+}
+
+/* ── Receipt document ────────────────────────────── */
+.receipt {
+  background: #ffffff;
+  width: 700px;
+  max-width: 100%;
+  padding: 32px 32px 24px;
+  border-radius: 16px;
+  border: 1px solid rgba(57, 57, 253, 0.12);
+  box-shadow: 0 18px 48px rgba(68, 84, 255, 0.08);
+}
+
+/* ── Header ──────────────────────────────────────── */
+.r-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 18px;
+  border-bottom: 2px solid rgba(57, 57, 253, 0.25);
+  margin-bottom: 20px;
+}
+
+.r-logo {
+  width: 90px;
+  height: 90px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 1.5px solid rgb(101, 101, 168);
+  flex-shrink: 0;
+}
+
+.r-company {
+  text-align: right;
+  line-height: 1.6;
+}
+.r-company h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #222266;
+  text-transform: capitalize;
+  margin-bottom: 6px;
+}
+.r-company p {
+  font-size: 12px;
+  color: #666;
+}
+
+/* ── Meta row ────────────────────────────────────── */
+.r-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  gap: 20px;
+}
+
+.r-recipient {
+  line-height: 1.65;
+}
+.r-to-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #888;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+.r-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111;
+  text-transform: uppercase;
+}
+.r-contact {
+  font-size: 12px;
+  color: #666;
+  margin-top: 3px;
+}
+
+.r-ref {
+  text-align: right;
+  line-height: 1.7;
+  font-size: 13px;
+  color: #555;
+}
+.r-location {
+  font-weight: 700;
+  color: #333;
+}
+.r-number {
+  font-size: 17px;
+  font-weight: 700;
+  color: rgb(57, 57, 253);
+  margin-bottom: 4px;
+}
+
+/* ── Table ───────────────────────────────────────── */
+.r-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 4px;
+}
+
+.r-table thead tr th {
+  background: #eef3ff;
+  color: rgba(12, 24, 87, 0.9);
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 10px 11px;
+  text-align: left;
+}
+
+.r-table tbody tr td {
+  padding: 11px 11px;
+  font-size: 13px;
+  text-transform: capitalize;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+/* Blue index & amount columns */
+.col-idx {
+  background: rgb(57, 57, 253);
+  color: #fff;
+  font-weight: 700;
+  width: 36px;
+  text-align: center;
+}
+.col-desc {
+  background: #e8e8e8;
+  flex: 1;
+}
+.col-room {
+  background: #e8e8e8;
+  width: 90px;
+}
+.col-amount {
+  background: rgb(57, 57, 253);
+  color: #fff;
+  font-weight: 700;
+  width: 120px;
+  text-align: right;
+  padding-right: 14px !important;
+}
+
+/* ── Totals ──────────────────────────────────────── */
+.r-totals {
+  float: right;
+  padding-top: 16px;
+  min-width: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.r-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 4px 0;
+  color: #444;
+}
+.r-total-row span:last-child {
+  color: rgb(57, 57, 253);
+  min-width: 90px;
+  text-align: right;
+}
+
+.r-divider {
+  height: 1px;
+  background: #bbb;
+  width: 100%;
+}
+
+/* Full-width divider before footer */
+.r-divider-full {
+  clear: both;
+  height: 1.5px;
+  background: #222;
+  margin: 22px 0 14px;
+}
+
+/* ── Footer ──────────────────────────────────────── */
+.r-foot {
+  text-align: center;
+  line-height: 1.6;
+}
+.r-foot p:first-child {
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: capitalize;
+  color: #333;
+}
+.r-foot-sub {
+  font-size: 11px;
+  color: #999;
+  margin-top: 3px;
+  font-style: italic;
+}
+
+/* ── Print button ────────────────────────────────── */
+.print-btn {
+  padding: 11px 28px;
+  border: none;
+  border-radius: 8px;
+  background: rgb(57, 57, 253);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: "Red Hat Text", Arial, sans-serif;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.print-btn:hover {
+  opacity: 0.85;
+}
+
+/* ── Print media ─────────────────────────────────── */
+@media print {
+  body {
+    background: #fff;
+    padding: 0;
+  }
+  .receipt {
+    box-shadow: none;
+    width: 100%;
+    padding: 16px;
+  }
+  .no-print {
+    display: none;
+  }
+}
+
+@media (max-width: 740px) {
+  .receipt {
+    padding: 18px 14px;
+  }
+  .r-head {
+    flex-direction: column;
+    gap: 14px;
+  }
+  .r-company {
+    text-align: left;
+  }
+  .r-meta {
+    flex-direction: column;
+  }
+  .r-ref {
+    text-align: left;
+  }
+  .r-totals {
+    float: none;
+    min-width: unset;
+  }
+}

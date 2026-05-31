@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Receipt — De-Crown Cottage</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Red+Hat+Text:ital,wght@0,400;0,600;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="receipt-wrap">
+      <div class="receipt" id="receiptDoc">
+        <!-- Header -->
+        <div class="r-head">
+          <img
+            src="/d420ac751563a3d498bd84cdf69386bb.jpg"
+            alt="De-Crown Logo"
+            class="r-logo"
+          />
+          <div class="r-company">
+            <h1>De-Crown Cottage</h1>
+            <p>Adjacent Victory Lodge, AGT2 Area Westend</p>
+            <p>Kwara State</p>
+            <p>09036388983 &nbsp;·&nbsp; decrown@gmail.com</p>
+          </div>
+        </div>
+
+        <!-- Receipt meta -->
+        <div class="r-meta">
+          <div class="r-recipient">
+            <p class="r-to-label">Receipt To</p>
+            <p class="r-name" id="r-name">—</p>
+            <p class="r-contact" id="r-contact">—</p>
+          </div>
+          <div class="r-ref">
+            <p class="r-number" id="r-number">Receipt #—</p>
+            <p id="r-date">Date: —</p>
+            <p>Mode: Bank Transfer</p>
+            <p>Bank: UBA</p>
+            <p>Campus: <span id="r-location">—</span></p>
+            <p>Session: <span id="r-session">—</span></p>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <table class="r-table">
+          <thead>
+            <tr>
+              <th class="col-idx">#</th>
+              <th class="col-desc">Description</th>
+              <th class="col-room">Room No.</th>
+              <th class="col-amount">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-idx">1</td>
+              <td class="col-desc">Hostel Accommodation Fee</td>
+              <td class="col-room" id="r-room">—</td>
+              <td class="col-amount" id="r-amount-row">₦0</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Totals -->
+        <div class="r-totals">
+          <div class="r-total-row">
+            <span>Grand Total</span>
+            <span id="r-total">₦0</span>
+          </div>
+          <div class="r-divider"></div>
+          <div class="r-total-row">
+            <span>Total Paid</span>
+            <span id="r-paid">₦0</span>
+          </div>
+          <div class="r-divider"></div>
+          <div class="r-total-row">
+            <span>Balance</span>
+            <span id="r-balance">₦0</span>
+          </div>
+          <div class="r-divider"></div>
+          <div class="r-total-row">
+            <span>Outstanding</span>
+            <span id="r-outstanding">₦0</span>
+          </div>
+        </div>
+
+        <div class="r-divider-full"></div>
+
+        <!-- Footer -->
+        <div class="r-foot">
+          <p>Thank you for choosing De-Crown Cottage</p>
+          <p class="r-foot-sub">
+            This receipt is computer-generated and valid without a signature.
+          </p>
+        </div>
+      </div>
+
+      <!-- Print button (hidden on print) -->
+      <div class="no-print">
+        <button onclick="window.print()" class="print-btn">
+          🖨 Print Receipt
+        </button>
+      </div>
+    </div>
+
+    <script src="index.js"></script>
+  </body>
+</html>

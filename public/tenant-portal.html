@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tenant Portal — De-Crown Cottage</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Outfit:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="tenant-portal.css" />
+  </head>
+  <body>
+    <!-- ═══════════════════════════════════════════════════════════
+       LOGIN SCREEN
+       Two columns: left = branding panel, right = login form
+  ════════════════════════════════════════════════════════════════ -->
+    <div id="loginScreen">
+      <div class="split">
+        <!-- Left branding panel -->
+        <div class="split-left">
+          <div class="brand-block">
+            <img
+              src="/d420ac751563a3d498bd84cdf69386bb.jpg"
+              alt="De-Crown"
+              class="brand-logo"
+            />
+            <h1 class="brand-title">De-Crown<br />Cottage</h1>
+            <p class="brand-sub">
+              Your home away from home.<br />Malete & Ila-Orangun.
+            </p>
+          </div>
+          <div class="brand-footer">
+            <p>© 2024 De-Crown Cottage</p>
+            <a href="login.html" class="switch-link">🔐 Admin Login →</a>
+          </div>
+        </div>
+
+        <!-- Right login form -->
+        <div class="split-right">
+          <!-- Dark mode toggle -->
+          <button
+            class="theme-btn"
+            id="themeBtn"
+            onclick="toggleTheme()"
+            title="Toggle dark mode"
+          >
+            🌙
+          </button>
+
+          <div class="login-card">
+            <div class="login-icon">🏠</div>
+            <h2>Tenant Portal</h2>
+            <p class="login-sub">
+              Enter your registered email and phone number to sign in
+            </p>
+
+            <div class="lfield">
+              <label>Email Address</label>
+              <input
+                type="email"
+                id="tEmail"
+                placeholder="you@example.com"
+                autocomplete="email"
+              />
+            </div>
+
+            <div class="lfield">
+              <label>Phone Number</label>
+              <input
+                type="tel"
+                id="tPhone"
+                placeholder="08012345678"
+                autocomplete="tel"
+              />
+            </div>
+
+            <button class="btn-login" id="loginBtn" onclick="tenantLogin()">
+              Access My Portal
+            </button>
+
+            <div class="login-err" id="loginErr"></div>
+
+            <p class="register-hint">
+              New tenant? <a href="form.html">Register here</a>
+            </p>
+
+            <!-- Mobile only: link to admin -->
+            <div class="mobile-switch">
+              <a href="login.html">🔐 Admin Login</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+       DASHBOARD SCREEN
+       Shown after successful login
+  ════════════════════════════════════════════════════════════════ -->
+    <div id="dashScreen" style="display: none">
+      <!-- Top navigation bar -->
+      <header class="dash-nav">
+        <div class="nav-brand">
+          <img src="/d420ac751563a3d498bd84cdf69386bb.jpg" alt="logo" />
+          <span>De-Crown Cottage</span>
+        </div>
+        <div class="nav-right">
+          <button
+            class="theme-btn"
+            id="dashThemeBtn"
+            onclick="toggleTheme()"
+            title="Toggle dark mode"
+          >
+            🌙
+          </button>
+          <button class="btn-signout" onclick="signOut()">Sign Out</button>
+        </div>
+      </header>
+
+      <main class="dash-main">
+        <!-- Welcome banner -->
+        <div class="welcome-banner">
+          <div class="welcome-text">
+            <p class="welcome-greeting" id="greeting">Good day,</p>
+            <h2 class="welcome-name" id="tenantName">—</h2>
+            <p class="welcome-loc" id="tenantLoc">—</p>
+          </div>
+          <div
+            id="pendingBanner"
+            style="
+              display: none;
+              margin-left: 20px;
+              padding: 14px 18px;
+              border-radius: 10px;
+              background: #fff4f4;
+              border: 1px solid #ffd3d3;
+              color: #a33;
+              font-weight: 700;
+              font-size: 18px;
+            "
+          >
+            ⏳ You have a pending retention for the next session — awaiting
+            admin approval
+          </div>
+          <div class="welcome-room-wrap">
+            <p class="room-label">Your Room</p>
+            <p class="room-num" id="tenantRoom">—</p>
+          </div>
+        </div>
+
+        <!-- Info cards row -->
+        <div class="info-grid">
+          <div class="info-card">
+            <span class="info-icon">📅</span>
+            <span class="info-label">Session</span>
+            <span class="info-val" id="tenantSession">—</span>
+          </div>
+          <div class="info-card">
+            <span class="info-icon">🎓</span>
+            <span class="info-label">Level</span>
+            <span class="info-val" id="tenantLevel">—</span>
+          </div>
+          <div class="info-card">
+            <span class="info-icon">💰</span>
+            <span class="info-label">Rent Paid</span>
+            <span class="info-val" id="tenantAmount">—</span>
+          </div>
+          <div class="info-card">
+            <span class="info-icon">🗓</span>
+            <span class="info-label">Payment Date</span>
+            <span class="info-val" id="tenantDate">—</span>
+          </div>
+        </div>
+
+        <!-- ── Retain room card ──────────────────────────────────────────── -->
+        <div
+          id="registrationBanner"
+          style="
+            display: none;
+            margin-bottom: 12px;
+            padding: 10px;
+            border-radius: 6px;
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+          "
+        >
+          New registrations are currently closed by the admin.
+        </div>
+
+        <div class="retain-card">
+          <div class="retain-left">
+            <h3>📋 Retain Your Room</h3>
+            <p>
+              Reserve your room for the next session. You will upload your
+              payment receipt here — your room is confirmed once admin approves.
+            </p>
+            <span class="next-badge" id="nextSessionBadge">Next: —</span>
+          </div>
+
+          <div class="retain-right">
+            <!-- Step 1: request button -->
+            <div id="retainStep1">
+              <button class="btn-retain" id="retainBtn" onclick="retainRoom()">
+                🔒 Request Retention
+              </button>
+            </div>
+
+            <!-- Step 2: upload receipt -->
+            <div id="retainStep2" style="display: none">
+              <p class="step-label">Step 2 — Upload Payment Receipt</p>
+              <label class="upload-box" for="retainFile">
+                <span id="uploadLabel">📎 Choose file (JPG, PNG or PDF)</span>
+                <input
+                  type="file"
+                  id="retainFile"
+                  accept="image/*,application/pdf"
+                  onchange="previewFile(this)"
+                  style="display: none"
+                />
+              </label>
+              <button
+                class="btn-retain btn-upload"
+                id="uploadBtn"
+                onclick="uploadReceipt()"
+                disabled
+              >
+                ⬆️ Submit Receipt
+              </button>
+            </div>
+
+            <!-- Step 3: waiting for admin -->
+            <div id="retainStep3" style="display: none">
+              <div class="status-pill pending">
+                ⏳ Receipt received — awaiting admin approval
+              </div>
+              <p class="step-note">
+                Your room is reserved. The admin will confirm after verifying
+                your payment.
+              </p>
+            </div>
+
+            <!-- Step 4: confirmed -->
+            <div id="retainStep4" style="display: none">
+              <div class="status-pill confirmed">
+                ✅ Room confirmed for next session
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Quick actions ─────────────────────────────────────────────── -->
+        <div class="actions-grid">
+          <button class="action-tile" onclick="viewReceipt()">
+            <span class="action-icon">🧾</span>
+            <span>View Receipt</span>
+          </button>
+          <a
+            id="proofLink"
+            href="#"
+            target="_blank"
+            class="action-tile"
+            onclick="proofClick(event)"
+          >
+            <span class="action-icon">📄</span>
+            <span>Payment Proof</span>
+          </a>
+          <a id="newRegLink" href="form.html" class="action-tile">
+            <span class="action-icon">📝</span>
+            <span>New Registration</span>
+          </a>
+        </div>
+
+        <!-- ── Session History ────────────────────────────────────────────── -->
+        <div class="history-section">
+          <div class="history-header">
+            <h3>📂 Session History</h3>
+            <select id="historySel" onchange="showHistoryRecord()">
+              <option value="">Select a session…</option>
+            </select>
+          </div>
+
+          <!-- Record detail — hidden until a session is chosen -->
+          <div id="historyDetail" style="display: none">
+            <div class="history-grid">
+              <div class="hdet">
+                <div class="hdet-label">Session</div>
+                <div class="hdet-val" id="hSession">—</div>
+              </div>
+              <div class="hdet">
+                <div class="hdet-label">Room</div>
+                <div class="hdet-val" id="hRoom">—</div>
+              </div>
+              <div class="hdet">
+                <div class="hdet-label">Amount Paid</div>
+                <div class="hdet-val" id="hAmount">—</div>
+              </div>
+              <div class="hdet">
+                <div class="hdet-label">Payment Date</div>
+                <div class="hdet-val" id="hDate">—</div>
+              </div>
+              <div class="hdet">
+                <div class="hdet-label">Status</div>
+                <div class="hdet-val" id="hStatus">—</div>
+              </div>
+            </div>
+
+            <div class="history-actions">
+              <button
+                class="hbtn"
+                id="hReceiptBtn"
+                onclick="openHistoryReceipt()"
+              >
+                🧾 Generate Receipt
+              </button>
+              <a
+                class="hbtn hbtn-proof"
+                id="hProofLink"
+                href="#"
+                target="_blank"
+                >📄 View Proof</a
+              >
+            </div>
+          </div>
+
+          <p
+            id="historyEmpty"
+            style="
+              display: none;
+              color: var(--muted);
+              font-size: 13px;
+              padding: 10px 0;
+            "
+          >
+            No record found for this session.
+          </p>
+        </div>
+      </main>
+    </div>
+
+    <script src="tenant-portal.js"></script>
+  </body>
+</html>
