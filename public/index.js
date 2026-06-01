@@ -10,9 +10,11 @@ if (!id) {
 
 async function loadReceipt(id) {
   try {
-    const res = await fetch(`/user/${id}`); // â† relative URL, works everywhere
+    const res = await fetch(`/user/${id}`); // <- relative URL, works everywhere
     if (!res.ok) throw new Error("Record not found");
     const data = await res.json();
+    if (data.retainPending)
+      throw new Error("Receipt unavailable until admin approval.");
     populate(data);
   } catch (err) {
     document.getElementById("receiptDoc").innerHTML =
@@ -22,9 +24,9 @@ async function loadReceipt(id) {
 
 function populate(data) {
   const fmt = (n) =>
-    "â‚¦" + Number(n || 0).toLocaleString("en-NG", { minimumFractionDigits: 2 });
+    "₦" + Number(n || 0).toLocaleString("en-NG", { minimumFractionDigits: 2 });
 
-  // Receipt number â€” last 6 chars of MongoDB _id so each is unique
+  // Receipt number — last 6 chars of MongoDB _id so each is unique
   const receiptNum = data._id
     ? data._id.toString().slice(-6).toUpperCase()
     : "000000";
@@ -45,10 +47,10 @@ function populate(data) {
   setText("r-date", `Date: ${date}`);
 
   // Recipient
-  setText("r-name", (data.name || "â€”").toUpperCase());
+  setText("r-name", (data.name || "—").toUpperCase());
   setText(
     "r-contact",
-    [data.email, data.phone].filter(Boolean).join("  Â·  ") || "â€”",
+    [data.email, data.phone].filter(Boolean).join("  ·  ") || "—",
   );
 
   // Campus
@@ -57,22 +59,22 @@ function populate(data) {
       ? "Malete Campus"
       : data.location === "Ila-Orangun"
         ? "Ila-Orangun Campus"
-        : data.location || "â€”";
+        : data.location || "—";
   setText("r-location", campusLabel);
   if (data.location) {
-    document.title = `Receipt â€” De-Crown Cottage (${campusLabel})`;
+    document.title = `Receipt — De-Crown Cottage (${campusLabel})`;
   }
 
   // Session
-  setText("r-session", data.session || "â€”");
+  setText("r-session", data.session || "—");
 
   // Room (was hardcoded "room 1" before)
-  setText("r-room", data.roomNo || "â€”");
+  setText("r-room", data.roomNo || "—");
 
   // Amount in table row
   setText("r-amount-row", fmt(data.amount));
 
-  // Totals (all the same since single payment â€” balance is 0)
+  // Totals (all the same since single payment — balance is 0)
   const amount = Number(data.amount || 0);
   setText("r-total", fmt(amount));
   setText("r-paid", fmt(amount));
@@ -84,5 +86,3 @@ function setText(id, value) {
   const el = document.getElementById(id);
   if (el) el.textContent = value;
 }
-
-

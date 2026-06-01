@@ -3,13 +3,12 @@
   if (el) el.textContent = val;
 }
 function esc(s) {
-  return String(s ?? "â€”").replace(
+  return String(s ?? "—").replace(
     /[<>&"]/g,
     (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;" })[c],
   );
 }
-
-// â”€â”€â”€ Auth â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Auth ---
 function getToken() {
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token") || "";
@@ -150,21 +149,20 @@ async function toggleRegistration() {
   }
 }
 
-// â”€â”€â”€ Theme â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Theme ---
 (function initTheme() {
   if ((localStorage.getItem("theme") || "light") === "dark") {
     document.documentElement.classList.add("dark");
     const btn = document.getElementById("themeBtn");
-    if (btn) btn.textContent = "â˜€ï¸";
+    if (btn) btn.textContent = "🌙";
   }
 })();
 function toggleTheme() {
   const dark = document.documentElement.classList.toggle("dark");
   localStorage.setItem("theme", dark ? "dark" : "light");
-  set("themeBtn", dark ? "â˜€ï¸" : "ðŸŒ™");
+  set("themeBtn", dark ? "🌙" : "☀️");
 }
-
-// â”€â”€â”€ Admin identity â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Admin identity ---
 const adminName =
   localStorage.getItem("adminName") ||
   sessionStorage.getItem("adminName") ||
@@ -337,8 +335,13 @@ function updateStats() {
   set("stShops", shops.length);
   set("stOccupied", occupied);
   set("stAvailable", available);
-  set("stRevenue", "â‚¦" + revenue.toLocaleString());
+  set("stRevenue", "₦" + revenue.toLocaleString());
   set("stPending", pending.length);
+
+  // update top pending banner
+  try {
+    updatePendingBanner(pending.length);
+  } catch (e) {}
 
   const pendingStrip = document.getElementById("statPending");
   if (pendingStrip)
@@ -348,7 +351,41 @@ function updateStats() {
   if (badge) badge.textContent = allUsers.length;
 }
 
-// â”€â”€â”€ Load users â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Top pending banner
+function updatePendingBanner(count) {
+  var banner = document.getElementById("adminPendingBanner");
+  if (!banner) {
+    banner = document.createElement("div");
+    banner.id = "adminPendingBanner";
+    banner.style.cssText =
+      "background:#fff4f4;border:1px solid #ffd6d6;padding:12px;margin:10px 0;border-left:6px solid #e53935;font-weight:600;display:none;";
+    var container = document.querySelector("main") || document.body;
+    container.insertBefore(banner, container.firstChild);
+  }
+  if (count && count > 0) {
+    banner.innerHTML =
+      '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px">' +
+      "<div>There are <strong>" +
+      count +
+      "</strong> pending retention application" +
+      (count > 1 ? "s" : "") +
+      " awaiting approval.</div>" +
+      '<div><button class="cta" onclick="openPendingList()">View Pending</button></div>' +
+      "</div>";
+    banner.style.display = "block";
+  } else {
+    banner.style.display = "none";
+  }
+}
+
+function openPendingList() {
+  // Refresh the users list and scroll to the cards area so admins can review.
+  loadUsers();
+  var grid = document.getElementById("cardGrid");
+  if (grid) grid.scrollIntoView({ behavior: "smooth" });
+}
+
+// --- Load users ---
 async function loadUsers() {
   const grid = document.getElementById("cardGrid");
   grid.innerHTML =
@@ -463,10 +500,10 @@ function buildCard(u) {
       })
     : u.retainPending
       ? "Awaiting payment"
-      : "â€”";
+      : "—";
 
   var occupiedBadge = u.roomNo
-    ? '<span class="room-chip room-occupied">âœ” Occupied</span>'
+    ? '<span class="room-chip room-occupied">✔️ Occupied</span>'
     : "";
 
   var histArgs = [u._id, u.email, u.name, img, u.location]
@@ -1038,7 +1075,3 @@ function logout() {
   await loadAdminSettings();
   await loadUsers();
 })();
-
-
-
-

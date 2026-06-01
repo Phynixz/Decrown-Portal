@@ -3,10 +3,10 @@
   const icon = document.getElementById("eyeIcon");
   if (pass.type === "password") {
     pass.type = "text";
-    icon.textContent = "ðŸ™ˆ";
+    icon.textContent = "👁️";
   } else {
     pass.type = "password";
-    icon.textContent = "ðŸ‘";
+    icon.textContent = "🔒";
   }
 }
 
@@ -23,7 +23,7 @@ async function login() {
     return;
   }
 
-  btn.textContent = "Logging inâ€¦";
+  btn.textContent = "Logging in…";
   btn.disabled = true;
 
   try {
@@ -47,7 +47,10 @@ async function login() {
   } catch (err) {
     error.textContent = err.message;
     document.querySelector(".login-box").classList.add("shake");
-    setTimeout(() => document.querySelector(".login-box").classList.remove("shake"), 400);
+    setTimeout(
+      () => document.querySelector(".login-box").classList.remove("shake"),
+      400,
+    );
   } finally {
     btn.textContent = "Login";
     btn.disabled = false;
@@ -58,4 +61,3 @@ async function login() {
 document.addEventListener("keydown", (e) => {
   if (e.key === "Enter") login();
 });
-

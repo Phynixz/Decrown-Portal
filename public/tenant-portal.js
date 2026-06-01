@@ -342,17 +342,42 @@ async function retainRoom() {
   btn.textContent = "Processing…";
   btn.disabled = true;
 
+  await loadHistory();
+  const existing = sessionHistory.find((r) => r.session === nextSession);
+  if (existing) {
+    if (existing.retainPending && !existing.paymentProof) {
+      alert(
+        "You already requested retention for the next session. Please upload your payment receipt.",
+      );
+      showOnly("retainStep2");
+    } else if (existing.retainPending && existing.paymentProof) {
+      alert(
+        "Your retention request already has a receipt uploaded. Waiting for admin approval.",
+      );
+      showOnly("retainStep3");
+    } else {
+      alert("Your room is already retained for the next session.");
+      showOnly("retainStep4");
+    }
+    btn.textContent = "🔒 Request Retention";
+    btn.disabled = false;
+    return;
+  }
+
   try {
     const res = await fetch("/tenant/retain", {
       method: "POST",
       headers: { Authorization: tenantToken },
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error);
+    if (!res.ok) throw new Error(data.error || "Unable to request retention.");
 
     // Refresh history and move to step 2
     await loadHistory();
     showOnly("retainStep2");
+    alert(
+      "Retention request created. Please upload your payment receipt in the next step.",
+    );
   } catch (err) {
     alert("❌ " + err.message);
     btn.textContent = "🔒 Request Retention";
@@ -405,11 +430,24 @@ async function uploadReceipt() {
 
 // ─── Quick actions ────────────────────────────────────────────────────────────
 function viewReceipt() {
-  if (!tenantProfile?._id) {
+  if (!tenantProfile) {
     alert("Profile not loaded.");
     return;
   }
-  window.open(`receipt.html?id=${tenantProfile._id}`, "_blank");
+
+  const nextRec = sessionHistory.find((r) => r.session === nextSession);
+  let receiptId = tenantProfile._id;
+
+  if (nextRec && !nextRec.retainPending) {
+    receiptId = nextRec._id;
+  }
+
+  if (!receiptId) {
+    alert("No receipt available.");
+    return;
+  }
+
+  window.open(`receipt.html?id=${receiptId}`, "_blank");
 }
 
 function proofClick(e) {

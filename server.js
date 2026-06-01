@@ -54,7 +54,6 @@ app.use(express.static(path.join(__dirname, "public")));
 app.get("/", (req, res) => {
   res.redirect("/login.html");
 });
-// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function getSession() {
   const now = new Date();
   const year = now.getFullYear();
@@ -65,7 +64,6 @@ function getNextSession() {
   return `${start + 1}/${start + 2}`;
 }
 
-// â”€â”€â”€ Auth Middleware â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function verifyAdmin(req, res, next) {
   const token = (req.headers.authorization || "").replace("Bearer ", "").trim();
   if (!token) return res.status(403).json({ error: "No token" });
@@ -274,10 +272,10 @@ app.get("/tenant/history", verifyTenant, async (req, res) => {
 
 app.post("/tenant/retain", verifyTenant, async (req, res) => {
   try {
-    if (!(await isRegistrationOpen()))
-      return res
-        .status(403)
-        .json({ error: "New session registration is currently closed." });
+    if (!(await isRegistrationOpen(getNextSession())))
+      return res.status(403).json({
+        error: "Room retention is currently closed for the next session.",
+      });
 
     const orig = await User.findById(req.tenant.id);
     if (!orig) return res.status(404).json({ error: "Profile not found" });
@@ -384,9 +382,9 @@ async function isRegistrationOpen(session = getSession()) {
   return state ? state.open : false;
 }
 
-// â”€â”€â”€ Public Routes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ----- Public Routes -----
 app.get("/current-session", async (req, res) => {
-  const registrationOpen = await isRegistrationOpen();
+  const registrationOpen = await isRegistrationOpen(getNextSession());
   res.json({
     session: getSession(),
     next: getNextSession(),
@@ -808,9 +806,9 @@ async function seed() {
 mongoose
   .connect(MONGO_URI)
   .then(async () => {
-    console.log("âœ… MongoDB connected");
+    console.log(" MongoDB connected");
     await seed();
-    app.listen(PORT, () => console.log(`ðŸš€ Server on port ${PORT}`));
+    app.listen(PORT, () => console.log(` Server on port ${PORT}`));
   })
   .catch((e) => {
     console.error(e);

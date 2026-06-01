@@ -11,7 +11,7 @@ function updateCampusDisplay(location) {
         ? "Ila-Orangun Campus"
         : "Choose Campus";
   if (display) display.textContent = label;
-  document.title = `Application Form â€” De-Crown Cottage`;
+  document.title = `Application Form — De-Crown Cottage`;
 }
 
 const ROOM_COUNTS = {
@@ -74,7 +74,7 @@ async function loadMeta() {
     );
     const data = await res.json();
     const el = document.getElementById("amountPaid");
-    if (el && res.ok) el.value = "â‚¦" + Number(data.amount).toLocaleString();
+    if (el && res.ok) el.value = "₦" + Number(data.amount).toLocaleString();
   } catch {}
 }
 loadMeta();
@@ -143,7 +143,7 @@ function handleUpload(input, zoneId, previewId) {
       reader.readAsDataURL(file);
     } else {
       preview.innerHTML =
-        "<span style='font-size:26px'>ðŸ“„</span>" +
+        "<span style='font-size:26px'>📄</span>" +
         "<span style='font-size:12px;color:var(--success)'>" +
         file.name +
         "</span>";
@@ -271,7 +271,7 @@ if (form) {
     }
 
     var btn = document.getElementById("submitBtn");
-    btn.textContent = "Submittingâ€¦";
+    btn.textContent = "Submitting…";
     btn.disabled = true;
 
     try {
@@ -285,17 +285,17 @@ if (form) {
       if (!res.ok) {
         var msg = data.error || "Submission failed";
         if (msg.toLowerCase().includes("room"))
-          alert("âŒ This room is already occupied for this session.");
+          alert("❌ This room is already occupied for this session.");
         else if (msg.toLowerCase().includes("email"))
-          alert("âŒ This email is already registered.");
+          alert("❌ This email is already registered.");
         else if (msg.toLowerCase().includes("phone"))
-          alert("âŒ This phone number is already registered.");
-        else alert("âŒ " + msg);
+          alert("❌ This phone number is already registered.");
+        else alert("❌ " + msg);
         return;
       }
 
       alert(
-        "âœ… Application submitted successfully and is pending admin approval.",
+        "✔️ Application submitted successfully and is pending admin approval.",
       );
       form.reset();
 
@@ -308,17 +308,15 @@ if (form) {
       });
       document.querySelectorAll(".upload-placeholder").forEach(function (p) {
         p.innerHTML =
-          '<span class="upload-icon">ðŸ“Ž</span><span>Click to upload</span>';
+          '<span class="upload-icon">📁</span><span>Click to upload</span>';
       });
 
       loadMeta();
     } catch {
-      alert("âŒ Network error. Please check your connection and try again.");
+      alert("❌ Network error. Please check your connection and try again.");
     } finally {
       btn.textContent = "Submit Application";
       btn.disabled = false;
     }
   });
 }
-
-

@@ -120,29 +120,33 @@
       </header>
 
       <main class="dash-main">
+        <div
+          id="pendingBanner"
+          style="
+            display: none;
+            width: 100%;
+            margin-bottom: 18px;
+            padding: 18px 20px;
+            border-radius: 14px;
+            background: #fff0f0;
+            border: 1px solid #ffb3b3;
+            color: #961b1b;
+            font-weight: 800;
+            font-size: 20px;
+            line-height: 1.4;
+            text-align: center;
+          "
+        >
+          ⏳ <strong>Pending retention request:</strong> your next-session room
+          is awaiting admin approval.
+        </div>
+
         <!-- Welcome banner -->
         <div class="welcome-banner">
           <div class="welcome-text">
             <p class="welcome-greeting" id="greeting">Good day,</p>
             <h2 class="welcome-name" id="tenantName">—</h2>
             <p class="welcome-loc" id="tenantLoc">—</p>
-          </div>
-          <div
-            id="pendingBanner"
-            style="
-              display: none;
-              margin-left: 20px;
-              padding: 14px 18px;
-              border-radius: 10px;
-              background: #fff4f4;
-              border: 1px solid #ffd3d3;
-              color: #a33;
-              font-weight: 700;
-              font-size: 18px;
-            "
-          >
-            ⏳ You have a pending retention for the next session — awaiting
-            admin approval
           </div>
           <div class="welcome-room-wrap">
             <p class="room-label">Your Room</p>

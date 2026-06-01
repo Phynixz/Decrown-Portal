@@ -5,12 +5,10 @@ function createDeleteCard(user) {
   div.classList.add("user-item");
 
   const imgSrc = user.passport
-    ? `http://localhost:3000/uploads/${user.passport}`
+    ? `/uploads/${user.passport}`
     : "https://via.placeholder.com/50";
 
-  const receiptSrc = user.paymentProof
-    ? `http://localhost:3000/uploads/${user.paymentProof}`
-    : null;
+  const receiptSrc = user.paymentProof ? `/uploads/${user.paymentProof}` : null;
 
   div.innerHTML = `
     <input type="checkbox" value="${user._id}" class="user-select">
@@ -24,9 +22,10 @@ function createDeleteCard(user) {
       <p>${user.session}</p>
       <p>${user.roomNo || "N/A"}</p>
 
-      ${receiptSrc 
-        ? `<a href="${receiptSrc}" target="_blank">View Receipt</a>`
-        : `<p>No Receipt</p>`
+      ${
+        receiptSrc
+          ? `<a href="${receiptSrc}" target="_blank">View Receipt</a>`
+          : `<p>No Receipt</p>`
       }
     </div>
   `;
@@ -34,11 +33,11 @@ function createDeleteCard(user) {
   return div;
 }
 
-fetch("http://localhost:3000/users")
-  .then(res => res.json())
-  .then(users => {
+fetch("/users")
+  .then((res) => res.json())
+  .then((users) => {
     container.innerHTML = "";
-    users.forEach(user => {
+    users.forEach((user) => {
       container.appendChild(createDeleteCard(user));
     });
   });
@@ -53,7 +52,7 @@ async function deleteSelected() {
 
   const selected = document.querySelectorAll(".user-select:checked");
 
-  const ids = Array.from(selected).map(cb => cb.value);
+  const ids = Array.from(selected).map((cb) => cb.value);
 
   if (ids.length === 0) {
     alert("No users selected");
@@ -61,13 +60,13 @@ async function deleteSelected() {
   }
 
   try {
-    const res = await fetch("http://localhost:3000/users/delete-bulk", {
+    const res = await fetch("/users/delete-bulk", {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`   // 🔥 THIS WAS MISSING
+        Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ ids })
+      body: JSON.stringify({ ids }),
     });
 
     const data = await res.json();
@@ -79,7 +78,6 @@ async function deleteSelected() {
 
     alert("Deleted successfully");
     location.reload();
-
   } catch (err) {
     console.error(err);
     alert("Server error");
