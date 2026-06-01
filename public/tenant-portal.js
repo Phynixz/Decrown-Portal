@@ -160,8 +160,7 @@ async function showDashboard() {
     const proofTile = document.getElementById("proofLink");
     if (proofTile) {
       if (tenantProfile.paymentProof) {
-        proofTile.href =
-          "/uploads/" + encodeURIComponent(tenantProfile.paymentProof);
+        proofTile.href = tenantProfile.paymentProof;
         proofTile.style.opacity = "1";
         proofTile.onclick = null;
       } else {
@@ -256,7 +255,7 @@ function showHistoryRecord() {
   // Proof link
   const proofLink = document.getElementById("hProofLink");
   if (rec.paymentProof) {
-    proofLink.href = "/uploads/" + encodeURIComponent(rec.paymentProof);
+    proofLink.href = rec.paymentProof;
     proofLink.style.opacity = "1";
     proofLink.onclick = null;
   } else {

@@ -493,7 +493,7 @@
         list.innerHTML = filteredRecords
           .map(function (r) {
             var img = r.passport
-              ? "/uploads/" + encodeURIComponent(r.passport)
+              ? r.passport
               : "https://ui-avatars.com/api/?name=" +
                 encodeURIComponent(r.name || "?") +
                 "&background=1a3c5e&color=fff&size=80";

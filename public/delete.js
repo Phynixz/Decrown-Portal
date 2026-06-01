@@ -5,11 +5,11 @@ function createDeleteCard(user) {
   div.classList.add("user-item");
 
   const imgSrc = user.passport
-    ? "/uploads/" + encodeURIComponent(user.passport)
+    ? user.passport
     : "https://via.placeholder.com/50";
 
   const receiptSrc = user.paymentProof
-    ? "/uploads/" + encodeURIComponent(user.paymentProof)
+    ? user.paymentProof
     : null;
 
   div.innerHTML = `

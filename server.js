@@ -49,7 +49,6 @@ app.use(
     limit: "10mb",
   }),
 );
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use(express.static(path.join(__dirname, "public")));
 app.get("/", (req, res) => {
   res.redirect("/login.html");
@@ -78,16 +77,12 @@ function verifyAdmin(req, res, next) {
   }
 }
 
-function deleteUploadedFile(fileName) {
-  if (!fileName) return;
-  const fp = path.join(__dirname, "uploads", fileName);
-  if (fs.existsSync(fp)) {
-    try {
-      fs.unlinkSync(fp);
-    } catch (e) {
-      console.error("Failed to delete upload", fp, e.message);
-    }
-  }
+function deleteUploadedFile(cloudinaryPublicId) {
+  if (!cloudinaryPublicId) return;
+  const cloudinary = require("cloudinary").v2;
+  cloudinary.uploader.destroy(cloudinaryPublicId, (err, result) => {
+    if (err) console.error("Failed to delete from Cloudinary", cloudinaryPublicId, err.message);
+  });
 }
 
 function sanitizeString(value) {
@@ -354,13 +349,7 @@ app.post(
           error: "No pending retention found. Request retention first.",
         });
 
-      // Delete old proof if exists
-      if (record.paymentProof) {
-        const old = path.join(__dirname, "uploads", record.paymentProof);
-        if (fs.existsSync(old)) fs.unlinkSync(old);
-      }
-
-      record.paymentProof = req.file.filename;
+      record.paymentProof = req.file.secure_url;
       await record.save();
       res.json({ message: "Receipt uploaded. Awaiting admin approval." });
     } catch (e) {
@@ -494,8 +483,8 @@ app.post(
         roomNo: safeRoomNo,
         amount: setting?.rentAmount ?? 0,
         paymentDate: safePaymentDate,
-        passport: req.files?.passport?.[0]?.filename,
-        paymentProof: req.files?.paymentProof?.[0]?.filename,
+        passport: req.files?.passport?.[0]?.secure_url,
+        paymentProof: req.files?.paymentProof?.[0]?.secure_url,
         retainPending: true,
       }).save();
 
