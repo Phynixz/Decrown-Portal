@@ -5,10 +5,12 @@ function createDeleteCard(user) {
   div.classList.add("user-item");
 
   const imgSrc = user.passport
-    ? `/uploads/${user.passport}`
+    ? "/uploads/" + encodeURIComponent(user.passport)
     : "https://via.placeholder.com/50";
 
-  const receiptSrc = user.paymentProof ? `/uploads/${user.paymentProof}` : null;
+  const receiptSrc = user.paymentProof
+    ? "/uploads/" + encodeURIComponent(user.paymentProof)
+    : null;
 
   div.innerHTML = `
     <input type="checkbox" value="${user._id}" class="user-select">

@@ -487,7 +487,7 @@ function buildCard(u) {
   el.className = "card" + (u.retainPending ? " is-pending" : "");
 
   var img = u.passport
-    ? "/uploads/" + u.passport
+    ? "/uploads/" + encodeURIComponent(u.passport)
     : "https://ui-avatars.com/api/?name=" +
       encodeURIComponent(u.name || "?") +
       "&background=1a3c5e&color=fff&bold=true&size=100";
@@ -538,7 +538,7 @@ function buildCard(u) {
 
   var proofBtn = u.paymentProof
     ? '<a class="cta cta-proof" href="/uploads/' +
-      u.paymentProof +
+      encodeURIComponent(u.paymentProof) +
       '" target="_blank" rel="noopener">View Proof</a>'
     : '<span class="cta cta-no-proof">No Proof</span>';
 
@@ -741,7 +741,7 @@ function renderDrawerHistory() {
         "','_blank')\">Receipt</button>" +
         (r.paymentProof
           ? '<a class="sbtn sbtn-proof" href="/uploads/' +
-            r.paymentProof +
+            encodeURIComponent(r.paymentProof) +
             '" target="_blank">Proof</a>'
           : "") +
         (r.retainPending
