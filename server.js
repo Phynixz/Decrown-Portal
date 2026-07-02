@@ -354,7 +354,7 @@ app.post(
           error: "No pending retention found. Request retention first.",
         });
 
-      record.paymentProof = req.file.secure_url;
+      record.paymentProof = req.file.secure_url || req.file.path || null;
       await record.save();
       res.json({ message: "Receipt uploaded. Awaiting admin approval." });
     } catch (e) {
@@ -516,9 +516,14 @@ app.post(
         roomNo: safeRoomNo,
         amount: setting?.rentAmount ?? 0,
         paymentDate: safePaymentDate,
-        passport: req.files?.passport?.[0]?.secure_url,
-        idCard: req.files?.idCard?.[0]?.secure_url,
-        paymentProof: req.files?.paymentProof?.[0]?.secure_url,
+        passport:
+          req.files?.passport?.[0]?.secure_url || req.files?.passport?.[0]?.path || null,
+        idCard:
+          req.files?.idCard?.[0]?.secure_url || req.files?.idCard?.[0]?.path || null,
+        paymentProof:
+          req.files?.paymentProof?.[0]?.secure_url ||
+          req.files?.paymentProof?.[0]?.path ||
+          null,
         retainPending: true,
       }).save();
 
