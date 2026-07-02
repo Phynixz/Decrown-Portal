@@ -517,9 +517,13 @@ app.post(
         amount: setting?.rentAmount ?? 0,
         paymentDate: safePaymentDate,
         passport:
-          req.files?.passport?.[0]?.secure_url || req.files?.passport?.[0]?.path || null,
+          req.files?.passport?.[0]?.secure_url ||
+          req.files?.passport?.[0]?.path ||
+          null,
         idCard:
-          req.files?.idCard?.[0]?.secure_url || req.files?.idCard?.[0]?.path || null,
+          req.files?.idCard?.[0]?.secure_url ||
+          req.files?.idCard?.[0]?.path ||
+          null,
         paymentProof:
           req.files?.paymentProof?.[0]?.secure_url ||
           req.files?.paymentProof?.[0]?.path ||
