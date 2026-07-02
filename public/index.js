@@ -46,6 +46,13 @@ function populate(data) {
       });
   setText("r-date", `Date: ${date}`);
 
+  // User profile photo
+  const photoEl = document.getElementById("userPhoto");
+  if (data.passport) {
+    photoEl.src = data.passport;
+    photoEl.style.display = "block";
+  }
+
   // Recipient
   setText("r-name", (data.name || "—").toUpperCase());
   setText(

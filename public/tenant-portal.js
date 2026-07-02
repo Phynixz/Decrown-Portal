@@ -454,6 +454,11 @@ function proofClick(e) {
   // handled per-tile in showDashboard
 }
 
+// ─── View profile ─────────────────────────────────────────────────────────────
+function viewProfile() {
+  window.location.href = "tenant-profile.html";
+}
+
 // ─── Sign out ─────────────────────────────────────────────────────────────────
 function signOut() {
   sessionStorage.removeItem("tenantToken");

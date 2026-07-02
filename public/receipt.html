@@ -6,10 +6,93 @@
     <title>Receipt — De-Crown Cottage</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
-      href="https://fonts.googleapis.com/css2?family=Red+Hat+Text:ital,wght@0,400;0,600;0,700;1,400&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Outfit:wght@300;400;500;600&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="style.css" />
+    <style>
+      :root {
+        --navy: #1a3c5e;
+        --navy2: #0f2744;
+        --cream: #faf7f2;
+        --cream2: #f2ece0;
+        --terra: #c4622d;
+        --text: #2c2418;
+        --text2: #5a4a3a;
+        --muted: #8a7560;
+        --border: #ddd4c0;
+        --white: #ffffff;
+        --font-h: "Playfair Display", serif;
+        --font-b: "Outfit", sans-serif;
+      }
+      body {
+        font-family: var(--font-b);
+        background: var(--cream);
+        color: var(--text);
+      }
+      .receipt {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        box-shadow: 0 4px 16px rgba(44, 36, 24, 0.08);
+      }
+      .r-head {
+        border-bottom: 2px solid var(--border);
+      }
+      .r-logo {
+        border: 2px solid var(--border);
+      }
+      .r-company h1 {
+        font-family: var(--font-h);
+        color: var(--navy);
+        font-size: 28px;
+      }
+      .r-company p {
+        color: var(--muted);
+      }
+      .r-table thead tr th {
+        background: var(--cream2);
+        color: var(--navy);
+      }
+      .r-total-row {
+        font-family: var(--font-b);
+      }
+      .print-btn {
+        background: var(--navy);
+        color: var(--white);
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .print-btn:hover {
+        background: var(--navy2);
+      }
+      .user-photo {
+        width: 100px;
+        height: 100px;
+        border-radius: 10px;
+        object-fit: cover;
+        border: 2px solid var(--terra);
+        box-shadow: 0 2px 8px rgba(196, 98, 45, 0.15);
+      }
+      .r-meta {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 24px;
+        align-items: flex-start;
+      }
+      .r-recipient {
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+      }
+      .recipient-info {
+        line-height: 1.6;
+      }
+    </style>
   </head>
   <body>
     <div class="receipt-wrap">
@@ -31,10 +114,19 @@
 
         <!-- Receipt meta -->
         <div class="r-meta">
+          <img
+            id="userPhoto"
+            src=""
+            alt="User Photo"
+            class="user-photo"
+            style="display: none"
+          />
           <div class="r-recipient">
-            <p class="r-to-label">Receipt To</p>
-            <p class="r-name" id="r-name">—</p>
-            <p class="r-contact" id="r-contact">—</p>
+            <div class="recipient-info">
+              <p class="r-to-label">Receipt To</p>
+              <p class="r-name" id="r-name">—</p>
+              <p class="r-contact" id="r-contact">—</p>
+            </div>
           </div>
           <div class="r-ref">
             <p class="r-number" id="r-number">Receipt #—</p>

@@ -881,6 +881,32 @@ body {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  overflow-y: auto;
+}
+
+.drawer-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border2);
+  display: flex;
+  gap: 10px;
+}
+
+.drawer-btn-edit {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  background: var(--terra);
+  color: var(--white);
+  font-weight: 600;
+  font-family: var(--font-b);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.drawer-btn-edit:hover {
+  background: #b0531e;
+  box-shadow: 0 4px 12px rgba(196, 98, 45, 0.2);
 }
 
 /* Contact section in drawer */

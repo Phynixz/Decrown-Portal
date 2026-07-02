@@ -246,6 +246,23 @@
                 <small class="err-msg">Please upload a passport photo</small>
               </div>
               <div class="field">
+                <label for="idCard">ID Card</label>
+                <div class="upload-zone" id="idCardZone">
+                  <input
+                    type="file"
+                    id="idCard"
+                    name="idCard"
+                    accept="image/*,.pdf"
+                    onchange="handleUpload(this, 'idCardZone', 'idCardPreview')"
+                  />
+                  <div class="upload-placeholder" id="idCardPreview">
+                    <span class="upload-icon">🪪</span>
+                    <span>Click to upload — JPG, PNG or PDF</span>
+                  </div>
+                </div>
+                <small class="err-msg">Please upload your ID card</small>
+              </div>
+              <div class="field">
                 <label for="paymentProof">Payment Receipt</label>
                 <div class="upload-zone" id="proofZone">
                   <input
@@ -265,6 +282,20 @@
                 >
               </div>
             </div>
+          </div>
+
+          <div class="field full terms-row" id="termsRow">
+            <label class="terms-label" for="termsAccepted">
+              <input type="checkbox" id="termsAccepted" name="termsAccepted" />
+              I have read and agree to the
+              <a href="terms.html" target="_blank" rel="noopener"
+                >Terms and Conditions</a
+              >.
+            </label>
+            <small class="err-msg terms-error"
+              >You must agree to the terms and conditions before
+              submitting.</small
+            >
           </div>
 
           <div class="form-submit-area">

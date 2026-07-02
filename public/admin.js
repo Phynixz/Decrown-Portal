@@ -536,6 +536,12 @@ function buildCard(u) {
       "</div>"
     : "";
 
+  var idCardBtn = u.idCard
+    ? '<a class="cta cta-proof" href="' +
+      u.idCard +
+      '" target="_blank" rel="noopener">View ID</a>'
+    : '<span class="cta cta-no-proof">No ID</span>';
+
   var proofBtn = u.paymentProof
     ? '<a class="cta cta-proof" href="' +
       u.paymentProof +
@@ -607,6 +613,7 @@ function buildCard(u) {
     "</div></div>" +
     "</div>" +
     '<div class="card-actions">' +
+    idCardBtn +
     proofBtn +
     actionBtn +
     "</div>";
@@ -676,6 +683,121 @@ function closeDrawer() {
   drawerHistory = [];
 }
 
+// ── Edit Tenant Modal ──────────────────────────────────────────────────────────
+let currentEditingUser = null;
+
+async function openEditModal() {
+  const latest = drawerHistory[0];
+  if (!latest) {
+    alert("Could not load user data");
+    return;
+  }
+
+  currentEditingUser = latest;
+
+  // Populate edit form with current data
+  document.getElementById("editName").value = latest.name || "";
+  document.getElementById("editEmail").value = latest.email || "";
+  document.getElementById("editPhone").value = latest.phone || "";
+  document.getElementById("editGuardianName").value = latest.guardianName || "";
+  document.getElementById("editGuardianPhone").value =
+    latest.guardianPhone || "";
+  document.getElementById("editLocation").value = latest.location || "Malete";
+  document.getElementById("editType").value = latest.type || "tenant";
+  document.getElementById("editRoomNo").value = latest.roomNo || "";
+  document.getElementById("editLevel").value = latest.level || "";
+  document.getElementById("editSession").value = latest.session || "";
+  document.getElementById("editAmount").value = latest.amount || "";
+  document.getElementById("editPaymentDate").value = latest.paymentDate || "";
+
+  openModal("editModal", "editBack");
+}
+
+function closeEditModal() {
+  currentEditingUser = null;
+  closeModal("editModal", "editBack");
+}
+
+async function saveEdit() {
+  if (!currentEditingUser) return;
+
+  const btn = document.getElementById("editSaveBtn");
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "Saving…";
+
+  try {
+    const res = await fetch("/admin/user/" + currentEditingUser._id, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: getToken(),
+      },
+      body: JSON.stringify({
+        name: document.getElementById("editName").value,
+        email: document.getElementById("editEmail").value,
+        phone: document.getElementById("editPhone").value,
+        guardianName: document.getElementById("editGuardianName").value,
+        guardianPhone: document.getElementById("editGuardianPhone").value,
+        location: document.getElementById("editLocation").value,
+        type: document.getElementById("editType").value,
+        roomNo: document.getElementById("editRoomNo").value,
+        level: document.getElementById("editLevel").value,
+        session: document.getElementById("editSession").value,
+        amount: document.getElementById("editAmount").value,
+        paymentDate: document.getElementById("editPaymentDate").value,
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || "Failed to update user");
+    }
+
+    const result = await res.json();
+    currentEditingUser = result.user;
+    closeEditModal();
+
+    // Refresh the drawer with updated data
+    if (drawerHistory.length > 0) {
+      drawerHistory[0] = currentEditingUser;
+      renderDrawerHistory();
+      // Update contact info display
+      const grid = document.getElementById("drawerInfoGrid");
+      if (grid) {
+        grid.innerHTML = [
+          ["Email", currentEditingUser.email],
+          ["Phone", currentEditingUser.phone],
+          ["Guardian", currentEditingUser.guardianName],
+          ["G. Phone", currentEditingUser.guardianPhone],
+        ]
+          .map(function (pair) {
+            return (
+              '<div class="drawer-info-item">' +
+              '<div class="drawer-info-label">' +
+              pair[0] +
+              "</div>" +
+              '<div class="drawer-info-val">' +
+              esc(pair[1]) +
+              "</div>" +
+              "</div>"
+            );
+          })
+          .join("");
+      }
+    }
+
+    alert("User updated successfully");
+    // Refresh main list
+    await queryUsers();
+  } catch (err) {
+    alert("Error: " + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
+}
+
 function renderDrawerHistory() {
   const list = document.getElementById("drawerSessionList");
   if (!drawerHistory.length) {
@@ -739,6 +861,11 @@ function renderDrawerHistory() {
         '<button class="sbtn" onclick="window.open(\'receipt.html?id=' +
         r._id +
         "','_blank')\">Receipt</button>" +
+        (r.idCard
+          ? '<a class="sbtn sbtn-proof" href="' +
+            r.idCard +
+            '" target="_blank">ID Card</a>'
+          : "") +
         (r.paymentProof
           ? '<a class="sbtn sbtn-proof" href="' +
             r.paymentProof +

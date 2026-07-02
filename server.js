@@ -81,7 +81,12 @@ function deleteUploadedFile(cloudinaryPublicId) {
   if (!cloudinaryPublicId) return;
   const cloudinary = require("cloudinary").v2;
   cloudinary.uploader.destroy(cloudinaryPublicId, (err, result) => {
-    if (err) console.error("Failed to delete from Cloudinary", cloudinaryPublicId, err.message);
+    if (err)
+      console.error(
+        "Failed to delete from Cloudinary",
+        cloudinaryPublicId,
+        err.message,
+      );
   });
 }
 
@@ -410,6 +415,7 @@ app.get("/user/:id", async (req, res) => {
       amount: u.amount,
       paymentDate: u.paymentDate,
       passport: u.passport,
+      idCard: u.idCard,
       paymentProof: u.paymentProof,
       retainPending: u.retainPending,
       renewedFrom: u.renewedFrom,
@@ -423,7 +429,11 @@ app.get("/user/:id", async (req, res) => {
 
 app.post(
   "/submit",
-  upload.fields([{ name: "passport" }, { name: "paymentProof" }]),
+  upload.fields([
+    { name: "passport" },
+    { name: "idCard" },
+    { name: "paymentProof" },
+  ]),
   async (req, res) => {
     try {
       if (!(await isRegistrationOpen()))
@@ -442,7 +452,30 @@ app.post(
         roomNo,
         paymentDate,
         type = "tenant",
+        termsAccepted,
       } = req.body;
+
+      if (
+        !req.files?.passport?.[0] ||
+        !req.files?.idCard?.[0] ||
+        !req.files?.paymentProof?.[0]
+      ) {
+        return res.status(400).json({
+          error: "Passport, ID card, and payment proof are required.",
+        });
+      }
+
+      const acceptedTerms =
+        termsAccepted === true ||
+        termsAccepted === "true" ||
+        termsAccepted === "on" ||
+        termsAccepted === 1 ||
+        termsAccepted === "1";
+      if (!acceptedTerms) {
+        return res
+          .status(400)
+          .json({ error: "You must accept the terms and conditions." });
+      }
 
       const safeLocation = sanitizeLocation(location);
       const safeName = sanitizeString(name);
@@ -484,12 +517,14 @@ app.post(
         amount: setting?.rentAmount ?? 0,
         paymentDate: safePaymentDate,
         passport: req.files?.passport?.[0]?.secure_url,
+        idCard: req.files?.idCard?.[0]?.secure_url,
         paymentProof: req.files?.paymentProof?.[0]?.secure_url,
         retainPending: true,
       }).save();
 
       res.json({
-        message: "Submitted successfully and is pending admin approval.",
+        message:
+          "Application submitted successfully. Please wait for admin review.",
       });
     } catch (err) {
       if (err.code === 11000) {
@@ -738,7 +773,59 @@ app.get("/export-users", verifyAdmin, async (req, res) => {
   }
 });
 
-// â”€â”€â”€ Seed & Start â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Get single user for editing ──────────────────────────────────────────────
+app.get("/admin/user/:id", verifyAdmin, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ error: "User not found" });
+    res.json(user);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── Update user information ──────────────────────────────────────────────────
+app.put("/admin/user/:id", verifyAdmin, async (req, res) => {
+  try {
+    const {
+      name,
+      email,
+      phone,
+      guardianName,
+      guardianPhone,
+      location,
+      type,
+      level,
+      roomNo,
+      session,
+      amount,
+      paymentDate,
+    } = req.body;
+
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    // Sanitize inputs
+    if (name) user.name = sanitizeString(name);
+    if (email) user.email = sanitizeEmail(email);
+    if (phone) user.phone = sanitizeString(phone);
+    if (guardianName) user.guardianName = sanitizeString(guardianName);
+    if (guardianPhone) user.guardianPhone = sanitizeString(guardianPhone);
+    if (location) user.location = location;
+    if (type) user.type = type;
+    if (level) user.level = sanitizeString(level);
+    if (roomNo) user.roomNo = sanitizeString(roomNo);
+    if (session) user.session = sanitizeString(session);
+    if (amount != null) user.amount = Number(amount);
+    if (paymentDate) user.paymentDate = sanitizeString(paymentDate);
+
+    await user.save();
+    res.json({ message: "User updated successfully", user });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 async function seed() {
   for (const loc of ["Malete", "Ila-Orangun"]) {
     if (!(await Settings.findOne({ location: loc }))) {

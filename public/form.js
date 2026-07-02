@@ -211,6 +211,14 @@ function validateFile(input) {
   return !!file;
 }
 
+function validateTerms() {
+  var terms = document.getElementById("termsAccepted");
+  var row = document.getElementById("termsRow");
+  var valid = !!(terms && terms.checked);
+  if (row) row.classList.toggle("invalid", !valid);
+  return valid;
+}
+
 // â”€â”€â”€ Live listeners â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 document
   .querySelectorAll(
@@ -238,6 +246,13 @@ if (dateInput)
     updateProgress();
   });
 
+var termsCheckbox = document.getElementById("termsAccepted");
+if (termsCheckbox) {
+  termsCheckbox.addEventListener("change", function () {
+    validateTerms();
+  });
+}
+
 // â”€â”€â”€ Submit â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 var form = document.getElementById("applicationForm");
 if (form) {
@@ -260,9 +275,12 @@ if (form) {
     if (dInp && !validateDate(dInp)) valid = false;
 
     var passport = document.getElementById("passport");
+    var idCard = document.getElementById("idCard");
     var proof = document.getElementById("paymentProof");
     if (passport && !validateFile(passport)) valid = false;
+    if (idCard && !validateFile(idCard)) valid = false;
     if (proof && !validateFile(proof)) valid = false;
+    if (!validateTerms()) valid = false;
 
     if (!valid) {
       var first = document.querySelector(".invalid, .upload-zone.invalid");
@@ -295,7 +313,7 @@ if (form) {
       }
 
       alert(
-        "✔️ Application submitted successfully and is pending admin approval.",
+        "✔️ Application submitted successfully. Please wait for admin review.",
       );
       form.reset();
 

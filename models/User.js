@@ -19,6 +19,7 @@ const userSchema = new mongoose.Schema({
   amount: { type: Number, default: 0 },
   paymentDate: String,
   passport: String,
+  idCard: String,
   paymentProof: String,
   renewedFrom: {
     type: mongoose.Schema.Types.ObjectId,

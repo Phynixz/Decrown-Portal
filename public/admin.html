@@ -191,6 +191,86 @@
           <div class="session-list" id="drawerSessionList"></div>
         </div>
       </div>
+      <div class="drawer-footer">
+        <button
+          class="drawer-btn-edit"
+          onclick="openEditModal()"
+          title="Edit this tenant's information"
+        >
+          ✏️ Edit Tenant
+        </button>
+      </div>
+    </div>
+
+    <!-- Edit tenant modal -->
+    <div class="backdrop" id="editBack" onclick="closeEditModal()"></div>
+    <div class="modal" id="editModal" style="max-width: 600px">
+      <div class="modal-head">
+        <h3>Edit Tenant Information</h3>
+        <button onclick="closeEditModal()">&#10005;</button>
+      </div>
+      <div class="modal-body" style="max-height: 70vh; overflow-y: auto">
+        <div class="mfield">
+          <label>Name</label>
+          <input type="text" id="editName" />
+        </div>
+        <div class="mfield">
+          <label>Email</label>
+          <input type="email" id="editEmail" />
+        </div>
+        <div class="mfield">
+          <label>Phone</label>
+          <input type="tel" id="editPhone" />
+        </div>
+        <div class="mfield">
+          <label>Guardian Name</label>
+          <input type="text" id="editGuardianName" />
+        </div>
+        <div class="mfield">
+          <label>Guardian Phone</label>
+          <input type="tel" id="editGuardianPhone" />
+        </div>
+        <div class="mfield">
+          <label>Location</label>
+          <select id="editLocation">
+            <option value="Malete">Malete</option>
+            <option value="Ila-Orangun">Ila-Orangun</option>
+          </select>
+        </div>
+        <div class="mfield">
+          <label>Type</label>
+          <select id="editType">
+            <option value="tenant">Tenant</option>
+            <option value="shop">Shop</option>
+          </select>
+        </div>
+        <div class="mfield">
+          <label>Room Number</label>
+          <input type="text" id="editRoomNo" />
+        </div>
+        <div class="mfield">
+          <label>Level</label>
+          <input type="text" id="editLevel" placeholder="e.g., 100Level" />
+        </div>
+        <div class="mfield">
+          <label>Session</label>
+          <input type="text" id="editSession" placeholder="e.g., 2024/2025" />
+        </div>
+        <div class="mfield">
+          <label>Amount (₦)</label>
+          <input type="number" id="editAmount" />
+        </div>
+        <div class="mfield">
+          <label>Payment Date</label>
+          <input type="date" id="editPaymentDate" />
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="mbtn ghost" onclick="closeEditModal()">Cancel</button>
+        <button class="mbtn primary" onclick="saveEdit()" id="editSaveBtn">
+          Save Changes
+        </button>
+      </div>
     </div>
 
     <!-- Rent modal -->
