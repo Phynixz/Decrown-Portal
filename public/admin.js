@@ -536,6 +536,12 @@ function buildCard(u) {
       "</div>"
     : "";
 
+  var passportBtn = u.passport
+    ? '<a class="cta cta-proof" href="' +
+      u.passport +
+      '" target="_blank" rel="noopener">View Passport</a>'
+    : '<span class="cta cta-no-proof">No Passport</span>';
+
   var idCardBtn = u.idCard
     ? '<a class="cta cta-proof" href="' +
       u.idCard +
@@ -613,6 +619,7 @@ function buildCard(u) {
     "</div></div>" +
     "</div>" +
     '<div class="card-actions">' +
+    passportBtn +
     idCardBtn +
     proofBtn +
     actionBtn +
