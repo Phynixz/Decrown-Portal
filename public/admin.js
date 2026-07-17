@@ -1209,3 +1209,5 @@ function logout() {
   await loadAdminSettings();
   await loadUsers();
 })();
+
+// server test cloudiniary upload
