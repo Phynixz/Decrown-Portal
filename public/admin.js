@@ -547,15 +547,22 @@ function buildCard(u) {
       u.idCard +
       '" target="_blank" rel="noopener">View ID</a>'
     : '<span class="cta cta-no-proof">No ID</span>';
+  var proofUrl = u.paymentProof
+    ? u.paymentProof.toLowerCase().includes(".pdf")
+      ? u.paymentProof.replace("/image/upload/", "/raw/upload/")
+      : u.paymentProof
+    : null;
 
-  var proofBtn = u.paymentProof
-    ? u.paymentProof.includes(".pdf")
-      ? '<a class="cta cta-proof" href="' +
-        u.paymentProof +
-        '" target="_blank" rel="noopener">📄 View PDF</a>'
-      : '<a class="cta cta-proof" href="' +
-        u.paymentProof +
-        '" target="_blank" rel="noopener">🖼 View Proof</a>'
+  var proofBtn = proofUrl
+    ? '<a class="cta cta-proof" href="' +
+      proofUrl +
+      "?t=" +
+      Date.now() +
+      '" target="_blank" rel="noopener">' +
+      (u.paymentProof.toLowerCase().includes(".pdf")
+        ? "📄 View PDF"
+        : "🖼 View Proof") +
+      "</a>"
     : '<span class="cta cta-no-proof">No Proof</span>';
 
   var actionBtn =
