@@ -704,6 +704,21 @@ app.put("/approve-retain/:id", verifyAdmin, async (req, res) => {
   }
 });
 
+app.put("/disapprove/:id", verifyAdmin, async (req, res) => {
+  try {
+    const { reason, note } = req.body;
+    await User.findByIdAndUpdate(req.params.id, {
+      retainPending: false,
+      disapproved: true,
+      disapprovalReason: reason || "Not specified",
+      disapprovalNote: note || "",
+    });
+    res.json({ message: "Application rejected" });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.delete("/users/delete-bulk", verifyAdmin, async (req, res) => {
   try {
     const { ids, adminPassword } = req.body;

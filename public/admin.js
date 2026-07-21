@@ -1133,6 +1133,50 @@ async function refreshAdminList() {
   }
 }
 
+var disapproveTargetId = null;
+
+function openDisapproveModal(id, name) {
+  disapproveTargetId = id;
+  set(
+    "disapproveInfo",
+    "Rejecting application for " + name + ". The tenant will need to reapply.",
+  );
+  document.getElementById("disapproveNote").value = "";
+  openModal("disapproveModal", "disapproveBack");
+}
+
+function closeDisapproveModal() {
+  disapproveTargetId = null;
+  closeModal("disapproveModal", "disapproveBack");
+}
+
+async function confirmDisapprove() {
+  if (!disapproveTargetId) return;
+  const reason = document.getElementById("disapproveReason").value;
+  const note = document.getElementById("disapproveNote").value.trim();
+
+  try {
+    const r = await fetch("/disapprove/" + disapproveTargetId, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: getToken(),
+      },
+      body: JSON.stringify({ reason, note }),
+    });
+    const d = await r.json();
+    if (!r.ok) {
+      alert("❌ " + d.error);
+      return;
+    }
+    alert("Application rejected and tenant notified.");
+    closeDisapproveModal();
+    loadUsers();
+  } catch {
+    alert("Failed to reject application");
+  }
+}
+
 async function createAdmin() {
   var name = document.getElementById("newAdminName").value.trim();
   var email = document.getElementById("newAdminEmail").value.trim();

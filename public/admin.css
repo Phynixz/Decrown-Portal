@@ -1413,3 +1413,24 @@ html.dark .badge-shop {
   border-color: var(--navy);
   transform: scale(1.06);
 }
+
+.approval-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.disapprove-btn {
+  padding: 6px 14px;
+  background: transparent;
+  color: #fff;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: var(--font-b);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.disapprove-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}

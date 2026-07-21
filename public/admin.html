@@ -419,6 +419,55 @@
       </div>
     </div>
 
+    <div
+      class="backdrop"
+      id="disapproveBack"
+      onclick="closeDisapproveModal()"
+    ></div>
+    <div class="modal" id="disapproveModal">
+      <div class="modal-head">
+        <h3>❌ Reject Application</h3>
+        <button onclick="closeDisapproveModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-info" id="disapproveInfo"></div>
+        <div class="mfield">
+          <label>Reason for rejection</label>
+          <select id="disapproveReason">
+            <option value="Invalid payment proof">Invalid payment proof</option>
+            <option value="Incomplete information">
+              Incomplete information
+            </option>
+            <option value="Room no longer available">
+              Room no longer available
+            </option>
+            <option value="Duplicate application">Duplicate application</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="mfield">
+          <label>Additional note (optional)</label>
+          <input
+            type="text"
+            id="disapproveNote"
+            placeholder="Any extra details..."
+          />
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="mbtn ghost" onclick="closeDisapproveModal()">
+          Cancel
+        </button>
+        <button
+          class="mbtn"
+          style="background: var(--danger); color: #fff; border: none"
+          onclick="confirmDisapprove()"
+        >
+          Reject Application
+        </button>
+      </div>
+    </div>
+
     <script src="admin.js"></script>
   </body>
 </html>

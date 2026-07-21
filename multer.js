@@ -18,18 +18,15 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// const storage = new CloudinaryStorage({
-//   cloudinary: cloudinary,
-//   params: {
-//     folder: "receipt-system",
-//     resource_type: "auto",
-//   },
-// });
-params: (async (req, file) => {
-  const isPDF = file.mimetype === "application/pdf";
-  return {
-    folder: "receipt-system",
-    resource_type: isPDF ? "raw" : "image",
-  };
-},
-  (module.exports = multer({ storage })));
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: async (req, file) => {
+    const isPDF = file.mimetype === "application/pdf";
+    return {
+      folder: "receipt-system",
+      resource_type: isPDF ? "raw" : "image",
+    };
+  },
+});
+
+module.exports = multer({ storage });
