@@ -549,9 +549,13 @@ function buildCard(u) {
     : '<span class="cta cta-no-proof">No ID</span>';
 
   var proofBtn = u.paymentProof
-    ? '<a class="cta cta-proof" href="' +
-      u.paymentProof +
-      '" target="_blank" rel="noopener">View Proof</a>'
+    ? u.paymentProof.includes(".pdf")
+      ? '<a class="cta cta-proof" href="' +
+        u.paymentProof +
+        '" target="_blank" rel="noopener">📄 View PDF</a>'
+      : '<a class="cta cta-proof" href="' +
+        u.paymentProof +
+        '" target="_blank" rel="noopener">🖼 View Proof</a>'
     : '<span class="cta cta-no-proof">No Proof</span>';
 
   var actionBtn =
@@ -876,7 +880,13 @@ function renderDrawerHistory() {
         (r.paymentProof
           ? '<a class="sbtn sbtn-proof" href="' +
             r.paymentProof +
-            '" target="_blank">Proof</a>'
+            "?t=" +
+            Date.now() +
+            '" target="_blank">' +
+            (r.paymentProof.toLowerCase().includes(".pdf")
+              ? "📄 PDF"
+              : "🖼 Proof") +
+            "</a>"
           : "") +
         (r.retainPending
           ? '<button class="sbtn sbtn-approve" onclick="openApproveModal(' +
