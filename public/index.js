@@ -27,10 +27,14 @@ function populate(data) {
     "₦" + Number(n || 0).toLocaleString("en-NG", { minimumFractionDigits: 2 });
 
   // Receipt number — last 6 chars of MongoDB _id so each is unique
-  const receiptNum = data._id
-    ? data._id.toString().slice(-6).toUpperCase()
-    : "000000";
+  const receiptNum =
+    data.receiptNumber || data._id.toString().slice(-6).toUpperCase();
   setText("r-number", `Receipt #${receiptNum}`);
+  const addresses = {
+    Malete: "Adjacent Victory Lodge, AGT2 Area Westend, Malete",
+    "Ila-Orangun": "Behind Central Mosque, College Road, Ila-Orangun",
+  };
+  setText("r-address", addresses[data.location] || "Kwara State, Nigeria");
 
   // Date
   const date = data.paymentDate

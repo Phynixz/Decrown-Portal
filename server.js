@@ -427,6 +427,13 @@ app.get("/user/:id", async (req, res) => {
   }
 });
 
+async function generateReceiptNumber(location) {
+  const prefix = location === "Malete" ? "DCM" : "DCI";
+  const year = new Date().getFullYear();
+  const count = await User.countDocuments({ location });
+  const num = String(count + 1).padStart(4, "0");
+  return `${prefix}-${year}-${num}`;
+}
 app.post(
   "/submit",
   upload.fields([
@@ -529,6 +536,7 @@ app.post(
           req.files?.paymentProof?.[0]?.path ||
           null,
         retainPending: true,
+        receiptNumber: await generateReceiptNumber(location),
       }).save();
 
       res.json({

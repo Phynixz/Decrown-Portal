@@ -28,6 +28,7 @@ const userSchema = new mongoose.Schema({
   },
   retainPending: { type: Boolean, default: false }, // true = tenant retained but hasn't paid yet
   createdAt: { type: Date, default: Date.now },
+  receiptNumber: { type: String, default: null },
 });
 
 // Prevent two tenants in the same room for the same location+session
