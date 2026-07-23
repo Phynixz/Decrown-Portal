@@ -526,13 +526,20 @@ function buildCard(u) {
       "</div>" +
       "</div>" +
       "</div>" +
+      '<div class="approval-actions">' +
       '<button class="approval-btn" onclick="openApproveModal(' +
       getJsArg(u._id) +
       "," +
       getJsArg(u.session) +
       "," +
       getJsArg(u.name) +
-      ')">Approve</button>' +
+      ')">✅ Approve</button>' +
+      '<button class="disapprove-btn" onclick="openDisapproveModal(' +
+      getJsArg(u._id) +
+      "," +
+      getJsArg(u.name) +
+      ')">❌ Reject</button>' +
+      "</div>" +
       "</div>"
     : "";
 
