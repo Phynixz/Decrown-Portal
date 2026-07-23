@@ -467,7 +467,113 @@
         </button>
       </div>
     </div>
+    <!-- Revoke modal -->
+    <div class="backdrop" id="revokeBack" onclick="closeRevokeModal()"></div>
+    <div class="modal" id="revokeModal">
+      <div class="modal-head">
+        <h3>🚫 Revoke Tenant</h3>
+        <button onclick="closeRevokeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-info" id="revokeInfo"></div>
+        <div class="mfield">
+          <label>Reason for revocation</label>
+          <select id="revokeReason">
+            <option value="Invalid documents">Invalid documents</option>
+            <option value="Payment not verified">Payment not verified</option>
+            <option value="Policy violation">Policy violation</option>
+            <option value="Fraudulent information">
+              Fraudulent information
+            </option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="mfield">
+          <label>Additional note (optional)</label>
+          <input
+            type="text"
+            id="revokeNote"
+            placeholder="Any extra details..."
+          />
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="mbtn ghost" onclick="closeRevokeModal()">Cancel</button>
+        <button
+          class="mbtn"
+          style="background: var(--danger); color: #fff; border: none"
+          onclick="confirmRevoke()"
+        >
+          Revoke Tenant
+        </button>
+      </div>
+    </div>
 
+    <!-- Grant re-upload modal -->
+    <div
+      class="backdrop"
+      id="reuploadBack"
+      onclick="closeReuploadModal()"
+    ></div>
+    <div class="modal" id="reuploadModal">
+      <div class="modal-head">
+        <h3>📤 Grant Re-upload Access</h3>
+        <button onclick="closeReuploadModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-info" id="reuploadInfo"></div>
+        <div class="mfield">
+          <label>Select documents tenant can re-upload</label>
+          <label
+            style="
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              margin-top: 10px;
+              font-size: 13px;
+              font-weight: 400;
+            "
+          >
+            <input type="checkbox" id="reupPassport" /> Passport Photo
+          </label>
+          <label
+            style="
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              margin-top: 8px;
+              font-size: 13px;
+              font-weight: 400;
+            "
+          >
+            <input type="checkbox" id="reupIdCard" /> ID Card
+          </label>
+          <label
+            style="
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              margin-top: 8px;
+              font-size: 13px;
+              font-weight: 400;
+            "
+          >
+            <input type="checkbox" id="reupProof" /> Payment Proof
+          </label>
+        </div>
+        <p style="font-size: 12px; color: var(--muted); margin-top: 12px">
+          ⏰ Access expires after 24 hours automatically.
+        </p>
+      </div>
+      <div class="modal-foot">
+        <button class="mbtn ghost" onclick="closeReuploadModal()">
+          Cancel
+        </button>
+        <button class="mbtn primary" onclick="confirmGrantReupload()">
+          Grant Access
+        </button>
+      </div>
+    </div>
     <script src="admin.js"></script>
   </body>
 </html>

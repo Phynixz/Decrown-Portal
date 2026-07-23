@@ -33,6 +33,14 @@ const userSchema = new mongoose.Schema({
   disapproved: { type: Boolean, default: false },
   disapprovalReason: { type: String, default: null },
   disapprovalNote: { type: String, default: null },
+  status: { type: String, enum: ["active", "revoked"], default: "active" },
+  revokeReason: { type: String, default: null },
+  revokeNote: { type: String, default: null },
+  revokedAt: { type: Date, default: null },
+  canReuploadPassport: { type: Boolean, default: false },
+  canReuploadIdCard: { type: Boolean, default: false },
+  canReuploadProof: { type: Boolean, default: false },
+  reuploadExpiresAt: { type: Date, default: null },
 });
 
 // Prevent two tenants in the same room for the same location+session

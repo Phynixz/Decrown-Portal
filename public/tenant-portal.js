@@ -177,6 +177,9 @@ async function showDashboard() {
     await loadHistory();
     setRetainStep();
 
+    checkRevokedStatus(tenantProfile);
+    checkReuploadAccess(tenantProfile);
+
     // 6 — switch screens last, after all DOM writes are done
     const loginScreen = document.getElementById("loginScreen");
     const dashScreen = document.getElementById("dashScreen");
@@ -467,6 +470,147 @@ function signOut() {
   sessionHistory = [];
   document.getElementById("dashScreen").style.display = "none";
   document.getElementById("loginScreen").style.display = "block";
+}
+
+// ── Revoked banner ────────────────────────────────────────────────────────────
+function checkRevokedStatus(profile) {
+  const banner = document.getElementById("revokedBanner");
+  if (!banner) return;
+
+  if (profile.status === "revoked") {
+    banner.style.display = "block";
+    setText(
+      "revokedReason",
+      "Reason: " + (profile.revokeReason || "Not specified"),
+    );
+    setText(
+      "revokedNote",
+      profile.revokeNote ? "Note: " + profile.revokeNote : "",
+    );
+  } else {
+    banner.style.display = "none";
+  }
+}
+
+// ── Re-upload ─────────────────────────────────────────────────────────────────
+function checkReuploadAccess(profile) {
+  const section = document.getElementById("reuploadSection");
+  if (!section) return;
+
+  const hasAccess =
+    profile.canReuploadPassport ||
+    profile.canReuploadIdCard ||
+    profile.canReuploadProof;
+
+  if (!hasAccess) {
+    section.style.display = "none";
+    return;
+  }
+
+  // Check 24hr expiry
+  if (profile.reuploadExpiresAt) {
+    const expires = new Date(profile.reuploadExpiresAt);
+    const now = new Date();
+
+    if (now > expires) {
+      section.style.display = "none";
+      return;
+    }
+
+    // Show countdown
+    const hoursLeft = Math.ceil((expires - now) / (1000 * 60 * 60));
+    setText("reuploadExpiry", "⏰ Access expires in " + hoursLeft + " hour(s)");
+  }
+
+  section.style.display = "block";
+
+  // Show only the items admin unlocked
+  const passportItem = document.getElementById("reupPassportItem");
+  const idCardItem = document.getElementById("reupIdCardItem");
+  const proofItem = document.getElementById("reupProofItem");
+
+  if (passportItem)
+    passportItem.style.display = profile.canReuploadPassport ? "flex" : "none";
+  if (idCardItem)
+    idCardItem.style.display = profile.canReuploadIdCard ? "flex" : "none";
+  if (proofItem)
+    proofItem.style.display = profile.canReuploadProof ? "flex" : "none";
+}
+
+function previewReupload(input, labelId) {
+  const file = input.files[0];
+  const label = document.getElementById(labelId);
+  if (!file || !label) return;
+
+  if (file.size > 5 * 1024 * 1024) {
+    alert("File must be under 5MB");
+    input.value = "";
+    return;
+  }
+
+  label.textContent = "✅ " + file.name;
+
+  // Enable the matching upload button
+  const btnMap = {
+    newPassportLabel: "submitPassportBtn",
+    newIdCardLabel: "submitIdCardBtn",
+    newProofLabel: "submitProofBtn",
+  };
+  const btn = document.getElementById(btnMap[labelId]);
+  if (btn) btn.disabled = false;
+}
+
+async function submitReupload(field, inputId) {
+  const input = document.getElementById(inputId);
+  if (!input || !input.files[0]) {
+    alert("Please select a file first");
+    return;
+  }
+
+  const btnMap = {
+    passport: "submitPassportBtn",
+    idCard: "submitIdCardBtn",
+    paymentProof: "submitProofBtn",
+  };
+  const btn = document.getElementById(btnMap[field]);
+  if (btn) {
+    btn.textContent = "Uploading…";
+    btn.disabled = true;
+  }
+
+  try {
+    const formData = new FormData();
+    formData.append("file", input.files[0]);
+    formData.append("field", field);
+
+    const res = await fetch("/tenant/reupload", {
+      method: "PUT",
+      headers: { Authorization: tenantToken },
+      body: formData,
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+
+    alert("✅ " + data.message);
+
+    // Hide the item that was just uploaded
+    const itemMap = {
+      passport: "reupPassportItem",
+      idCard: "reupIdCardItem",
+      paymentProof: "reupProofItem",
+    };
+    const item = document.getElementById(itemMap[field]);
+    if (item) item.style.display = "none";
+
+    // Reload profile to reflect changes
+    await showDashboard();
+  } catch (e) {
+    alert("❌ " + e.message);
+    if (btn) {
+      btn.textContent = "⬆️ Upload";
+      btn.disabled = false;
+    }
+  }
 }
 
 // Allow Enter on login form

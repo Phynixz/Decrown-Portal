@@ -1434,3 +1434,135 @@ html.dark .badge-shop {
 .disapprove-btn:hover {
   background: rgba(255, 255, 255, 0.15);
 }
+
+.badge-revoked {
+  background: var(--danger-faint);
+  color: var(--danger);
+  border: 1px solid rgba(192, 57, 43, 0.25);
+}
+.cta-revoke {
+  color: var(--danger);
+  border-color: rgba(192, 57, 43, 0.25);
+}
+.cta-revoke:hover {
+  background: var(--danger);
+  color: #fff;
+}
+.cta-reupload {
+  color: var(--navy);
+  border-color: rgba(26, 60, 94, 0.2);
+}
+.cta-reupload:hover {
+  background: var(--navy);
+  color: #fff;
+}
+
+/* ── Revoked banner ───────────────────────────────── */
+.revoked-banner {
+  background: var(--danger, #c0392b);
+  border-radius: 14px;
+  padding: 20px 24px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 4px;
+}
+.revoked-banner-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+.revoked-icon {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+.revoked-title {
+  font-family: var(--font-h);
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 5px;
+}
+.revoked-reason {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 3px;
+}
+.revoked-note {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* ── Re-upload section ────────────────────────────── */
+.reupload-section {
+  background: var(--card-bg);
+  border: 1.5px solid var(--border2);
+  border-radius: 14px;
+  padding: 22px 24px;
+  box-shadow: var(--shadow-sm);
+}
+.reupload-header {
+  margin-bottom: 18px;
+}
+.reupload-header h3 {
+  font-family: var(--font-h);
+  font-size: 18px;
+  color: var(--navy);
+  margin-bottom: 6px;
+}
+.reupload-header p {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.6;
+}
+.reupload-expiry {
+  display: inline-block;
+  margin-top: 10px;
+  background: var(--amber-faint);
+  color: var(--amber);
+  border: 1px solid rgba(217, 119, 6, 0.2);
+  border-radius: 20px;
+  padding: 4px 14px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.reupload-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+.reupload-item {
+  background: var(--card-bg2);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.reupload-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.btn-reupload {
+  width: 100%;
+  padding: 10px;
+  background: var(--navy);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-b);
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.btn-reupload:hover {
+  opacity: 0.88;
+}
+.btn-reupload:disabled {
+  background: var(--muted);
+  cursor: not-allowed;
+  opacity: 1;
+}

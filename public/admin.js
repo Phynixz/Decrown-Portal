@@ -572,13 +572,26 @@ function buildCard(u) {
       "</a>"
     : '<span class="cta cta-no-proof">No Proof</span>';
 
+  var isRevoked = u.status === "revoked";
+
   var actionBtn =
-    '<button class="cta cta-receipt" onclick="window.open(\'receipt.html?id=' +
+    '<button class="cta cta-receipt" onclick="openReceipt(\'' +
     u._id +
-    "', '_blank')\">Receipt</button>" +
+    "')\">Receipt</button>" +
     '<button class="cta cta-history" onclick="openDrawer(' +
     histArgs +
-    ')">History</button>';
+    ')">History</button>' +
+    (isRevoked
+      ? '<button class="cta cta-reupload" onclick="openReuploadModal(' +
+        getJsArg(u._id) +
+        "," +
+        getJsArg(u.name) +
+        ')">📤 Re-upload</button>'
+      : '<button class="cta cta-revoke" onclick="openRevokeModal(' +
+        getJsArg(u._id) +
+        "," +
+        getJsArg(u.name) +
+        ')">🚫 Revoke</button>');
 
   el.innerHTML =
     banner +
@@ -617,6 +630,9 @@ function buildCard(u) {
       : "") +
     ((u.type || "tenant") === "shop"
       ? '<span class="badge badge-shop">Shop</span>'
+      : "") +
+    (u.status === "revoked"
+      ? '<span class="badge badge-revoked">&#128683; Revoked</span>'
       : "") +
     "</div>" +
     "</div>" +
@@ -1218,6 +1234,109 @@ async function createAdmin() {
     await refreshAdminList();
   } catch {
     alert("Failed");
+  }
+}
+
+// ── Revoke ─────────────────────────────────────────────────────────────────────
+var revokeTargetId = null;
+
+function openRevokeModal(id, name) {
+  revokeTargetId = id;
+  set(
+    "revokeInfo",
+    "Revoking approval for " +
+      name +
+      ". Tenant will be flagged but can still access their portal.",
+  );
+  document.getElementById("revokeNote").value = "";
+  document.getElementById("revokeReason").value = "Invalid documents";
+  openModal("revokeModal", "revokeBack");
+}
+
+function closeRevokeModal() {
+  revokeTargetId = null;
+  closeModal("revokeModal", "revokeBack");
+}
+
+async function confirmRevoke() {
+  if (!revokeTargetId) return;
+  const reason = document.getElementById("revokeReason").value;
+  const note = document.getElementById("revokeNote").value.trim();
+
+  try {
+    const r = await fetch("/revoke/" + revokeTargetId, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: getToken(),
+      },
+      body: JSON.stringify({ reason, note }),
+    });
+    const d = await r.json();
+    if (!r.ok) {
+      alert("❌ " + d.error);
+      return;
+    }
+    alert("✅ Tenant revoked successfully");
+    closeRevokeModal();
+    closeDrawer();
+    loadUsers();
+  } catch {
+    alert("Revocation failed");
+  }
+}
+
+// ── Grant Re-upload ────────────────────────────────────────────────────────────
+var reuploadTargetId = null;
+
+function openReuploadModal(id, name) {
+  reuploadTargetId = id;
+  set(
+    "reuploadInfo",
+    "Granting " +
+      name +
+      " access to re-upload documents. Access expires in 24 hours.",
+  );
+  document.getElementById("reupPassport").checked = false;
+  document.getElementById("reupIdCard").checked = false;
+  document.getElementById("reupProof").checked = false;
+  openModal("reuploadModal", "reuploadBack");
+}
+
+function closeReuploadModal() {
+  reuploadTargetId = null;
+  closeModal("reuploadModal", "reuploadBack");
+}
+
+async function confirmGrantReupload() {
+  if (!reuploadTargetId) return;
+  const passport = document.getElementById("reupPassport").checked;
+  const idCard = document.getElementById("reupIdCard").checked;
+  const proof = document.getElementById("reupProof").checked;
+
+  if (!passport && !idCard && !proof) {
+    alert("Please select at least one document");
+    return;
+  }
+
+  try {
+    const r = await fetch("/admin/grant-reupload/" + reuploadTargetId, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: getToken(),
+      },
+      body: JSON.stringify({ passport, idCard, proof }),
+    });
+    const d = await r.json();
+    if (!r.ok) {
+      alert("❌ " + d.error);
+      return;
+    }
+    alert("✅ Re-upload access granted for 24 hours");
+    closeReuploadModal();
+  } catch {
+    alert("Failed to grant access");
   }
 }
 

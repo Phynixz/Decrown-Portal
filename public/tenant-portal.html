@@ -143,7 +143,17 @@
           ⏳ <strong>Pending retention request:</strong> your next-session room
           is awaiting admin approval.
         </div>
-
+        <!-- Revoked banner — hidden by default, shown if tenant is revoked -->
+        <div class="revoked-banner" id="revokedBanner" style="display: none">
+          <div class="revoked-banner-left">
+            <span class="revoked-icon">🚫</span>
+            <div>
+              <div class="revoked-title">Your Application Has Been Flagged</div>
+              <div class="revoked-reason" id="revokedReason"></div>
+              <div class="revoked-note" id="revokedNote"></div>
+            </div>
+          </div>
+        </div>
         <!-- Welcome banner -->
         <div class="welcome-banner">
           <div class="welcome-text">
@@ -257,7 +267,100 @@
             </div>
           </div>
         </div>
+        <!-- Re-upload section — hidden by default -->
+        <div
+          class="reupload-section"
+          id="reuploadSection"
+          style="display: none"
+        >
+          <div class="reupload-header">
+            <h3>📤 Re-upload Documents</h3>
+            <p>
+              Admin has granted you access to re-upload the following documents.
+              Access expires in 24 hours.
+            </p>
+            <div class="reupload-expiry" id="reuploadExpiry"></div>
+          </div>
 
+          <div class="reupload-grid" id="reuploadGrid">
+            <!-- Passport -->
+            <div
+              class="reupload-item"
+              id="reupPassportItem"
+              style="display: none"
+            >
+              <div class="reupload-label">📷 Passport Photo</div>
+              <label class="upload-box" for="newPassportFile">
+                <span id="newPassportLabel">Click to select image</span>
+                <input
+                  type="file"
+                  id="newPassportFile"
+                  accept="image/*"
+                  onchange="previewReupload(this, 'newPassportLabel')"
+                  style="display: none"
+                />
+              </label>
+              <button
+                class="btn-reupload"
+                id="submitPassportBtn"
+                onclick="submitReupload('passport', 'newPassportFile')"
+                disabled
+              >
+                ⬆️ Upload Passport
+              </button>
+            </div>
+
+            <!-- ID Card -->
+            <div
+              class="reupload-item"
+              id="reupIdCardItem"
+              style="display: none"
+            >
+              <div class="reupload-label">🪪 ID Card</div>
+              <label class="upload-box" for="newIdCardFile">
+                <span id="newIdCardLabel">Click to select image or PDF</span>
+                <input
+                  type="file"
+                  id="newIdCardFile"
+                  accept="image/*,.pdf"
+                  onchange="previewReupload(this, 'newIdCardLabel')"
+                  style="display: none"
+                />
+              </label>
+              <button
+                class="btn-reupload"
+                id="submitIdCardBtn"
+                onclick="submitReupload('idCard', 'newIdCardFile')"
+                disabled
+              >
+                ⬆️ Upload ID Card
+              </button>
+            </div>
+
+            <!-- Payment Proof -->
+            <div class="reupload-item" id="reupProofItem" style="display: none">
+              <div class="reupload-label">📄 Payment Proof</div>
+              <label class="upload-box" for="newProofFile">
+                <span id="newProofLabel">Click to select image or PDF</span>
+                <input
+                  type="file"
+                  id="newProofFile"
+                  accept="image/*,.pdf"
+                  onchange="previewReupload(this, 'newProofLabel')"
+                  style="display: none"
+                />
+              </label>
+              <button
+                class="btn-reupload"
+                id="submitProofBtn"
+                onclick="submitReupload('paymentProof', 'newProofFile')"
+                disabled
+              >
+                ⬆️ Upload Proof
+              </button>
+            </div>
+          </div>
+        </div>
         <!-- ── Quick actions ─────────────────────────────────────────────── -->
         <div class="actions-grid">
           <button class="action-tile" onclick="viewReceipt()">
