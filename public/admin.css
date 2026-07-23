@@ -1419,7 +1419,7 @@ html.dark .badge-shop {
   gap: 8px;
   flex-shrink: 0;
 }
-.disapprove-btn {
+/* .disapprove-btn {
   padding: 6px 14px;
   background: transparent;
   color: #fff;
@@ -1433,7 +1433,7 @@ html.dark .badge-shop {
 }
 .disapprove-btn:hover {
   background: rgba(255, 255, 255, 0.15);
-}
+} */
 
 .badge-revoked {
   background: var(--danger-faint);
