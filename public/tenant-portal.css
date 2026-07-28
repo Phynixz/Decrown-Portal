@@ -376,24 +376,37 @@ html.dark .login-err {
 .dash-nav .theme-btn {
   position: static;
 }
-
 .btn-profile {
-  background: var(--navy);
+  background: #ffffff;
   border: none;
-  color: var(--white);
-  padding: 8px 16px;
-  border-radius: 8px;
+  color: var(--navy);
+  padding: 8px 20px;
+  border-radius: 30px;
   font-family: var(--font-b);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+  white-space: nowrap;
+  letter-spacing: 0.2px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 .btn-profile:hover {
-  background: var(--navy2);
-  box-shadow: 0 4px 12px rgba(26, 60, 94, 0.2);
+  background: #f2ece0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+  transform: translateY(-1px);
+}
+.btn-profile:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
+@media (max-width: 700px) {
+  .btn-profile {
+    padding: 7px 14px;
+    font-size: 12px;
+  }
+}
 .btn-signout {
   background: transparent;
   border: 1.5px solid var(--border);
@@ -846,4 +859,332 @@ html.dark .login-err {
   .room-num {
     font-size: 36px;
   }
+}
+/* ── Revoked banner mobile ────────────────────────── */
+@media (max-width: 700px) {
+  .revoked-banner {
+    padding: 16px 18px;
+    border-radius: 10px;
+  }
+  .revoked-banner-left {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .revoked-icon {
+    font-size: 22px;
+  }
+  .revoked-title {
+    font-size: 14px;
+  }
+  .revoked-reason,
+  .revoked-note {
+    font-size: 12px;
+  }
+
+  /* ── Re-upload section mobile ───────────────────── */
+  .reupload-section {
+    padding: 16px 16px;
+  }
+  .reupload-header h3 {
+    font-size: 16px;
+  }
+  .reupload-header p {
+    font-size: 12px;
+  }
+  .reupload-grid {
+    grid-template-columns: 1fr;
+  }
+  .reupload-item {
+    padding: 14px;
+  }
+
+  /* ── Info grid — single column on very small ────── */
+  .info-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .info-card {
+    padding: 14px 12px;
+  }
+  .info-icon {
+    font-size: 18px;
+  }
+  .info-val {
+    font-size: 13px;
+  }
+
+  /* ── History grid ───────────────────────────────── */
+  .history-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .history-section {
+    padding: 16px;
+  }
+  .history-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .history-header select {
+    width: 100%;
+  }
+
+  /* ── History actions ────────────────────────────── */
+  .history-actions {
+    flex-direction: column;
+  }
+  .hbtn {
+    text-align: center;
+    width: 100%;
+  }
+
+  /* ── Nav bar ────────────────────────────────────── */
+  .dash-nav {
+    padding: 0 12px;
+    gap: 6px;
+  }
+  .nav-brand span {
+    font-size: 13px;
+  }
+
+  .btn-signout {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  /* ── Retain card ────────────────────────────────── */
+  .retain-right {
+    min-width: unset;
+    width: 100%;
+  }
+  .retain-left h3 {
+    font-size: 16px;
+  }
+  .retain-left p {
+    font-size: 12px;
+  }
+
+  /* ── Actions grid ───────────────────────────────── */
+  .actions-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .action-tile {
+    padding: 16px 12px;
+  }
+  .action-icon {
+    font-size: 22px;
+  }
+
+  /* ── Welcome banner ─────────────────────────────── */
+  .welcome-name {
+    font-size: 20px;
+  }
+  .room-num {
+    font-size: 32px;
+  }
+
+  /* ── Upload box ─────────────────────────────────── */
+  .upload-box {
+    padding: 12px;
+    font-size: 12px;
+  }
+}
+
+/* ── Very small screens (below 380px) ────────────── */
+@media (max-width: 380px) {
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+  .actions-grid {
+    grid-template-columns: 1fr;
+  }
+  .split-right {
+    padding: 50px 16px 30px;
+  }
+  .login-card h2 {
+    font-size: 22px;
+  }
+}
+/* ── Profile button mobile fix ───────────────────── */
+.btn-profile {
+  background: var(--navy);
+  border: none;
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-family: var(--font-b);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  white-space: nowrap;
+}
+.btn-profile:hover {
+  opacity: 0.88;
+}
+
+@media (max-width: 700px) {
+  .btn-profile {
+    padding: 7px 10px;
+    font-size: 12px;
+  }
+}
+
+/* ── Profile modal ────────────────────────────────── */
+.profile-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 300;
+  backdrop-filter: blur(3px);
+}
+.profile-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--card-bg);
+  border: 1px solid var(--border2);
+  border-radius: 16px;
+  width: 480px;
+  max-width: calc(100vw - 32px);
+  max-height: 88vh;
+  overflow-y: auto;
+  z-index: 301;
+  box-shadow: var(--shadow-md);
+  flex-direction: column;
+}
+.profile-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border2);
+  position: sticky;
+  top: 0;
+  background: var(--card-bg);
+  z-index: 1;
+}
+.profile-modal-head h3 {
+  font-family: var(--font-h);
+  font-size: 18px;
+  color: var(--navy);
+}
+.profile-modal-head button {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: var(--muted);
+  padding: 4px;
+}
+.profile-modal-body {
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.profile-avatar-wrap {
+  display: flex;
+  justify-content: center;
+}
+.profile-avatar {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--border2);
+}
+
+.profile-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.pfield {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border2);
+  gap: 12px;
+}
+.pfield:last-child {
+  border-bottom: none;
+}
+.pfield-label {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+.pfield-val {
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 500;
+  text-align: right;
+  word-break: break-all;
+}
+
+.profile-docs-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 10px;
+}
+.profile-docs-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.profile-doc-btn {
+  padding: 9px 10px;
+  background: var(--card-bg2);
+  border: 1.5px solid var(--border2);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--navy);
+  text-decoration: none;
+  text-align: center;
+  transition: all 0.15s;
+  display: block;
+}
+.profile-doc-btn:hover {
+  background: var(--navy);
+  color: #fff;
+  border-color: var(--navy);
+}
+
+@media (max-width: 480px) {
+  .profile-docs-grid {
+    grid-template-columns: 1fr;
+  }
+  .profile-modal-body {
+    padding: 16px;
+  }
+}
+
+.profile-doc-upload-btn {
+  display: block;
+  padding: 9px 10px;
+  background: var(--navy-faint);
+  border: 1.5px dashed var(--navy);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--navy);
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.profile-doc-upload-btn:hover {
+  background: var(--navy);
+  color: #fff;
+  border-style: solid;
 }

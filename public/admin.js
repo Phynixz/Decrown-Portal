@@ -575,24 +575,28 @@ function buildCard(u) {
   var isRevoked = u.status === "revoked";
 
   var actionBtn =
-    '<button class="cta cta-receipt" onclick="openReceipt(\'' +
+    '<button class="cta cta-receipt" onclick="window.open(\'receipt.html?id=' +
     u._id +
-    "')\">Receipt</button>" +
+    "', '_blank')\">Receipt</button>" +
     '<button class="cta cta-history" onclick="openDrawer(' +
     histArgs +
     ')">History</button>' +
+    '<button class="cta cta-reupload" onclick="openReuploadModal(' +
+    getJsArg(u._id) +
+    "," +
+    getJsArg(u.name) +
+    ')">📤 Re-upload</button>' +
     (isRevoked
-      ? '<button class="cta cta-reupload" onclick="openReuploadModal(' +
+      ? '<button class="cta cta-unrevooke" onclick="unrevooke(' +
         getJsArg(u._id) +
         "," +
         getJsArg(u.name) +
-        ')">📤 Re-upload</button>'
+        ')">✅ Reinstate</button>'
       : '<button class="cta cta-revoke" onclick="openRevokeModal(' +
         getJsArg(u._id) +
         "," +
         getJsArg(u.name) +
         ')">🚫 Revoke</button>');
-
   el.innerHTML =
     banner +
     '<div class="card-stripe' +
@@ -934,6 +938,43 @@ function renderDrawerHistory() {
             getJsArg(r.roomNo) +
             ')">Renew</button>') +
         "</div>" +
+        // Change log
+        (r.changeLog && r.changeLog.length
+          ? '<div style="padding:10px 14px 12px;border-top:1px solid var(--border2)">' +
+            '<p style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;' +
+            'letter-spacing:0.8px;margin-bottom:8px">Document Changes</p>' +
+            r.changeLog
+              .map(function (entry) {
+                var labelMap = {
+                  passport: "📷 Passport",
+                  idCard: "🪪 ID Card",
+                  paymentProof: "📄 Payment Proof",
+                };
+                var date = new Date(entry.changedAt).toLocaleDateString(
+                  "en-NG",
+                  {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                  },
+                );
+                return (
+                  '<div style="display:flex;justify-content:space-between;align-items:center;' +
+                  'font-size:11px;padding:5px 0;border-bottom:1px solid var(--border2)">' +
+                  '<span style="color:var(--text);font-weight:500">' +
+                  (labelMap[entry.field] || entry.field) +
+                  "</span>" +
+                  '<span style="color:var(--muted)">' +
+                  esc(entry.note) +
+                  " &middot; " +
+                  date +
+                  "</span>" +
+                  "</div>"
+                );
+              })
+              .join("") +
+            "</div>"
+          : "") +
         "</div>" +
         "</div>"
       );

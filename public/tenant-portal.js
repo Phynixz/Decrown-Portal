@@ -32,8 +32,18 @@ let tenantProfile = null;
 let sessionHistory = []; // all DB records for this tenant
 let nextSession = "";
 
-// Skip login if already authenticated
+// Hide login screen immediately if token exists — prevents flash
 if (tenantToken) {
+  const loginScreen = document.getElementById("loginScreen");
+  const dashScreen = document.getElementById("dashScreen");
+  if (loginScreen) loginScreen.style.display = "none";
+  if (dashScreen) dashScreen.style.display = "block";
+  dashScreen.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:16px;background:var(--bg)">
+      <div style="width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--navy);border-radius:50%;animation:spin 0.7s linear infinite"></div>
+      <p style="color:var(--muted);font-size:14px">Loading your portal…</p>
+    </div>
+  `;
   showDashboard();
 }
 
@@ -269,6 +279,44 @@ function showHistoryRecord() {
       alert("No payment proof for this session.");
     };
   }
+  // Show change log for this record
+  const logSection = document.getElementById("changeLogSection");
+  const logList = document.getElementById("changeLogList");
+
+  if (rec.changeLog && rec.changeLog.length && logSection && logList) {
+    logSection.style.display = "block";
+    logList.innerHTML = rec.changeLog
+      .map(function (entry) {
+        var date = new Date(entry.changedAt).toLocaleDateString("en-NG", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+        var labelMap = {
+          passport: "📷 Passport Photo",
+          idCard: "🪪 ID Card",
+          paymentProof: "📄 Payment Proof",
+        };
+        return (
+          '<div style="display:flex;align-items:center;justify-content:space-between;' +
+          'padding:8px 0;border-bottom:1px solid var(--border2);font-size:12px">' +
+          '<span style="color:var(--text);font-weight:500">' +
+          (labelMap[entry.field] || entry.field) +
+          "</span>" +
+          '<span style="color:var(--muted)">' +
+          entry.note +
+          " · " +
+          date +
+          "</span>" +
+          "</div>"
+        );
+      })
+      .join("");
+  } else if (logSection) {
+    logSection.style.display = "none";
+  }
 }
 
 function openHistoryReceipt() {
@@ -471,7 +519,130 @@ function signOut() {
   document.getElementById("dashScreen").style.display = "none";
   document.getElementById("loginScreen").style.display = "block";
 }
+function viewProfile() {
+  if (!tenantProfile) {
+    alert("Profile not loaded yet");
+    return;
+  }
 
+  const p = tenantProfile;
+
+  // Avatar
+  const av = document.getElementById("profileAvatar");
+  if (av) {
+    av.src =
+      p.passport ||
+      "https://ui-avatars.com/api/?name=" +
+        encodeURIComponent(p.name || "?") +
+        "&background=1a3c5e&color=fff&bold=true&size=200";
+    av.style.display = "block";
+  }
+
+  // Fields
+  setText("pName", p.name || "—");
+  setText("pEmail", p.email || "—");
+  setText("pPhone", p.phone || "—");
+  setText("pLocation", p.location || "—");
+  setText("pRoom", p.roomNo || "—");
+  setText("pLevel", p.level || "—");
+  setText("pSession", p.session || "—");
+  setText("pGuardian", p.guardianName || "—");
+  setText("pGuardianPhone", p.guardianPhone || "—");
+
+  // Document links
+  const passLink = document.getElementById("pPassportLink");
+  const idLink = document.getElementById("pIdLink");
+  const prfLink = document.getElementById("pProofLink");
+
+  if (passLink) {
+    passLink.href = p.passport || "#";
+    passLink.style.opacity = p.passport ? "1" : "0.4";
+    passLink.onclick = p.passport ? null : (e) => e.preventDefault();
+  }
+  if (idLink) {
+    idLink.href = p.idCard || "#";
+    idLink.style.opacity = p.idCard ? "1" : "0.4";
+    idLink.onclick = p.idCard ? null : (e) => e.preventDefault();
+  }
+  if (prfLink) {
+    prfLink.href = p.paymentProof || "#";
+    prfLink.style.opacity = p.paymentProof ? "1" : "0.4";
+    prfLink.onclick = p.paymentProof ? null : (e) => e.preventDefault();
+  }
+
+  // Show modal
+  document.getElementById("profileBackdrop").style.display = "block";
+  document.getElementById("profileModal").style.display = "flex";
+  document.body.style.overflow = "hidden";
+}
+
+function closeProfile() {
+  document.getElementById("profileBackdrop").style.display = "none";
+  document.getElementById("profileModal").style.display = "none";
+  document.body.style.overflow = "";
+}
+function viewProfile() {
+  if (!tenantProfile) {
+    alert("Profile not loaded yet");
+    return;
+  }
+
+  const p = tenantProfile;
+
+  // Avatar
+  const av = document.getElementById("profileAvatar");
+  if (av) {
+    av.src =
+      p.passport ||
+      "https://ui-avatars.com/api/?name=" +
+        encodeURIComponent(p.name || "?") +
+        "&background=1a3c5e&color=fff&bold=true&size=200";
+    av.style.display = "block";
+  }
+
+  // Fields
+  setText("pName", p.name || "—");
+  setText("pEmail", p.email || "—");
+  setText("pPhone", p.phone || "—");
+  setText("pLocation", p.location || "—");
+  setText("pRoom", p.roomNo || "—");
+  setText("pLevel", p.level || "—");
+  setText("pSession", p.session || "—");
+  setText("pGuardian", p.guardianName || "—");
+  setText("pGuardianPhone", p.guardianPhone || "—");
+
+  // Document links
+  const passLink = document.getElementById("pPassportLink");
+  const idLink = document.getElementById("pIdLink");
+  const prfLink = document.getElementById("pProofLink");
+
+  if (passLink) {
+    passLink.href = p.passport || "#";
+    passLink.style.opacity = p.passport ? "1" : "0.4";
+    passLink.onclick = p.passport ? null : (e) => e.preventDefault();
+  }
+  if (idLink) {
+    idLink.href = p.idCard || "#";
+    idLink.style.opacity = p.idCard ? "1" : "0.4";
+    idLink.onclick = p.idCard ? null : (e) => e.preventDefault();
+  }
+  if (prfLink) {
+    prfLink.href = p.paymentProof || "#";
+    prfLink.style.opacity = p.paymentProof ? "1" : "0.4";
+    prfLink.onclick = p.paymentProof ? null : (e) => e.preventDefault();
+  }
+
+  // Show modal
+  document.getElementById("profileBackdrop").style.display = "block";
+  document.getElementById("profileModal").style.display = "flex";
+  document.body.style.overflow = "hidden";
+}
+
+function closeProfile() {
+  document.getElementById("profileBackdrop").style.display = "none";
+  document.getElementById("profileModal").style.display = "none";
+  document.body.style.overflow = "";
+}
 // ── Revoked banner ────────────────────────────────────────────────────────────
 function checkRevokedStatus(profile) {
   const banner = document.getElementById("revokedBanner");

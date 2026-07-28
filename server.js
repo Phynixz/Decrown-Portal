@@ -76,18 +76,48 @@ function verifyAdmin(req, res, next) {
     return res.status(403).json({ error: "Invalid or expired token" });
   }
 }
+function deleteUploadedFile(cloudinaryUrl) {
+  if (!cloudinaryUrl) return;
 
-function deleteUploadedFile(cloudinaryPublicId) {
-  if (!cloudinaryPublicId) return;
-  const cloudinary = require("cloudinary").v2;
-  cloudinary.uploader.destroy(cloudinaryPublicId, (err, result) => {
-    if (err)
-      console.error(
-        "Failed to delete from Cloudinary",
-        cloudinaryPublicId,
-        err.message,
-      );
-  });
+  try {
+    const cloudinary = require("cloudinary").v2;
+
+    // Extract public ID from full Cloudinary URL
+    // URL format: .../upload/v1234567890/folder/filename.ext
+    const uploadIndex = cloudinaryUrl.indexOf("/upload/");
+    if (uploadIndex === -1) return;
+
+    // Get everything after /upload/vXXXXXX/
+    let publicId = cloudinaryUrl.substring(uploadIndex + 8);
+
+    // Remove version number if present (v1234567890/)
+    publicId = publicId.replace(/^v\d+\//, "");
+
+    // Remove file extension
+    publicId = publicId.replace(/\.[^/.]+$/, "");
+
+    // Determine resource type — PDFs are stored as raw
+    const isPDF = cloudinaryUrl.toLowerCase().includes(".pdf");
+    const resourceType = isPDF ? "raw" : "image";
+
+    cloudinary.uploader.destroy(
+      publicId,
+      { resource_type: resourceType },
+      (err, result) => {
+        if (err) {
+          console.error(
+            "Failed to delete from Cloudinary:",
+            publicId,
+            err.message,
+          );
+        } else {
+          console.log("Deleted from Cloudinary:", publicId, result);
+        }
+      },
+    );
+  } catch (e) {
+    console.error("deleteUploadedFile error:", e.message);
+  }
 }
 
 function sanitizeString(value) {
@@ -357,6 +387,100 @@ app.post(
       record.paymentProof = req.file.secure_url || req.file.path || null;
       await record.save();
       res.json({ message: "Receipt uploaded. Awaiting admin approval." });
+    } catch (e) {
+      res.status(500).json({ error: e.message });
+    }
+  },
+);
+
+// Grant re-upload access with 24hr window
+app.put("/admin/grant-reupload/:id", verifyAdmin, async (req, res) => {
+  try {
+    const { passport, idCard, proof } = req.body;
+
+    if (!passport && !idCard && !proof)
+      return res.status(400).json({ error: "Select at least one document" });
+
+    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+    await User.findByIdAndUpdate(req.params.id, {
+      canReuploadPassport: !!passport,
+      canReuploadIdCard: !!idCard,
+      canReuploadProof: !!proof,
+      reuploadExpiresAt: expires,
+    });
+
+    res.json({ message: "Re-upload access granted for 24 hours" });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+// Tenant re-uploads a specific document (admin must have granted access)
+app.put(
+  "/tenant/reupload",
+  verifyTenant,
+  upload.single("file"),
+  async (req, res) => {
+    try {
+      const { field } = req.body;
+
+      if (!["passport", "idCard", "paymentProof"].includes(field))
+        return res.status(400).json({ error: "Invalid field" });
+
+      const user = await User.findById(req.tenant.id);
+      if (!user) return res.status(404).json({ error: "User not found" });
+
+      // Check which flag corresponds to this field
+      const flagMap = {
+        passport: "canReuploadPassport",
+        idCard: "canReuploadIdCard",
+        paymentProof: "canReuploadProof",
+      };
+      const flag = flagMap[field];
+
+      if (!user[flag])
+        return res.status(403).json({
+          error: "Re-upload not permitted for this document",
+        });
+
+      // Check 24hr window
+      if (!user.reuploadExpiresAt || new Date() > user.reuploadExpiresAt)
+        return res.status(403).json({
+          error:
+            "Re-upload window has expired. Ask admin to grant access again.",
+        });
+
+      if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+
+      // Delete old file from Cloudinary
+      if (user[field]) deleteUploadedFile(user[field]);
+
+      // Save new file
+      const newUrl = req.file.secure_url || req.file.path;
+      user[field] = newUrl;
+
+      // Reset the flag
+      user[flag] = false;
+
+      // Clear expiry if all flags are now false
+      if (
+        !user.canReuploadPassport &&
+        !user.canReuploadIdCard &&
+        !user.canReuploadProof
+      ) {
+        user.reuploadExpiresAt = null;
+      }
+
+      // Log the change
+      if (!user.changeLog) user.changeLog = [];
+      user.changeLog.push({
+        field: field,
+        changedAt: new Date(),
+        note: field + " updated by tenant",
+      });
+
+      await user.save();
+      res.json({ message: "Document updated successfully" });
     } catch (e) {
       res.status(500).json({ error: e.message });
     }
@@ -729,10 +853,10 @@ app.delete("/users/delete-bulk", verifyAdmin, async (req, res) => {
 
     const valid = await admin.comparePassword(sanitizeString(adminPassword));
     if (!valid) return res.status(403).json({ error: "Incorrect password" });
-
     const users = await User.find({ _id: { $in: ids } });
     for (const u of users) {
       deleteUploadedFile(u.passport);
+      deleteUploadedFile(u.idCard);
       deleteUploadedFile(u.paymentProof);
     }
     await User.deleteMany({ _id: { $in: ids } });

@@ -41,6 +41,13 @@ const userSchema = new mongoose.Schema({
   canReuploadIdCard: { type: Boolean, default: false },
   canReuploadProof: { type: Boolean, default: false },
   reuploadExpiresAt: { type: Date, default: null },
+  changeLog: [
+    {
+      field: { type: String },
+      changedAt: { type: Date, default: Date.now },
+      note: { type: String, default: "Image updated by tenant" },
+    },
+  ],
 });
 
 // Prevent two tenants in the same room for the same location+session

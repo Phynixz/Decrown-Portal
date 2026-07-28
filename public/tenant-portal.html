@@ -449,6 +449,151 @@
         </div>
       </main>
     </div>
+    <!-- Profile modal -->
+    <div
+      class="profile-backdrop"
+      id="profileBackdrop"
+      onclick="closeProfile()"
+      style="display: none"
+    ></div>
+    <div class="profile-modal" id="profileModal" style="display: none">
+      <div class="profile-modal-head">
+        <h3>👤 My Profile</h3>
+        <button onclick="closeProfile()">✕</button>
+      </div>
+      <div class="profile-modal-body">
+        <div class="profile-avatar-wrap">
+          <img id="profileAvatar" src="" alt="" class="profile-avatar" />
+        </div>
+        <div class="profile-fields">
+          <div class="pfield">
+            <span class="pfield-label">Full Name</span
+            ><span class="pfield-val" id="pName">—</span>
+          </div>
+          <div class="pfield">
+            <span class="pfield-label">Email</span
+            ><span class="pfield-val" id="pEmail">—</span>
+          </div>
+          <div class="pfield">
+            <span class="pfield-label">Phone</span
+            ><span class="pfield-val" id="pPhone">—</span>
+          </div>
+          <div class="pfield">
+            <span class="pfield-label">Location</span
+            ><span class="pfield-val" id="pLocation">—</span>
+          </div>
+          <div class="pfield">
+            <span class="pfield-label">Room</span
+            ><span class="pfield-val" id="pRoom">—</span>
+          </div>
+          <div class="pfield">
+            <span class="pfield-label">Level</span
+            ><span class="pfield-val" id="pLevel">—</span>
+          </div>
+          <div class="pfield">
+            <span class="pfield-label">Session</span
+            ><span class="pfield-val" id="pSession">—</span>
+          </div>
+          <div class="pfield">
+            <span class="pfield-label">Guardian</span
+            ><span class="pfield-val" id="pGuardian">—</span>
+          </div>
+          <div class="pfield">
+            <span class="pfield-label">Guardian Phone</span
+            ><span class="pfield-val" id="pGuardianPhone">—</span>
+          </div>
+        </div>
+        <div class="profile-docs">
+          <p class="profile-docs-label">Documents</p>
+          <div class="profile-docs-grid">
+            <a
+              id="pPassportLink"
+              href="#"
+              target="_blank"
+              class="profile-doc-btn"
+              >📷 Passport</a
+            >
+            <a id="pIdLink" href="#" target="_blank" class="profile-doc-btn"
+              >🪪 ID Card</a
+            >
+            <a id="pProofLink" href="#" target="_blank" class="profile-doc-btn"
+              >📄 Payment Proof</a
+            >
+          </div>
+          <div
+            class="profile-change-section"
+            id="profileChangeSection"
+            style="display: none"
+          >
+            <p class="profile-docs-label">📤 Update Documents</p>
+            <p
+              style="
+                font-size: 12px;
+                color: var(--muted);
+                margin-bottom: 12px;
+                line-height: 1.6;
+              "
+            >
+              Admin has granted you access to update the following documents.
+            </p>
+            <div class="profile-docs-grid">
+              <div id="profilePassportUpload" style="display: none">
+                <label class="profile-doc-upload-btn" for="profilePassportFile">
+                  📷 Change Passport
+                  <input
+                    type="file"
+                    id="profilePassportFile"
+                    accept="image/*"
+                    onchange="
+                      handleProfileUpload(
+                        this,
+                        'passport',
+                        'profilePassportFile',
+                      )
+                    "
+                    style="display: none"
+                  />
+                </label>
+              </div>
+
+              <div id="profileIdCardUpload" style="display: none">
+                <label class="profile-doc-upload-btn" for="profileIdCardFile">
+                  🪪 Change ID Card
+                  <input
+                    type="file"
+                    id="profileIdCardFile"
+                    accept="image/*,.pdf"
+                    onchange="
+                      handleProfileUpload(this, 'idCard', 'profileIdCardFile')
+                    "
+                    style="display: none"
+                  />
+                </label>
+              </div>
+
+              <div id="profileProofUpload" style="display: none">
+                <label class="profile-doc-upload-btn" for="profileProofFile">
+                  📄 Change Proof
+                  <input
+                    type="file"
+                    id="profileProofFile"
+                    accept="image/*,.pdf"
+                    onchange="
+                      handleProfileUpload(
+                        this,
+                        'paymentProof',
+                        'profileProofFile',
+                      )
+                    "
+                    style="display: none"
+                  />
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <script src="tenant-portal.js"></script>
   </body>
