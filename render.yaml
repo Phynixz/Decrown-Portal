@@ -1,0 +1,37 @@
+# Render Blueprint — deploys the full-stack app (Express API + React frontend).
+# Use via: Render dashboard → New → Blueprint (select this repo).
+# Or copy the buildCommand/startCommand below into an existing service's
+# Build & Deploy settings.
+services:
+  - type: web
+    name: receipt-system
+    runtime: node
+    plan: free
+    # --include=dev is required: Render sets NODE_ENV=production, and npm
+    # then skips devDependencies (vite, @vitejs/plugin-react) by default.
+    buildCommand: npm install --include=dev && npm install --prefix client --include=dev && npm run build
+    startCommand: node server.js
+    healthCheckPath: /login
+    envVars:
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: ADMIN_EMAIL_1
+        sync: false
+      - key: ADMIN_PASS_1
+        sync: false
+      - key: ADMIN_EMAIL_2
+        sync: false
+      - key: ADMIN_PASS_2
+        sync: false
+      - key: ADMIN_EMAIL_3
+        sync: false
+      - key: ADMIN_PASS_3
+        sync: false
