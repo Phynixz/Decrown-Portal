@@ -70,7 +70,7 @@
   .section {
     @apply bg-card border border-border rounded-[14px] px-8 py-7 mb-5 shadow-sm;
   }
-  .section-num {
+  .dc-terms .section-num {
     @apply font-display text-[13px] font-bold uppercase tracking-[1px] mb-2;
     color: var(--color-terra);
   }

@@ -68,11 +68,11 @@
   .panel-right {
     @apply flex items-center justify-center p-10 px-13 relative bg-card transition-colors;
   }
-  .theme-btn {
+  .dc-login .theme-btn {
     @apply absolute top-5 right-6 w-9.5 h-9.5 rounded-full border-[1.5px] cursor-pointer text-[17px] flex items-center justify-center transition-all bg-bg;
     border-color: var(--color-border);
   }
-  .theme-btn:hover {
+  .dc-login .theme-btn:hover {
     border-color: var(--color-navy);
     transform: scale(1.08);
   }
@@ -124,14 +124,14 @@
     accent-color: var(--color-navy);
   }
 
-  .btn-login {
+  .dc-login .btn-login {
     @apply w-full py-3.5 text-white border-none rounded-[10px] text-[15px] font-semibold font-sans cursor-pointer transition-colors active:scale-[0.99];
     background: var(--color-navy);
   }
-  .btn-login:hover {
+  .dc-login .btn-login:hover {
     background: var(--color-navy2);
   }
-  .btn-login:disabled {
+  .dc-login .btn-login:disabled {
     background: #a0b0c4;
     cursor: not-allowed;
   }

@@ -61,11 +61,11 @@
   }
 
   /* Theme toggle button */
-  .theme-btn {
+  .dc-portal .theme-btn {
     @apply absolute top-5 right-5.5 w-9.5 h-9.5 rounded-full border-[1.5px] cursor-pointer text-[17px] flex items-center justify-center transition-all z-10 bg-bg;
     border-color: var(--color-border);
   }
-  .theme-btn:hover {
+  .dc-portal .theme-btn:hover {
     border-color: var(--color-navy);
     transform: scale(1.08);
   }
@@ -99,13 +99,13 @@
     box-shadow: 0 0 0 3px rgba(26, 60, 94, 0.1);
   }
 
-  .btn-login {
+  .dc-portal .btn-login {
     @apply w-full py-3.5 bg-navy text-white border-none rounded-[10px] text-[15px] font-semibold font-sans cursor-pointer transition-opacity mb-1;
   }
-  .btn-login:hover {
+  .dc-portal .btn-login:hover {
     opacity: 0.88;
   }
-  .btn-login:disabled {
+  .dc-portal .btn-login:disabled {
     @apply opacity-50 cursor-not-allowed;
   }
 

@@ -27,14 +27,14 @@
     @apply flex items-center justify-between px-4 py-4.5 pb-3.5 mb-1.5;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   }
-  .brand {
+  .dc-admin .brand {
     @apply flex items-center gap-2.5;
   }
-  .brand img {
+  .dc-admin .brand img {
     @apply w-9.5 h-9.5 rounded-lg object-cover border-[1.5px];
     border-color: rgba(255, 255, 255, 0.15);
   }
-  .brand-name {
+  .dc-admin .brand-name {
     @apply text-sm font-semibold text-white;
   }
   .brand-role {
@@ -121,13 +121,13 @@
   .topbar-right {
     @apply flex items-center gap-2.5;
   }
-  .theme-btn {
+  .dc-admin .theme-btn {
     @apply w-9 h-9 rounded-full border-[1.5px] cursor-pointer text-base flex items-center justify-center transition-all;
     border-color: var(--color-border);
     background: var(--color-bg);
     color: var(--color-text);
   }
-  .theme-btn:hover {
+  .dc-admin .theme-btn:hover {
     border-color: var(--color-navy);
     transform: scale(1.08);
   }
