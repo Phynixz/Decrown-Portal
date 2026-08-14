@@ -1,3 +1,4 @@
+@layer theme, base, components, utilities;
 @reference "./index.css";
 @layer components {
   .del-page {
