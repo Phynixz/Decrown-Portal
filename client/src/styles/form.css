@@ -1,0 +1,280 @@
+@reference "./index.css";
+@layer components {
+  /* ── Page shell ──────────────────────────────────── */
+  .dc-form {
+    @apply font-sans min-h-screen text-text relative leading-normal;
+    background: #f5f0e8;
+  }
+
+  /* ── Progress bar ────────────────────────────────── */
+  .progress-bar {
+    @apply fixed top-0 left-0 h-[3px] z-[999] transition-[width] duration-[0.4s];
+    background: linear-gradient(90deg, var(--color-navy), var(--color-terra));
+  }
+
+  /* ── Layout ──────────────────────────────────────── */
+  .page-wrap {
+    @apply grid min-h-screen;
+    grid-template-columns: 280px 1fr;
+  }
+
+  /* ── Left aside panel ────────────────────────────── */
+  .form-aside {
+    @apply flex flex-col gap-4 sticky top-0 h-screen overflow-hidden px-7.5 py-11;
+    background: var(--color-navy);
+  }
+  .aside-logo {
+    @apply w-15 h-15 rounded-[13px] object-cover border-2 block mb-1;
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+  .aside-title {
+    @apply font-display text-[26px] font-bold text-white leading-tight;
+  }
+  .aside-sub {
+    @apply text-[13px] font-light leading-relaxed;
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  /* Step indicators */
+  .aside-steps {
+    @apply mt-5 flex flex-col;
+  }
+  .step-item {
+    @apply flex items-center gap-3 transition-opacity duration-300;
+    opacity: 0.4;
+  }
+  .step-item.active {
+    opacity: 1;
+  }
+  .step-item.done {
+    opacity: 0.7;
+  }
+  .step-num {
+    @apply w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 transition-colors;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1.5px solid rgba(255, 255, 255, 0.25);
+  }
+  .step-item.active .step-num {
+    background: var(--color-terra);
+    border-color: var(--color-terra);
+  }
+  .step-item.done .step-num {
+    background: var(--color-success);
+    border-color: var(--color-success);
+  }
+  .step-text {
+    @apply text-[13px] font-normal;
+    color: rgba(255, 255, 255, 0.8);
+  }
+  .step-connector {
+    @apply w-[1.5px] h-[22px] ml-[13px];
+    background: rgba(255, 255, 255, 0.15);
+  }
+  .aside-note {
+    @apply mt-auto text-[11px] leading-relaxed;
+    color: rgba(255, 255, 255, 0.28);
+  }
+
+  /* ── Form main ───────────────────────────────────── */
+  .form-main {
+    @apply py-11 px-12 pb-15 max-w-[680px] overflow-y-auto;
+  }
+  .form-header {
+    @apply mb-8;
+  }
+  .form-title {
+    @apply font-display text-[26px] font-bold text-navy mb-1.5;
+  }
+  .form-sub {
+    @apply text-[13px];
+    color: var(--color-muted);
+  }
+
+  /* ── Form sections ───────────────────────────────── */
+  .form-section {
+    @apply bg-card border border-border2 rounded-xl px-6 py-5.5 mb-4.5 shadow-sm;
+  }
+  .location-section {
+    background: rgba(255, 244, 229, 0.95);
+    border-color: rgba(249, 171, 51, 0.45);
+    box-shadow: 0 14px 35px rgba(255, 184, 77, 0.14);
+  }
+  .location-section .section-label {
+    color: #b45f06;
+  }
+  .location-prompt {
+    @apply text-sm mb-4.5 leading-relaxed;
+    color: #8a6b21;
+  }
+  .location-select {
+    @apply !p-4 !text-base !border-2;
+  }
+
+  .section-label {
+    @apply flex items-center gap-2.5 text-[13px] font-bold text-navy uppercase tracking-[0.7px] mb-4.5 pb-3 border-b border-border2;
+  }
+  .section-num {
+    @apply font-display text-[22px] font-bold leading-none;
+    color: var(--color-terra);
+    opacity: 0.6;
+  }
+
+  /* ── Fields grid ─────────────────────────────────── */
+  .fields-grid {
+    @apply grid grid-cols-2 gap-3.5;
+  }
+  .field {
+    @apply flex flex-col gap-1.25;
+  }
+  .field.full {
+    grid-column: 1 / -1;
+  }
+  .field label {
+    @apply text-[11px] font-semibold uppercase tracking-[0.6px];
+    color: var(--color-text2);
+  }
+  .field input[type="text"],
+  .field input[type="email"],
+  .field input[type="tel"],
+  .field input[type="date"],
+  .field select {
+    @apply px-3.25 py-2.75 border-[1.5px] rounded-lg text-sm font-sans text-text bg-card outline-none transition-all;
+    border-color: var(--color-border);
+    appearance: none;
+  }
+  .field input:focus,
+  .field select:focus {
+    border-color: var(--color-navy);
+    box-shadow: 0 0 0 3px rgba(26, 60, 94, 0.08);
+  }
+  .readonly-field {
+    @apply font-bold cursor-not-allowed;
+    background: #f5f0e8 !important;
+    color: var(--color-terra) !important;
+  }
+
+  /* Valid / invalid */
+  .field input.valid,
+  .field select.valid {
+    border-color: var(--color-success);
+  }
+  .field input.invalid,
+  .field select.invalid {
+    border-color: var(--color-error);
+    background: var(--color-danger-faint);
+  }
+  .field input.invalid {
+    animation: shake 0.28s ease;
+  }
+
+  /* Terms row */
+  .terms-row {
+    @apply my-2 mb-4.5 px-4 py-3.5 border border-border rounded-[10px];
+    background: #f5f0e8;
+  }
+  .terms-row.invalid {
+    border-color: var(--color-error);
+    background: var(--color-danger-faint);
+  }
+  .terms-row.invalid .terms-error {
+    display: block;
+  }
+  .terms-label {
+    @apply flex items-center gap-2 flex-wrap text-[13px] cursor-pointer;
+    color: var(--color-text2);
+  }
+  .terms-label a {
+    @apply font-semibold underline;
+    color: var(--color-navy);
+  }
+  .terms-error {
+    @apply mt-2;
+  }
+  .hint {
+    @apply text-[11px] block;
+    color: var(--color-muted);
+  }
+  .err-msg {
+    @apply text-[11px] font-medium hidden;
+    color: var(--color-error);
+  }
+  .field input.invalid ~ .err-msg,
+  .field select.invalid ~ .err-msg {
+    display: block;
+  }
+
+  /* ── Upload zones ────────────────────────────────── */
+  .upload-zone {
+    @apply relative border-2 border-dashed rounded-[10px] min-h-[90px] flex items-center justify-center cursor-pointer transition-all overflow-hidden;
+    border-color: var(--color-border);
+    background: #f5f0e8;
+  }
+  .upload-zone:hover {
+    border-color: var(--color-navy);
+    background: var(--color-navy-faint);
+  }
+  .upload-zone.has-file {
+    border-color: var(--color-success);
+    background: var(--color-success-faint);
+  }
+  .upload-zone.invalid {
+    border-color: var(--color-error);
+  }
+  .upload-zone input[type="file"] {
+    @apply absolute inset-0 opacity-0 cursor-pointer w-full h-full border-none bg-none shadow-none p-0;
+  }
+  .upload-placeholder {
+    @apply flex flex-col items-center gap-1.5 p-4.5 pointer-events-none text-center;
+  }
+  .upload-icon {
+    @apply text-[26px];
+  }
+  .upload-placeholder span:last-child {
+    @apply text-xs font-normal;
+    color: var(--color-muted);
+  }
+
+  /* ── Submit area ─────────────────────────────────── */
+  .form-submit-area {
+    @apply flex flex-col items-center gap-2.5 mt-2;
+  }
+  .btn-submit {
+    @apply w-full py-3.75 text-white border-none rounded-[10px] text-[15px] font-semibold font-sans cursor-pointer transition-all tracking-[0.3px];
+    background: var(--color-navy);
+  }
+  .btn-submit:hover {
+    background: var(--color-navy2);
+  }
+  .btn-submit:active {
+    transform: scale(0.99);
+  }
+  .btn-submit:disabled {
+    background: #a0b0c4;
+    cursor: not-allowed;
+  }
+  .submit-note {
+    @apply text-xs text-center;
+    color: var(--color-muted);
+  }
+
+  /* ── Responsive ──────────────────────────────────── */
+  @media (max-width: 820px) {
+    .page-wrap {
+      grid-template-columns: 1fr;
+    }
+    .form-aside {
+      display: none;
+    }
+    .form-main {
+      @apply px-5 pt-7 pb-12.5 max-w-full;
+    }
+  }
+  @media (max-width: 480px) {
+    .fields-grid {
+      @apply grid-cols-1;
+    }
+    .field.full {
+      grid-column: 1;
+    }
+  }
+}

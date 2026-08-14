@@ -1,0 +1,135 @@
+@reference "./index.css";
+@layer components {
+  .del-page {
+    @apply max-w-[860px] mx-auto px-6 pt-7 pb-15;
+  }
+
+  .del-topbar {
+    @apply flex items-center justify-between mb-7 flex-wrap gap-3;
+  }
+  .del-topbar h2 {
+    @apply font-display text-[22px] text-navy;
+  }
+  .del-topbar p {
+    @apply text-[13px] mt-0.75;
+    color: var(--color-muted);
+  }
+  .back-btn {
+    @apply inline-flex items-center gap-1.5 text-[13px] font-semibold no-underline border-[1.5px] px-4 py-2 rounded-lg transition-all bg-card;
+    color: var(--color-navy);
+    border-color: var(--color-border);
+  }
+  .back-btn:hover {
+    background: var(--color-navy);
+    color: #fff;
+    border-color: var(--color-navy);
+  }
+
+  .filter-row {
+    @apply flex gap-2.5 flex-wrap bg-card border border-border2 rounded-xl px-4.5 py-4 mb-4 shadow-sm;
+  }
+  .filter-row select,
+  .filter-row input[type="text"] {
+    @apply px-3 py-2 border-[1.5px] rounded-lg font-sans text-[13px] text-text bg-input outline-none flex-1 min-w-[140px] transition-colors;
+    border-color: var(--color-border);
+  }
+  .filter-row select:focus,
+  .filter-row input:focus {
+    border-color: var(--color-navy);
+  }
+
+  .btn-load {
+    @apply px-5 py-2 text-white border-none rounded-lg font-sans text-[13px] font-semibold cursor-pointer transition-opacity;
+    background: var(--color-navy);
+  }
+  .btn-load:hover {
+    opacity: 0.88;
+  }
+
+  .sel-bar {
+    @apply flex items-center justify-between mb-2.5 flex-wrap gap-2;
+  }
+  .sel-label {
+    @apply flex items-center gap-2 text-[13px] cursor-pointer;
+    color: var(--color-text2);
+  }
+  .sel-label input {
+    @apply w-4 h-4 cursor-pointer;
+    accent-color: var(--color-danger);
+  }
+  .sel-count {
+    @apply text-[13px];
+    color: var(--color-muted);
+  }
+
+  .user-list {
+    @apply flex flex-col gap-2 mb-5;
+  }
+
+  .urow {
+    @apply flex items-center gap-3.5 bg-card border-[1.5px] border-border2 rounded-[10px] px-4 py-2.75 cursor-pointer transition-all;
+  }
+  .urow:hover {
+    border-color: var(--color-border);
+  }
+  .urow.selected {
+    border-color: var(--color-danger);
+    background: var(--color-danger-faint);
+  }
+  .urow input[type="checkbox"] {
+    @apply w-4 h-4 cursor-pointer shrink-0;
+    accent-color: var(--color-danger);
+  }
+  .urow-img {
+    @apply w-10.5 h-10.5 rounded-full object-cover border-2 border-border2 shrink-0;
+  }
+  .urow-name {
+    @apply text-[13px] font-semibold text-text;
+  }
+  .urow-meta {
+    @apply text-[11px] mt-0.5;
+    color: var(--color-muted);
+  }
+
+  .danger-box {
+    @apply rounded-xl px-5.5 py-5 hidden;
+    background: var(--color-danger-faint);
+    border: 1.5px solid rgba(192, 57, 43, 0.25);
+  }
+  .danger-box.show {
+    @apply block;
+  }
+  .danger-box h4 {
+    @apply text-sm font-bold mb-2;
+    color: var(--color-danger);
+  }
+  .danger-box p {
+    @apply text-[13px] mb-4 leading-relaxed;
+    color: var(--color-text2);
+  }
+  .pass-row {
+    @apply flex gap-2.5 flex-wrap;
+  }
+  .pass-row input {
+    @apply flex-1 min-w-[200px] px-3.5 py-2.5 rounded-lg font-sans text-[13px] text-text bg-input outline-none;
+    border: 1.5px solid rgba(192, 57, 43, 0.3);
+  }
+  .pass-row input:focus {
+    border-color: var(--color-danger);
+  }
+  .btn-delete {
+    @apply px-5.5 py-2.5 text-white border-none rounded-lg font-sans text-[13px] font-bold cursor-pointer transition-opacity;
+    background: var(--color-danger);
+  }
+  .btn-delete:hover {
+    opacity: 0.86;
+  }
+  .btn-delete:disabled {
+    @apply opacity-40 cursor-not-allowed;
+  }
+
+  .list-empty {
+    @apply text-center px-5 py-10 text-sm;
+    color: var(--color-muted);
+  }
+}

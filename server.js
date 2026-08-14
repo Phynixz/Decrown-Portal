@@ -49,10 +49,13 @@ app.use(
     limit: "10mb",
   }),
 );
-app.use(express.static(path.join(__dirname, "public")));
-app.get("/", (req, res) => {
-  res.redirect("/login.html");
-});
+// Serve the React build (client/dist) when it exists. Client-side routes
+// are handled by the SPA fallback registered below.
+const CLIENT_DIST = path.join(__dirname, "client", "dist");
+const CLIENT_INDEX = path.join(CLIENT_DIST, "index.html");
+if (fs.existsSync(CLIENT_DIST)) {
+  app.use(express.static(CLIENT_DIST));
+}
 function getSession() {
   const now = new Date();
   const year = now.getFullYear();
@@ -929,6 +932,35 @@ app.get("/export-users", verifyAdmin, async (req, res) => {
   }
 });
 
+// ── Revoke / Reinstate tenant ────────────────────────────────────────────────
+app.put("/revoke/:id", verifyAdmin, async (req, res) => {
+  try {
+    await User.findByIdAndUpdate(req.params.id, {
+      status: "revoked",
+      revokeReason: req.body.reason || "Not specified",
+      revokeNote: req.body.note || "",
+      revokedAt: new Date(),
+    });
+    res.json({ message: "Tenant revoked" });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.put("/reinstate/:id", verifyAdmin, async (req, res) => {
+  try {
+    await User.findByIdAndUpdate(req.params.id, {
+      status: "active",
+      revokeReason: null,
+      revokeNote: null,
+      revokedAt: null,
+    });
+    res.json({ message: "Tenant reinstated" });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ── Get single user for editing ──────────────────────────────────────────────
 app.get("/admin/user/:id", verifyAdmin, async (req, res) => {
   try {
@@ -1034,6 +1066,15 @@ async function seed() {
     }
   }
 }
+
+// ── SPA fallback ─────────────────────────────────────────────────────────────
+// Serve the React app for client-side routes (/login, /admin, /portal, …).
+// Registered last so it only catches GETs that no API route matched.
+app.use((req, res, next) => {
+  if (req.method !== "GET") return next();
+  if (!fs.existsSync(CLIENT_INDEX)) return next();
+  res.sendFile(CLIENT_INDEX);
+});
 
 mongoose
   .connect(MONGO_URI)

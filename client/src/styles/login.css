@@ -1,0 +1,179 @@
+@reference "./index.css";
+@layer components {
+  /* ── Page shell ─────────────────────────────────────── */
+  .dc-login {
+    @apply font-sans bg-bg text-text min-h-screen grid grid-cols-2 transition-colors;
+  }
+
+  /* ── Left panel (always navy) ──────────────────────── */
+  .panel-left {
+    @apply flex flex-col justify-between p-12 relative overflow-hidden;
+    background: #1a3c5e;
+  }
+  .panel-left::before {
+    content: "";
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    border-radius: 50%;
+    background: rgba(196, 98, 45, 0.12);
+    top: -100px;
+    left: -100px;
+  }
+  .panel-left::after {
+    content: "";
+    position: absolute;
+    width: 280px;
+    height: 280px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.04);
+    bottom: 60px;
+    right: -80px;
+  }
+  .logo-area {
+    @apply relative z-10;
+  }
+  .logo-area img {
+    @apply w-15 h-15 rounded-[13px] object-cover border-2 mb-5 block;
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+  .logo-area h1 {
+    @apply font-display text-3xl font-bold text-white leading-tight mb-3;
+  }
+  .logo-area p {
+    @apply text-sm font-light leading-relaxed;
+    color: rgba(255, 255, 255, 0.55);
+  }
+
+  .left-footer {
+    @apply relative z-10;
+  }
+  .left-footer p {
+    @apply text-xs mb-3.5;
+    color: rgba(255, 255, 255, 0.28);
+  }
+  .switch-link {
+    @apply inline-flex items-center gap-2 px-4.5 py-2.5 rounded-lg text-[13px] font-medium no-underline transition-all;
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.75);
+  }
+  .switch-link:hover {
+    background: rgba(255, 255, 255, 0.13);
+    color: #fff;
+  }
+
+  /* ── Right panel ───────────────────────────────────── */
+  .panel-right {
+    @apply flex items-center justify-center p-10 px-13 relative bg-card transition-colors;
+  }
+  .theme-btn {
+    @apply absolute top-5 right-6 w-9.5 h-9.5 rounded-full border-[1.5px] cursor-pointer text-[17px] flex items-center justify-center transition-all bg-bg;
+    border-color: var(--color-border);
+  }
+  .theme-btn:hover {
+    border-color: var(--color-navy);
+    transform: scale(1.08);
+  }
+
+  .login-box {
+    @apply w-full max-w-[380px];
+  }
+  .login-box h2 {
+    @apply font-display text-[30px] font-bold text-navy mb-1.5;
+  }
+  .subtitle {
+    @apply text-muted text-sm mb-8;
+  }
+
+  .login-box .field {
+    @apply flex flex-col gap-1.5 mb-4;
+  }
+  .login-box .field label {
+    @apply text-[11px] font-semibold text-text uppercase tracking-[0.7px];
+  }
+  .login-box .field input {
+    @apply px-4 py-3.5 border-[1.5px] rounded-[10px] text-sm font-sans text-text bg-input outline-none transition-all;
+    border-color: var(--color-border);
+  }
+  .login-box .field input:focus {
+    border-color: var(--color-navy);
+    box-shadow: 0 0 0 3px rgba(26, 60, 94, 0.1);
+  }
+
+  .pass-wrap {
+    @apply relative;
+  }
+  .pass-wrap input {
+    @apply w-full pr-11;
+  }
+  .eye-btn {
+    @apply absolute right-3.5 top-1/2 -translate-y-1/2 bg-transparent border-none cursor-pointer text-lg;
+    color: var(--color-muted);
+  }
+
+  .remember-row {
+    @apply flex items-center mb-5.5;
+  }
+  .remember-label {
+    @apply flex items-center gap-2 text-[13px] text-muted cursor-pointer;
+  }
+  .remember-label input {
+    @apply w-3.75 h-3.75 cursor-pointer;
+    accent-color: var(--color-navy);
+  }
+
+  .btn-login {
+    @apply w-full py-3.5 text-white border-none rounded-[10px] text-[15px] font-semibold font-sans cursor-pointer transition-colors active:scale-[0.99];
+    background: var(--color-navy);
+  }
+  .btn-login:hover {
+    background: var(--color-navy2);
+  }
+  .btn-login:disabled {
+    background: #a0b0c4;
+    cursor: not-allowed;
+  }
+
+  .error-box {
+    @apply mt-3.5 px-3.5 py-2.5 rounded-lg text-[13px] hidden;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: var(--color-error);
+  }
+  .dark .error-box {
+    background: #2a0f0f;
+    border-color: rgba(239, 83, 80, 0.3);
+  }
+  .error-box.show {
+    @apply block;
+  }
+
+  .mobile-portal-link {
+    @apply hidden text-center mt-5.5;
+  }
+  .mobile-portal-link a {
+    @apply text-[13px] font-medium no-underline border-[1.5px] px-5 py-2.5 rounded-lg inline-block transition-all;
+    color: var(--color-navy);
+    border-color: var(--color-border);
+  }
+  .mobile-portal-link a:hover {
+    background: var(--color-bg);
+  }
+
+  /* ── Responsive ────────────────────────────────────── */
+  @media (max-width: 700px) {
+    .dc-login {
+      @apply grid-cols-1;
+    }
+    .panel-left {
+      display: none;
+    }
+    .panel-right {
+      @apply px-6 pt-15 items-start;
+    }
+    .mobile-portal-link {
+      @apply block;
+    }
+  }
+}

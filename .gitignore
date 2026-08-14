@@ -2,3 +2,10 @@
 .env.local
 uploads/
 node_modules/
+client/node_modules/
+client/dist/
+.freebuff/
+.vscode/
+*.log
+Reciept.pdf
+git
