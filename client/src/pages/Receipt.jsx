@@ -24,7 +24,21 @@ export default function Receipt() {
     }
     (async () => {
       try {
-        const res = await fetch(`/user/${id}`);
+        // Send the tenant/admin token if one exists so revoked tenants are
+        // blocked server-side; anonymous access (share links) stays public.
+        const tok =
+          sessionStorage.getItem("tenantToken") ||
+          localStorage.getItem("token") ||
+          "";
+        const res = await fetch(`/user/${id}`, {
+          headers: tok ? { Authorization: tok } : {},
+        });
+        if (res.status === 403) {
+          const d = await res.json().catch(() => ({}));
+          throw new Error(
+            d.error || "Your access has been revoked by management.",
+          );
+        }
         if (!res.ok) throw new Error("Record not found");
         const d = await res.json();
         if (d.retainPending)

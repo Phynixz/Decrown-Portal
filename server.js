@@ -262,6 +262,12 @@ app.post("/tenant/login", async (req, res) => {
       return res
         .status(401)
         .json({ error: "No record found. Check your email and phone number." });
+    if (user.status === "revoked")
+      return res.status(403).json({
+        error:
+          "Your access has been revoked by management" +
+          (user.revokeReason ? `: ${user.revokeReason}` : "."),
+      });
     const token = jwt.sign(
       { id: user._id, email: user.email, type: "tenant" },
       JWT_SECRET,
@@ -283,6 +289,14 @@ app.get("/tenant/me", verifyTenant, async (req, res) => {
   try {
     const user = await User.findById(req.tenant.id);
     if (!user) return res.status(404).json({ error: "Profile not found" });
+    if (user.status === "revoked")
+      return res.status(403).json({
+        error:
+          "Your access has been revoked by management" +
+          (user.revokeReason ? `: ${user.revokeReason}` : "."),
+        revoked: true,
+        reason: user.revokeReason || "",
+      });
     res.json(user);
   } catch (e) {
     res.status(500).json({ error: e.message });
@@ -292,6 +306,13 @@ app.get("/tenant/me", verifyTenant, async (req, res) => {
 // FIX: was missing â€” all sessions for this tenant (by email)
 app.get("/tenant/history", verifyTenant, async (req, res) => {
   try {
+    const current = await User.findById(req.tenant.id);
+    if (current && current.status === "revoked")
+      return res.status(403).json({
+        error:
+          "Your access has been revoked by management" +
+          (current.revokeReason ? `: ${current.revokeReason}` : "."),
+      });
     const records = await User.find({ email: req.tenant.email })
       .sort({ createdAt: -1 })
       .select(
@@ -312,6 +333,12 @@ app.post("/tenant/retain", verifyTenant, async (req, res) => {
 
     const orig = await User.findById(req.tenant.id);
     if (!orig) return res.status(404).json({ error: "Profile not found" });
+    if (orig.status === "revoked")
+      return res.status(403).json({
+        error:
+          "Your access has been revoked by management" +
+          (orig.revokeReason ? `: ${orig.revokeReason}` : "."),
+      });
 
     const nextSess = getNextSession();
     const existing = await User.findOne({
@@ -376,6 +403,14 @@ app.post(
     try {
       if (!req.file) return res.status(400).json({ error: "No file uploaded" });
 
+      const current = await User.findById(req.tenant.id);
+      if (current && current.status === "revoked")
+        return res.status(403).json({
+          error:
+            "Your access has been revoked by management" +
+            (current.revokeReason ? `: ${current.revokeReason}` : "."),
+        });
+
       const nextSess = getNextSession();
       const record = await User.findOne({
         email: req.tenant.email,
@@ -432,6 +467,12 @@ app.put(
 
       const user = await User.findById(req.tenant.id);
       if (!user) return res.status(404).json({ error: "User not found" });
+      if (user.status === "revoked")
+        return res.status(403).json({
+          error:
+            "Your access has been revoked by management" +
+            (user.revokeReason ? `: ${user.revokeReason}` : "."),
+        });
 
       // Check which flag corresponds to this field
       const flagMap = {
@@ -530,6 +571,26 @@ app.get("/user/:id", async (req, res) => {
   try {
     const u = await User.findById(req.params.id);
     if (!u) return res.status(404).json({ error: "Not found" });
+    // Receipt is public, but a revoked tenant who sends their token must not
+    // be able to view it (the portal blocks revoked logins; this is defense
+    // in depth for sessions that are still active).
+    const bearer = (req.headers.authorization || "").replace("Bearer ", "").trim();
+    if (bearer) {
+      try {
+        const d = jwt.verify(bearer, JWT_SECRET);
+        if (d.type === "tenant") {
+          const t = await User.findById(d.id);
+          if (t && t.status === "revoked")
+            return res.status(403).json({
+              error:
+                "Your access has been revoked by management" +
+                (t.revokeReason ? `: ${t.revokeReason}` : "."),
+            });
+        }
+      } catch {
+        /* invalid/expired token — receipt stays public */
+      }
+    }
     res.json({
       _id: u._id,
       name: u.name,

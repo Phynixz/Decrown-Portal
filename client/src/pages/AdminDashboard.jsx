@@ -1627,15 +1627,18 @@ function RoomCard({ u, onOpenDrawer, onApprove, onDisapprove, onRevoke, onReuplo
         <button className="cta cta-reupload" onClick={onReupload}>
           📤 Re-upload
         </button>
-        {isRevoked ? (
-          <button className="cta cta-unrevooke" onClick={onReinstate}>
-            ✅ Reinstate
-          </button>
-        ) : (
-          <button className="cta cta-revoke" onClick={onRevoke}>
-            🚫 Revoke
-          </button>
-        )}
+        {/* Pending-approval cards use the banner's Approve/Reject buttons;
+            Revoke is only for approved/active tenants. */}
+        {!u.retainPending &&
+          (isRevoked ? (
+            <button className="cta cta-unrevooke" onClick={onReinstate}>
+              ✅ Reinstate
+            </button>
+          ) : (
+            <button className="cta cta-revoke" onClick={onRevoke}>
+              🚫 Revoke
+            </button>
+          ))}
       </div>
     </article>
   );

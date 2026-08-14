@@ -42,6 +42,7 @@ export default function TenantPortal() {
 
   // Profile modal
   const [profileOpen, setProfileOpen] = useState(false);
+  const [revoked, setRevoked] = useState(null); // { error, reason } when access was revoked
 
   const loadHistory = useCallback(async (tok) => {
     try {
@@ -62,6 +63,12 @@ export default function TenantPortal() {
           headers: { Authorization: tok },
         });
         if (!res.ok) {
+          const d = await res.json().catch(() => ({}));
+          if (d && d.revoked) {
+            setRevoked(d);
+            setLoading(false);
+            return;
+          }
           signOut();
           return;
         }
@@ -92,6 +99,7 @@ export default function TenantPortal() {
     setToken("");
     setProfile(null);
     setHistory([]);
+    setRevoked(null);
     setLoading(false);
   }
 
@@ -271,6 +279,30 @@ export default function TenantPortal() {
     } catch (e) {
       alert("❌ " + e.message);
     }
+  }
+
+  // ── Revoked screen — access stripped by management ───────────────
+  if (revoked) {
+    return (
+      <div className="dc-portal">
+        <div className="revoked-screen">
+          <div className="revoked-card">
+            <div className="revoked-icon">🚫</div>
+            <h2>Access Revoked</h2>
+            <p>
+              Your portal access has been revoked by management. You can no
+              longer view your room, receipt, or make any requests.
+            </p>
+            {revoked.reason && (
+              <div className="revoked-reason">Reason: {revoked.reason}</div>
+            )}
+            <button className="btn-signout" onClick={signOut}>
+              Sign Out
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   // ── Login screen ────────────────────────────────────────────────

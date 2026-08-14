@@ -272,11 +272,13 @@
     opacity: 0.88;
   }
   .disapprove-btn {
-    @apply px-3.5 py-1.5 bg-transparent text-white rounded-md text-[11px] font-bold font-sans cursor-pointer transition-all;
-    border: 1.5px solid rgba(255, 255, 255, 0.4);
+    @apply px-3.5 py-1.5 bg-white rounded-md text-[11px] font-bold font-sans cursor-pointer shrink-0 transition-all;
+    border: 1.5px solid #fff;
+    color: var(--color-danger);
   }
   .disapprove-btn:hover {
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--color-danger);
+    color: #fff;
   }
 
   .card-stripe {
