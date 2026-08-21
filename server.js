@@ -14,8 +14,14 @@ const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || "*";
 const NODE_ENV = process.env.NODE_ENV || "development";
 
 if (!MONGO_URI || !JWT_SECRET) {
+  const missing = [];
+  if (!MONGO_URI) missing.push("MONGO_URI");
+  if (!JWT_SECRET) missing.push("JWT_SECRET");
   console.error(
-    "Missing required environment variables. Please set MONGO_URI and JWT_SECRET.",
+    `\n❌ Missing required environment variable(s): ${missing.join(", ")}`,
+  );
+  console.error(
+    "Set them in your hosting dashboard (e.g. Render → Environment tab) or in a .env file for local development.\n",
   );
   process.exit(1);
 }
