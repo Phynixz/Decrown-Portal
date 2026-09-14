@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Moon, Sun, Home, ArrowLeft } from "lucide-react";
+import { Moon, Sun, Home, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { useTheme } from "../theme.js";
 import { setAdminAuth } from "../api.js";
 import "../styles/login.css";
