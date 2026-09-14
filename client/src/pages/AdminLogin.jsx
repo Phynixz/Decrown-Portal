@@ -45,30 +45,56 @@ export default function AdminLogin() {
 
   return (
     <div className="dc-login">
-      {/* Left decorative panel */}
+      {/* ── Left image panel ──────────────────────────── */}
       <div className="panel-left">
+        <img
+          src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80"
+          alt="De-Crown Cottage hostel exterior"
+          className="panel-left-bg"
+        />
+
+        {/* Corner brass accents */}
+        <span aria-hidden="true" className="corner-accent corner-tl" />
+        <span aria-hidden="true" className="corner-accent corner-tr" />
+        <span aria-hidden="true" className="corner-accent corner-bl" />
+        <span aria-hidden="true" className="corner-accent corner-br" />
+
         <div className="logo-area">
-          <img src="/d420ac751563a3d498bd84cdf69386bb.jpg" alt="De-Crown Logo" />
-          <h1>
-            De-Crown
-            <br />
-            Cottage
-          </h1>
-          <p>
-            Hostel management portal for
-            <br />
-            Malete &amp; Ila-Orangun campuses.
-          </p>
+          <Link to="/" className="logo-brand">
+            <span className="logo-name">De-Crown</span>
+            <span className="logo-sub">Cottage</span>
+          </Link>
         </div>
+
+        <div className="left-content">
+          <p className="welcome-label">Welcome Back</p>
+          <h2>Your hostel dashboard awaits.</h2>
+          <p className="welcome-desc">
+            Sign in to manage rooms, track tenants, review payments, and stay
+            on top of your campus accommodation.
+          </p>
+
+          <dl className="stats-grid">
+            <div className="stat-box">
+              <dd className="stat-num">2</dd>
+              <dt className="stat-desc">Campus locations</dt>
+            </div>
+            <div className="stat-box">
+              <dd className="stat-num">24/7</dd>
+              <dt className="stat-desc">Portal access</dt>
+            </div>
+          </dl>
+        </div>
+
         <div className="left-footer">
-          <p>© 2024 De-Crown Cottage. All rights reserved.</p>
+          <p>© 2025 De-Crown Cottage. All rights reserved.</p>
           <Link to="/portal" className="switch-link">
             🏠 I'm a Tenant →
           </Link>
         </div>
       </div>
 
-      {/* Right: login form */}
+      {/* ── Right form panel ──────────────────────────── */}
       <div className="panel-right">
         <button
           className="theme-btn"
@@ -78,66 +104,113 @@ export default function AdminLogin() {
           {dark ? "☀️" : "🌙"}
         </button>
 
-        <div className={"login-box" + (shaking ? " shake" : "")}>
-          <h2>Admin Login</h2>
-          <p className="subtitle">Sign in to the management dashboard</p>
-
-          <div className="field">
-            <label>Email Address</label>
-            <input
-              type="email"
-              placeholder="you@decrown.com"
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+        <div className="login-inner">
+          {/* Mobile logo */}
+          <div className="mobile-logo">
+            <Link to="/" className="logo-brand">
+              <span className="logo-name">De-Crown</span>
+              <span className="logo-sub">Cottage</span>
+            </Link>
           </div>
 
-          <div className="field">
-            <label>Password</label>
-            <div className="pass-wrap">
-              <input
-                type={showPwd ? "text" : "password"}
-                placeholder="••••••••"
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && doLogin()}
-              />
-              <button
-                className="eye-btn"
-                type="button"
-                onClick={() => setShowPwd((s) => !s)}
-              >
-                {showPwd ? "🙈" : "👁"}
-              </button>
+          <p className="login-label">Sign In</p>
+          <h1 className="login-title">Welcome back</h1>
+          <p className="login-subtitle">
+            Sign in to your account to access your rooms, reports, and
+            management tools.
+          </p>
+
+          <div className={"login-box" + (shaking ? " shake" : "")} style={{ marginTop: 24 }}>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                doLogin();
+              }}
+              noValidate
+            >
+              <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                {/* Email */}
+                <div className="field">
+                  <label className="field-label" htmlFor="dc-email">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    id="dc-email"
+                    placeholder="you@decrown.com"
+                    autoComplete="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+
+                {/* Password */}
+                <div className="field">
+                  <div className="field-header">
+                    <label className="field-label" htmlFor="dc-password">
+                      Password
+                    </label>
+                  </div>
+                  <div className="pass-wrap">
+                    <input
+                      type={showPwd ? "text" : "password"}
+                      id="dc-password"
+                      placeholder="Enter your password"
+                      autoComplete="current-password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
+                    <button
+                      className="eye-btn"
+                      type="button"
+                      onClick={() => setShowPwd((s) => !s)}
+                      aria-label={showPwd ? "Hide password" : "Show password"}
+                    >
+                      {showPwd ? "Hide" : "Show"}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Remember me */}
+                <div className="remember-row">
+                  <input
+                    type="checkbox"
+                    id="dc-remember"
+                    checked={remember}
+                    onChange={(e) => setRemember(e.target.checked)}
+                  />
+                  <label className="remember-label" htmlFor="dc-remember">
+                    Remember me for 30 days
+                  </label>
+                </div>
+
+                {/* Submit */}
+                <button
+                  className="btn-login"
+                  type="submit"
+                  disabled={busy}
+                >
+                  {busy ? "Signing in…" : "Sign In"}
+                </button>
+
+                <div className={"error-box" + (err ? " show" : "")}>{err}</div>
+              </div>
+            </form>
+
+            {/* Divider */}
+            <div className="login-divider">
+              <span>or</span>
             </div>
-          </div>
 
-          <div className="remember-row">
-            <label className="remember-label">
-              <input
-                type="checkbox"
-                checked={remember}
-                onChange={(e) => setRemember(e.target.checked)}
-              />
-              Remember me
-            </label>
-          </div>
+            {/* Tenant portal link */}
+            <div className="mobile-portal-link">
+              <Link to="/portal">🏠 Go to Tenant Portal</Link>
+            </div>
 
-          <button
-            className="btn-login"
-            onClick={doLogin}
-            disabled={busy}
-            onKeyDown={(e) => e.key === "Enter" && doLogin()}
-          >
-            {busy ? "Signing in…" : "Sign In"}
-          </button>
-          <div className={"error-box" + (err ? " show" : "")}>{err}</div>
-
-          {/* Mobile only */}
-          <div className="mobile-portal-link">
-            <Link to="/portal">🏠 Go to Tenant Portal</Link>
+            {/* Back link */}
+            <div className="back-link">
+              <Link to="/">← Back to De-Crown</Link>
+            </div>
           </div>
         </div>
       </div>

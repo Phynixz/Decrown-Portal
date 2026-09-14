@@ -26,6 +26,9 @@
   --color-border2: #e8e0d0;
   --color-success: #2e7d32;
   --color-success-faint: #f0fdf4;
+  --color-brass: #b8860b;
+  --color-brass-dark: #8f642f;
+  --color-brass-faint: #fdf8e8;
   --color-danger: #c0392b;
   --color-danger-faint: #fef2f2;
   --color-error: #c0392b;
@@ -54,6 +57,9 @@
   --color-border2: #252838;
   --color-success: #4caf6e;
   --color-success-faint: #0d2018;
+  --color-brass: #d4a843;
+  --color-brass-dark: #b8860b;
+  --color-brass-faint: #2a2200;
   --color-danger: #ef5350;
   --color-danger-faint: #2a0f0f;
   --color-error: #ef5350;

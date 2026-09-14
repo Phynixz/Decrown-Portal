@@ -1,60 +1,109 @@
 @layer theme, base, components, utilities;
 @reference "./index.css";
+
 @layer components {
   /* ── Page shell ─────────────────────────────────────── */
   .dc-login {
-    @apply font-sans bg-bg text-text min-h-screen grid grid-cols-2 transition-colors;
+    @apply font-sans min-h-screen grid grid-cols-2 transition-colors;
+    background: var(--color-bg);
   }
 
-  /* ── Left panel (always navy) ──────────────────────── */
+  /* ── Left image panel ───────────────────────────────── */
   .panel-left {
-    @apply flex flex-col justify-between p-12 relative overflow-hidden;
-    background: #1a3c5e;
+    @apply relative hidden lg:flex lg:min-h-screen lg:flex-col lg:justify-between overflow-hidden;
+    border-bottom-right-radius: 4px;
   }
-  .panel-left::before {
-    content: "";
-    position: absolute;
-    width: 400px;
-    height: 400px;
-    border-radius: 50%;
-    background: rgba(196, 98, 45, 0.12);
-    top: -100px;
-    left: -100px;
+  .panel-left-bg {
+    @apply absolute inset-0 h-full w-full object-cover;
   }
   .panel-left::after {
     content: "";
-    position: absolute;
-    width: 280px;
-    height: 280px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.04);
-    bottom: 60px;
-    right: -80px;
+    @apply absolute inset-0;
+    background: rgba(26, 60, 94, 0.6);
   }
+
+  /* Corner brass accents */
+  .corner-accent {
+    @apply absolute w-5 h-5 z-20 pointer-events-none;
+    border-color: var(--color-brass);
+    opacity: 0.8;
+  }
+  .corner-tl {
+    @apply left-6 top-6;
+    border-left: 2px solid;
+    border-top: 2px solid;
+  }
+  .corner-tr {
+    @apply right-6 top-6;
+    border-right: 2px solid;
+    border-top: 2px solid;
+  }
+  .corner-bl {
+    @apply bottom-6 left-6;
+    border-left: 2px solid;
+    border-bottom: 2px solid;
+  }
+  .corner-br {
+    @apply bottom-6 right-6;
+    border-right: 2px solid;
+    border-bottom: 2px solid;
+  }
+
   .logo-area {
-    @apply relative z-10;
+    @apply relative z-10 p-8;
   }
-  .logo-area img {
-    @apply w-15 h-15 rounded-[13px] object-cover border-2 mb-5 block;
-    border-color: rgba(255, 255, 255, 0.15);
+  .logo-area .logo-brand {
+    @apply flex items-baseline gap-2.5 no-underline;
   }
-  .logo-area h1 {
-    @apply font-display text-3xl font-bold text-white leading-tight mb-3;
+  .logo-area .logo-name {
+    @apply font-display text-2xl font-semibold;
+    color: #fff;
   }
-  .logo-area p {
-    @apply text-sm font-light leading-relaxed;
-    color: rgba(255, 255, 255, 0.55);
+  .logo-area .logo-sub {
+    @apply font-mono text-[11px] uppercase tracking-[0.22em];
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  .left-content {
+    @apply relative z-10 p-8;
+  }
+  .left-content .welcome-label {
+    @apply font-mono text-xs uppercase tracking-[0.22em];
+    color: var(--color-brass);
+  }
+  .left-content h2 {
+    @apply mt-4 font-display text-3xl font-semibold leading-tight tracking-tight;
+    color: #fff;
+  }
+  .left-content .welcome-desc {
+    @apply mt-4 max-w-sm text-[15px] leading-relaxed;
+    color: rgba(255, 255, 255, 0.7);
+  }
+  .stats-grid {
+    @apply mt-8 grid grid-cols-2 gap-4;
+  }
+  .stat-box {
+    @apply rounded p-4;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+  }
+  .stat-box .stat-num {
+    @apply font-mono text-xl font-medium;
+    color: #fff;
+  }
+  .stat-box .stat-desc {
+    @apply mt-1 text-xs;
+    color: rgba(255, 255, 255, 0.6);
   }
 
   .left-footer {
-    @apply relative z-10;
+    @apply relative z-10 p-8;
   }
   .left-footer p {
     @apply text-xs mb-3.5;
     color: rgba(255, 255, 255, 0.28);
   }
   .switch-link {
-    @apply inline-flex items-center gap-2 px-4.5 py-2.5 rounded-lg text-[13px] font-medium no-underline transition-all;
+    @apply inline-flex items-center gap-2 px-4 py-2.5 rounded text-[13px] font-medium no-underline transition-all;
     background: rgba(255, 255, 255, 0.07);
     border: 1px solid rgba(255, 255, 255, 0.15);
     color: rgba(255, 255, 255, 0.75);
@@ -64,12 +113,46 @@
     color: #fff;
   }
 
-  /* ── Right panel ───────────────────────────────────── */
+  /* ── Right form panel ───────────────────────────────── */
   .panel-right {
-    @apply flex items-center justify-center p-10 px-13 relative bg-card transition-colors;
+    @apply flex items-center py-12 lg:col-span-7 lg:py-0 relative bg-card transition-colors;
   }
+  .login-inner {
+    @apply w-full max-w-lg px-5 sm:px-8 lg:mx-auto;
+  }
+
+  /* Mobile logo */
+  .mobile-logo {
+    @apply mb-8 lg:hidden;
+  }
+  .mobile-logo .logo-brand {
+    @apply flex items-baseline gap-2.5 no-underline;
+  }
+  .mobile-logo .logo-name {
+    @apply font-display text-[26px] font-semibold tracking-tight;
+    color: var(--color-text);
+  }
+  .mobile-logo .logo-sub {
+    @apply font-mono text-[11px] uppercase tracking-[0.22em];
+    color: var(--color-muted);
+  }
+
+  .login-label {
+    @apply font-mono text-xs uppercase tracking-[0.22em];
+    color: var(--color-brass);
+  }
+  .login-title {
+    @apply mt-3 font-display text-3xl font-semibold tracking-tight sm:text-4xl;
+    color: var(--color-text);
+  }
+  .login-subtitle {
+    @apply mt-3 max-w-md text-[15px] leading-relaxed;
+    color: var(--color-muted);
+  }
+
+  /* Theme toggle */
   .dc-login .theme-btn {
-    @apply absolute top-5 right-6 w-9.5 h-9.5 rounded-full border-[1.5px] cursor-pointer text-[17px] flex items-center justify-center transition-all bg-bg;
+    @apply absolute top-5 right-6 w-9 h-9 rounded-full border-[1.5px] cursor-pointer text-[15px] flex items-center justify-center transition-all bg-bg;
     border-color: var(--color-border);
   }
   .dc-login .theme-btn:hover {
@@ -77,67 +160,105 @@
     transform: scale(1.08);
   }
 
-  .login-box {
-    @apply w-full max-w-[380px];
+  /* ── Form fields ────────────────────────────────────── */
+  .dc-login .field {
+    @apply flex flex-col gap-1.5;
   }
-  .login-box h2 {
-    @apply font-display text-[30px] font-bold text-navy mb-1.5;
+  .dc-login .field-label {
+    @apply block text-sm font-medium;
+    color: var(--color-text);
   }
-  .subtitle {
-    @apply text-muted text-sm mb-8;
-  }
-
-  .login-box .field {
-    @apply flex flex-col gap-1.5 mb-4;
-  }
-  .login-box .field label {
-    @apply text-[11px] font-semibold text-text uppercase tracking-[0.7px];
-  }
-  .login-box .field input {
-    @apply px-4 py-3.5 border-[1.5px] rounded-[10px] text-sm font-sans text-text bg-input outline-none transition-all;
+  .dc-login .field input[type="text"],
+  .dc-login .field input[type="email"],
+  .dc-login .field input[type="password"] {
+    @apply block w-full rounded border bg-white px-4 py-3 text-[15px] outline-none transition-colors;
     border-color: var(--color-border);
+    color: var(--color-text);
   }
-  .login-box .field input:focus {
+  .dc-login .field input::placeholder {
+    color: var(--color-muted);
+    opacity: 0.6;
+  }
+  .dc-login .field input:focus {
     border-color: var(--color-navy);
-    box-shadow: 0 0 0 3px rgba(26, 60, 94, 0.1);
+    box-shadow: 0 0 0 1px var(--color-navy);
   }
 
   .pass-wrap {
     @apply relative;
   }
   .pass-wrap input {
-    @apply w-full pr-11;
+    @apply w-full pr-12;
   }
   .eye-btn {
-    @apply absolute right-3.5 top-1/2 -translate-y-1/2 bg-transparent border-none cursor-pointer text-lg;
+    @apply absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[12px] font-medium border-none cursor-pointer transition-colors;
+    background: transparent;
     color: var(--color-muted);
+  }
+  .eye-btn:hover {
+    color: var(--color-text);
+  }
+
+  .field-header {
+    @apply flex items-center justify-between;
   }
 
   .remember-row {
-    @apply flex items-center mb-5.5;
+    @apply flex items-center gap-3;
   }
   .remember-label {
-    @apply flex items-center gap-2 text-[13px] text-muted cursor-pointer;
+    @apply flex items-center gap-2 text-sm cursor-pointer;
+    color: var(--color-muted);
   }
   .remember-label input {
-    @apply w-3.75 h-3.75 cursor-pointer;
+    @apply w-4 h-4 shrink-0 rounded;
     accent-color: var(--color-navy);
   }
 
+  /* Submit button */
   .dc-login .btn-login {
-    @apply w-full py-3.5 text-white border-none rounded-[10px] text-[15px] font-semibold font-sans cursor-pointer transition-colors active:scale-[0.99];
+    @apply mt-2 w-full rounded px-7 py-3.5 text-sm font-medium text-white border-none cursor-pointer transition-colors;
     background: var(--color-navy);
   }
   .dc-login .btn-login:hover {
     background: var(--color-navy2);
   }
   .dc-login .btn-login:disabled {
-    background: #a0b0c4;
+    opacity: 0.5;
     cursor: not-allowed;
   }
 
+  /* Divider */
+  .login-divider {
+    @apply mt-8 flex items-center gap-4;
+  }
+  .login-divider::before,
+  .login-divider::after {
+    content: "";
+    @apply h-px flex-1;
+    background: var(--color-border);
+  }
+  .login-divider span {
+    @apply text-sm;
+    color: var(--color-muted);
+  }
+
+  /* Portal link */
+  .mobile-portal-link {
+    @apply mt-6 text-center text-[15px];
+    color: var(--color-muted);
+  }
+  .mobile-portal-link a {
+    @apply font-medium no-underline underline-offset-2 transition-colors;
+    color: var(--color-navy);
+  }
+  .mobile-portal-link a:hover {
+    opacity: 0.8;
+  }
+
+  /* Error box */
   .error-box {
-    @apply mt-3.5 px-3.5 py-2.5 rounded-lg text-[13px] hidden;
+    @apply mt-4 px-4 py-3 rounded text-sm hidden;
     background: #fef2f2;
     border: 1px solid #fecaca;
     color: var(--color-error);
@@ -150,20 +271,21 @@
     @apply block;
   }
 
-  .mobile-portal-link {
-    @apply hidden text-center mt-5.5;
+  /* Back link */
+  .back-link {
+    @apply mt-4 text-center text-sm;
+    color: var(--color-muted);
   }
-  .mobile-portal-link a {
-    @apply text-[13px] font-medium no-underline border-[1.5px] px-5 py-2.5 rounded-lg inline-block transition-all;
-    color: var(--color-navy);
-    border-color: var(--color-border);
+  .back-link a {
+    @apply font-medium no-underline underline-offset-2 transition-colors;
+    color: var(--color-text);
   }
-  .mobile-portal-link a:hover {
-    background: var(--color-bg);
+  .back-link a:hover {
+    opacity: 0.8;
   }
 
   /* ── Responsive ────────────────────────────────────── */
-  @media (max-width: 700px) {
+  @media (max-width: 1024px) {
     .dc-login {
       @apply grid-cols-1;
     }
@@ -171,7 +293,7 @@
       display: none;
     }
     .panel-right {
-      @apply px-6 pt-15 items-start;
+      @apply items-start px-6 pt-15;
     }
     .mobile-portal-link {
       @apply block;
