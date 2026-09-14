@@ -900,6 +900,16 @@ export default function AdminDashboard() {
                                     : "🖼 Proof"}
                                 </a>
                               )}
+                              {r.agreementCopy && (
+                                <a
+                                  className="sbtn sbtn-proof"
+                                  href={r.agreementCopy}
+                                  target="_blank"
+                                  rel="noopener"
+                                >
+                                  📋 Agreement
+                                </a>
+                              )}
                               {r.retainPending ? (
                                 <button
                                   className="sbtn sbtn-approve"

@@ -326,7 +326,7 @@ app.get("/tenant/history", verifyTenant, async (req, res) => {
     const records = await User.find({ email: req.tenant.email })
       .sort({ createdAt: -1 })
       .select(
-        "session roomNo amount paymentDate paymentProof retainPending renewedFrom _id type level",
+        "session roomNo amount paymentDate paymentProof agreementCopy retainPending renewedFrom _id type level",
       );
     res.json(records);
   } catch (e) {

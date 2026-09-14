@@ -8,6 +8,7 @@ import {
   fmtNaira,
   fmtDate,
 } from "../api.js";
+import "../styles/login.css";
 import "../styles/tenant-portal.css";
 
 const avatarFor = (name) =>
@@ -42,7 +43,7 @@ export default function TenantPortal() {
 
   // Profile modal
   const [profileOpen, setProfileOpen] = useState(false);
-  const [revoked, setRevoked] = useState(null); // { error, reason } when access was revoked
+  const [revoked, setRevoked] = useState(null);
 
   const loadHistory = useCallback(async (tok) => {
     try {
@@ -91,7 +92,6 @@ export default function TenantPortal() {
 
   useEffect(() => {
     if (getTenantToken()) showDashboard(getTenantToken());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function signOut() {
@@ -281,7 +281,7 @@ export default function TenantPortal() {
     }
   }
 
-  // ── Revoked screen — access stripped by management ───────────────
+  // ── Revoked screen ──────────────────────────────────────────────
   if (revoked) {
     return (
       <div className="dc-portal">
@@ -305,39 +305,63 @@ export default function TenantPortal() {
     );
   }
 
-  // ── Login screen ────────────────────────────────────────────────
+  // ── Login screen (new design matching admin login) ──────────────
   if (!token || (!profile && !loading)) {
     return (
-      <div className="dc-portal">
-        <div id="loginScreen">
-          <div className="split">
-            <div className="split-left">
-              <div className="brand-block">
-                <img
-                  src="/d420ac751563a3d498bd84cdf69386bb.jpg"
-                  alt="De-Crown"
-                  className="brand-logo"
-                />
-                <h1 className="brand-title">
-                  De-Crown
-                  <br />
-                  Cottage
-                </h1>
-                <p className="brand-sub">
-                  Your home away from home.
-                  <br />
-                  Malete &amp; Ila-Orangun.
-                </p>
+      <div className="dc-portal dc-login">
+        <div className="login-grid">
+          <div className="login-columns">
+            {/* ── Left image panel ────────────────────── */}
+            <div className="panel-left">
+              <img
+                src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80"
+                alt="De-Crown Cottage hostel exterior"
+                className="panel-left-bg"
+              />
+              <div className="panel-left-overlay" />
+
+              <span aria-hidden="true" className="corner-accent corner-tl" />
+              <span aria-hidden="true" className="corner-accent corner-tr" />
+              <span aria-hidden="true" className="corner-accent corner-bl" />
+              <span aria-hidden="true" className="corner-accent corner-br" />
+
+              <div className="logo-area">
+                <Link to="/" className="logo-brand">
+                  <span className="logo-name">De-Crown</span>
+                  <span className="logo-sub">Cottage</span>
+                </Link>
               </div>
-              <div className="brand-footer">
-                <p>© 2024 De-Crown Cottage</p>
+
+              <div className="left-content">
+                <p className="welcome-label">Welcome Back</p>
+                <h2>Your home away from home.</h2>
+                <p className="welcome-desc">
+                  Sign in to view your room, receipts, and manage your
+                  campus accommodation.
+                </p>
+
+                <dl className="stats-grid">
+                  <div className="stat-box">
+                    <dd className="stat-num">2</dd>
+                    <dt className="stat-desc">Campus locations</dt>
+                  </div>
+                  <div className="stat-box">
+                    <dd className="stat-num">24/7</dd>
+                    <dt className="stat-desc">Portal access</dt>
+                  </div>
+                </dl>
+              </div>
+
+              <div className="left-footer">
+                <p>© 2025 De-Crown Cottage. All rights reserved.</p>
                 <Link to="/login" className="switch-link">
                   🔐 Admin Login →
                 </Link>
               </div>
             </div>
 
-            <div className="split-right">
+            {/* ── Right form panel ────────────────────── */}
+            <div className="panel-right">
               <button
                 className="theme-btn"
                 onClick={toggleTheme}
@@ -346,56 +370,83 @@ export default function TenantPortal() {
                 {dark ? "☀️" : "🌙"}
               </button>
 
-              <div className="login-card">
-                <div className="login-icon">🏠</div>
-                <h2>Tenant Portal</h2>
-                <p className="login-sub">
-                  Enter your registered email and phone number to sign in
+              <div className="login-inner">
+                <div className="mobile-logo">
+                  <Link to="/" className="logo-brand">
+                    <span className="logo-name">De-Crown</span>
+                    <span className="logo-sub">Cottage</span>
+                  </Link>
+                </div>
+
+                <p className="login-label">Tenant Portal</p>
+                <h1 className="login-title">Welcome back</h1>
+                <p className="login-subtitle">
+                  Enter your registered email and phone number to access
+                  your room, receipts, and accommodation details.
                 </p>
 
-                <div className="lfield">
-                  <label>Email Address</label>
-                  <input
-                    type="email"
-                    placeholder="you@example.com"
-                    autoComplete="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && tenantLogin()}
-                  />
-                </div>
+                <div>
+                  <form
+                    className="login-form"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      tenantLogin();
+                    }}
+                    noValidate
+                  >
+                    <div className="field">
+                      <label className="field-label" htmlFor="tp-email">
+                        Email Address
+                      </label>
+                      <input
+                        type="email"
+                        id="tp-email"
+                        placeholder="you@example.com"
+                        autoComplete="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                      />
+                    </div>
 
-                <div className="lfield">
-                  <label>Phone Number</label>
-                  <input
-                    type="tel"
-                    placeholder="08012345678"
-                    autoComplete="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && tenantLogin()}
-                  />
-                </div>
+                    <div className="field">
+                      <label className="field-label" htmlFor="tp-phone">
+                        Phone Number
+                      </label>
+                      <input
+                        type="tel"
+                        id="tp-phone"
+                        placeholder="08012345678"
+                        autoComplete="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                      />
+                    </div>
 
-                <button
-                  className="btn-login"
-                  onClick={tenantLogin}
-                  disabled={loginBusy}
-                  onKeyDown={(e) => e.key === "Enter" && tenantLogin()}
-                >
-                  {loginBusy ? "Checking…" : "Access My Portal"}
-                </button>
+                    <button
+                      className="btn-login"
+                      type="submit"
+                      disabled={loginBusy}
+                    >
+                      {loginBusy ? "Checking…" : "Access My Portal"}
+                    </button>
 
-                <div className={"login-err" + (loginErr ? " show" : "")}>
-                  {loginErr}
-                </div>
+                    <div className={"error-box" + (loginErr ? " show" : "")}>
+                      {loginErr}
+                    </div>
+                  </form>
 
-                <p className="register-hint">
-                  New tenant? <Link to="/register">Register here</Link>
-                </p>
+                  <div className="login-divider">
+                    <span>or</span>
+                  </div>
 
-                <div className="mobile-switch">
-                  <Link to="/login">🔐 Admin Login</Link>
+                  <div className="login-footer-links">
+                    <p className="portal-link">
+                      📝 <Link to="/register">New tenant? Register here</Link>
+                    </p>
+                    <p className="back-link">
+                      <Link to="/">← Back to De-Crown</Link>
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -658,6 +709,17 @@ export default function TenantPortal() {
               <span className="action-icon">📄</span>
               <span>Payment Proof</span>
             </a>
+            {profile.agreementCopy && (
+              <a
+                href={profile.agreementCopy}
+                target="_blank"
+                rel="noopener"
+                className="action-tile"
+              >
+                <span className="action-icon">📋</span>
+                <span>Agreement Copy</span>
+              </a>
+            )}
             <Link
               to="/register"
               className={
@@ -817,6 +879,7 @@ export default function TenantPortal() {
                     ["pPassportLink", "📷 Passport", profile.passport],
                     ["pIdLink", "🪪 ID Card", profile.idCard],
                     ["pProofLink", "📄 Payment Proof", profile.paymentProof],
+                    ["pAgreementLink", "📋 Agreement", profile.agreementCopy],
                   ].map(([id, label, href]) => (
                     <a
                       key={id}

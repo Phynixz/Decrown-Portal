@@ -4,51 +4,56 @@
 @layer components {
   /* ── Page shell ─────────────────────────────────────── */
   .dc-login {
-    @apply font-sans min-h-screen grid grid-cols-2 transition-colors;
+    @apply font-sans min-h-screen transition-colors;
     background: var(--color-bg);
+  }
+  .dc-login .login-grid {
+    @apply mx-auto max-w-7xl px-5 sm:px-8;
+  }
+  .dc-login .login-columns {
+    @apply grid grid-cols-1 lg:grid-cols-12 lg:gap-0;
   }
 
   /* ── Left image panel ───────────────────────────────── */
   .panel-left {
-    @apply relative hidden lg:flex lg:min-h-screen lg:flex-col lg:justify-between overflow-hidden;
+    @apply relative hidden lg:col-span-5 lg:flex lg:min-h-screen lg:flex-col lg:justify-between overflow-hidden;
     border-bottom-right-radius: 4px;
   }
   .panel-left-bg {
     @apply absolute inset-0 h-full w-full object-cover;
   }
-  .panel-left::after {
-    content: "";
+  .panel-left-overlay {
     @apply absolute inset-0;
-    background: rgba(26, 60, 94, 0.6);
+    background: rgba(23, 23, 23, 0.55);
   }
 
   /* Corner brass accents */
   .corner-accent {
     @apply absolute w-5 h-5 z-20 pointer-events-none;
-    border-color: var(--color-brass);
     opacity: 0.8;
   }
   .corner-tl {
     @apply left-6 top-6;
-    border-left: 2px solid;
-    border-top: 2px solid;
+    border-left: 2px solid var(--color-brass);
+    border-top: 2px solid var(--color-brass);
   }
   .corner-tr {
     @apply right-6 top-6;
-    border-right: 2px solid;
-    border-top: 2px solid;
+    border-right: 2px solid var(--color-brass);
+    border-top: 2px solid var(--color-brass);
   }
   .corner-bl {
     @apply bottom-6 left-6;
-    border-left: 2px solid;
-    border-bottom: 2px solid;
+    border-left: 2px solid var(--color-brass);
+    border-bottom: 2px solid var(--color-brass);
   }
   .corner-br {
     @apply bottom-6 right-6;
-    border-right: 2px solid;
-    border-bottom: 2px solid;
+    border-right: 2px solid var(--color-brass);
+    border-bottom: 2px solid var(--color-brass);
   }
 
+  /* Logo area (top of left panel) */
   .logo-area {
     @apply relative z-10 p-8;
   }
@@ -64,6 +69,7 @@
     color: rgba(255, 255, 255, 0.6);
   }
 
+  /* Left content (bottom of left panel) */
   .left-content {
     @apply relative z-10 p-8;
   }
@@ -95,6 +101,7 @@
     color: rgba(255, 255, 255, 0.6);
   }
 
+  /* Left footer */
   .left-footer {
     @apply relative z-10 p-8;
   }
@@ -115,7 +122,8 @@
 
   /* ── Right form panel ───────────────────────────────── */
   .panel-right {
-    @apply flex items-center py-12 lg:col-span-7 lg:py-0 relative bg-card transition-colors;
+    @apply flex min-h-screen items-center py-12 lg:col-span-7 lg:py-0 relative transition-colors;
+    background: var(--color-bg);
   }
   .login-inner {
     @apply w-full max-w-lg px-5 sm:px-8 lg:mx-auto;
@@ -137,6 +145,7 @@
     color: var(--color-muted);
   }
 
+  /* Sign In label + heading */
   .login-label {
     @apply font-mono text-xs uppercase tracking-[0.22em];
     color: var(--color-brass);
@@ -152,15 +161,19 @@
 
   /* Theme toggle */
   .dc-login .theme-btn {
-    @apply absolute top-5 right-6 w-9 h-9 rounded-full border-[1.5px] cursor-pointer text-[15px] flex items-center justify-center transition-all bg-bg;
+    @apply absolute top-5 right-6 w-9 h-9 rounded-full border-[1.5px] cursor-pointer text-[15px] flex items-center justify-center transition-all z-10;
     border-color: var(--color-border);
+    background: var(--color-bg);
   }
   .dc-login .theme-btn:hover {
     border-color: var(--color-navy);
     transform: scale(1.08);
   }
 
-  /* ── Form fields ────────────────────────────────────── */
+  /* ── Form ────────────────────────────────────────────── */
+  .dc-login .login-form {
+    @apply mt-6 flex flex-col gap-5;
+  }
   .dc-login .field {
     @apply flex flex-col gap-1.5;
   }
@@ -243,16 +256,31 @@
     color: var(--color-muted);
   }
 
-  /* Portal link */
-  .mobile-portal-link {
-    @apply mt-6 text-center text-[15px];
+  /* Links below form */
+  .login-footer-links {
+    @apply mt-6 flex flex-col items-center gap-4;
+  }
+  .portal-link {
+    @apply text-[15px];
     color: var(--color-muted);
   }
-  .mobile-portal-link a {
+  .portal-link a {
     @apply font-medium no-underline underline-offset-2 transition-colors;
     color: var(--color-navy);
   }
-  .mobile-portal-link a:hover {
+  .portal-link a:hover {
+    opacity: 0.8;
+  }
+
+  .back-link {
+    @apply text-center text-sm;
+    color: var(--color-muted);
+  }
+  .back-link a {
+    @apply font-medium no-underline underline-offset-2 transition-colors;
+    color: var(--color-text);
+  }
+  .back-link a:hover {
     opacity: 0.8;
   }
 
@@ -271,32 +299,13 @@
     @apply block;
   }
 
-  /* Back link */
-  .back-link {
-    @apply mt-4 text-center text-sm;
-    color: var(--color-muted);
-  }
-  .back-link a {
-    @apply font-medium no-underline underline-offset-2 transition-colors;
-    color: var(--color-text);
-  }
-  .back-link a:hover {
-    opacity: 0.8;
-  }
-
   /* ── Responsive ────────────────────────────────────── */
   @media (max-width: 1024px) {
-    .dc-login {
-      @apply grid-cols-1;
-    }
     .panel-left {
       display: none;
     }
     .panel-right {
-      @apply items-start px-6 pt-15;
-    }
-    .mobile-portal-link {
-      @apply block;
+      @apply items-start;
     }
   }
 }
