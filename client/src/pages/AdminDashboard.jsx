@@ -117,7 +117,36 @@ export default function AdminDashboard() {
 
   // ── Guards ─────────────────────────────────────────────────────
   useEffect(() => {
-    if (!getToken()) navigate("/login", { replace: true });
+    const token = getToken();
+    const expiry = Number(
+      localStorage.getItem("adminSessionExpiresAt") ||
+        sessionStorage.getItem("adminSessionExpiresAt") ||
+        0,
+    );
+
+    if (!token || !expiry || Date.now() >= expiry) {
+      clearAdminAuth();
+      navigate("/login", { replace: true });
+      return;
+    }
+  }, [navigate]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const token = getToken();
+      const expiry = Number(
+        localStorage.getItem("adminSessionExpiresAt") ||
+          sessionStorage.getItem("adminSessionExpiresAt") ||
+          0,
+      );
+
+      if (!token || !expiry || Date.now() >= expiry) {
+        clearAdminAuth();
+        navigate("/login", { replace: true });
+      }
+    }, 30_000);
+
+    return () => clearInterval(timer);
   }, [navigate]);
 
   // ── Load admin settings (session + registration state) ─────────
@@ -469,13 +498,13 @@ export default function AdminDashboard() {
   // ── Grant re-upload ────────────────────────────────────────────
   function openReuploadModal(id, name) {
     setReuploadTarget({ id, name });
-    setReupChecks({ passport: false, idCard: false, proof: false });
+    setReupChecks({ passport: false, idCard: false, proof: false, agreementCopy: false });
     setReuploadModal(true);
   }
 
   async function confirmGrantReupload() {
     if (!reuploadTarget) return;
-    if (!reupChecks.passport && !reupChecks.idCard && !reupChecks.proof)
+    if (!reupChecks.passport && !reupChecks.idCard && !reupChecks.proof && !reupChecks.agreementCopy)
       return alert("Please select at least one document");
     try {
       await sendJSON(
@@ -1396,6 +1425,7 @@ export default function AdminDashboard() {
                   ["passport", "Passport Photo"],
                   ["idCard", "ID Card"],
                   ["proof", "Payment Proof"],
+                  ["agreementCopy", "Agreement Copy"],
                 ].map(([key, label]) => (
                   <label
                     key={key}

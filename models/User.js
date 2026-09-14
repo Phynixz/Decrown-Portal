@@ -41,6 +41,7 @@ const userSchema = new mongoose.Schema({
   canReuploadPassport: { type: Boolean, default: false },
   canReuploadIdCard: { type: Boolean, default: false },
   canReuploadProof: { type: Boolean, default: false },
+  canReuploadAgreement: { type: Boolean, default: false },
   reuploadExpiresAt: { type: Date, default: null },
   changeLog: [
     {

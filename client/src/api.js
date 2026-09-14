@@ -3,10 +3,30 @@
  * vanilla-JS app, so existing sessions stay valid.
  */
 
+export const ADMIN_SESSION_TIMEOUT_MS = 30 * 60 * 1000;
+export const ADMIN_REMEMBER_TIMEOUT_MS = 30 * 24 * 60 * 60 * 1000;
+
 export function getToken() {
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token") || "";
   return token ? (token.startsWith("Bearer ") ? token : "Bearer " + token) : "";
+}
+
+export function isTokenExpired(token) {
+  if (!token) return true;
+  const clean = token.replace(/^Bearer\s+/i, "");
+  const payloadPart = clean.split(".")[1];
+  if (!payloadPart) return false;
+
+  try {
+    const payload = JSON.parse(
+      atob(payloadPart.replace(/-/g, "+").replace(/_/g, "/")),
+    );
+    if (!payload.exp) return false;
+    return Date.now() >= Number(payload.exp) * 1000;
+  } catch {
+    return false;
+  }
 }
 
 export function getAdminName() {
@@ -25,13 +45,16 @@ export function getAdminRole() {
 
 export function setAdminAuth(token, name, role, remember) {
   const store = remember ? localStorage : sessionStorage;
+  const expiry =
+    Date.now() + (remember ? ADMIN_REMEMBER_TIMEOUT_MS : ADMIN_SESSION_TIMEOUT_MS);
   store.setItem("token", "Bearer " + token);
   store.setItem("adminName", name);
   store.setItem("adminRole", role);
+  store.setItem("adminSessionExpiresAt", String(expiry));
 }
 
 export function clearAdminAuth() {
-  ["token", "adminName", "adminRole"].forEach((k) => {
+  ["token", "adminName", "adminRole", "adminSessionExpiresAt"].forEach((k) => {
     localStorage.removeItem(k);
     sessionStorage.removeItem(k);
   });
@@ -44,10 +67,12 @@ export function getTenantToken() {
 
 export function setTenantToken(token) {
   sessionStorage.setItem("tenantToken", "Bearer " + token);
+  sessionStorage.setItem("tenantSessionExpiresAt", String(Date.now() + 24 * 60 * 60 * 1000));
 }
 
 export function clearTenantToken() {
   sessionStorage.removeItem("tenantToken");
+  sessionStorage.removeItem("tenantSessionExpiresAt");
 }
 
 /** GET JSON with optional auth header. */

@@ -13,7 +13,9 @@ import {
   clearTenantToken,
   fmtNaira,
   fmtDate,
+  isTokenExpired,
 } from "../api.js";
+import { validateEmail, validatePhone } from "../utils/validation.js";
 import "../styles/login.css";
 import "../styles/tenant-portal.css";
 
@@ -43,7 +45,7 @@ export default function TenantPortal() {
   const [selId, setSelId] = useState("");
 
   // Re-upload state
-  const [reupFiles, setReupFiles] = useState({ passport: null, idCard: null, paymentProof: null });
+  const [reupFiles, setReupFiles] = useState({ passport: null, idCard: null, paymentProof: null, agreementCopy: null });
   const [reupLabels, setReupLabels] = useState({});
   const [retainLabel, setRetainLabel] = useState("📎 Choose file (JPG, PNG or PDF)");
 
@@ -97,7 +99,17 @@ export default function TenantPortal() {
   );
 
   useEffect(() => {
-    if (getTenantToken()) showDashboard(getTenantToken());
+    const checkAuth = () => {
+      const tenantToken = getTenantToken();
+      if (tenantToken && isTokenExpired(tenantToken)) {
+        signOut();
+        return;
+      }
+      if (tenantToken) showDashboard(tenantToken);
+    };
+    checkAuth();
+    const timer = setInterval(checkAuth, 30_000);
+    return () => clearInterval(timer);
   }, []);
 
   function signOut() {
@@ -110,8 +122,18 @@ export default function TenantPortal() {
   }
 
   async function tenantLogin() {
-    if (!email.trim() || !phone.trim()) {
+    const cleanEmail = email.trim();
+    const cleanPhone = phone.trim();
+    if (!cleanEmail || !cleanPhone) {
       setLoginErr("Please enter both your email and phone number.");
+      return;
+    }
+    if (!validateEmail(cleanEmail)) {
+      setLoginErr("Please enter a valid email address.");
+      return;
+    }
+    if (!validatePhone(cleanPhone)) {
+      setLoginErr("Please enter a valid phone number in 11 digits.");
       return;
     }
     setLoginErr("");
@@ -120,7 +142,7 @@ export default function TenantPortal() {
       const res = await fetch("/tenant/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim(), phone: phone.trim() }),
+        body: JSON.stringify({ email: cleanEmail, phone: cleanPhone }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Login failed");
@@ -239,7 +261,8 @@ export default function TenantPortal() {
   const hasReupAccess = !!(
     profile?.canReuploadPassport ||
     profile?.canReuploadIdCard ||
-    profile?.canReuploadProof
+    profile?.canReuploadProof ||
+    profile?.canReuploadAgreement
   );
   const reupExpired =
     profile?.reuploadExpiresAt && new Date(profile.reuploadExpiresAt) < new Date();
@@ -484,6 +507,7 @@ export default function TenantPortal() {
     { field: "passport", label: "Passport Photo", accept: "image/*", hint: "Click to select image", Icon: Camera },
     { field: "idCard", label: "ID Card", accept: "image/*,.pdf", hint: "Click to select image or PDF", Icon: CreditCard },
     { field: "paymentProof", label: "Payment Proof", accept: "image/*,.pdf", hint: "Click to select image or PDF", Icon: File },
+    { field: "agreementCopy", label: "Agreement Copy", accept: "image/*,.pdf", hint: "Click to select image or PDF", Icon: FileText },
   ];
 
   return (
@@ -918,6 +942,7 @@ const REUP_FLAGS = {
   passport: "canReuploadPassport",
   idCard: "canReuploadIdCard",
   paymentProof: "canReuploadProof",
+  agreementCopy: "canReuploadAgreement",
 };
 
 function cap(s) {

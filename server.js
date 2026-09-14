@@ -1,8 +1,4 @@
-﻿const dns = require("dns");
-
-dns.setServers(["8.8.8.8"]);
-
-require("dotenv").config();
+﻿require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -167,6 +163,20 @@ function sanitizeSession(value) {
   return sanitizeString(value);
 }
 
+function isValidEmail(value) {
+  return /^[\w.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+$/.test(
+    sanitizeEmail(value),
+  );
+}
+
+function isValidPhone(value) {
+  return /^\+?[0-9]{11,15}$/.test(sanitizePhone(value));
+}
+
+function isValidName(value) {
+  return /^[A-Za-z][A-Za-z\s'.-]{2,49}$/.test(sanitizeString(value));
+}
+
 function isValidObjectId(id) {
   return mongoose.Types.ObjectId.isValid(id);
 }
@@ -199,6 +209,10 @@ app.post("/admin/login", async (req, res) => {
   const password = sanitizeString(req.body.password);
   if (!email || !password)
     return res.status(400).json({ error: "Email and password required" });
+  if (!isValidEmail(email))
+    return res.status(400).json({ error: "Please enter a valid email address" });
+  if (password.length < 6)
+    return res.status(400).json({ error: "Password must be at least 6 characters" });
   try {
     const admin = await Admin.findOne({ email });
     if (!admin) return res.status(401).json({ error: "Invalid credentials" });
@@ -207,7 +221,7 @@ app.post("/admin/login", async (req, res) => {
     const token = jwt.sign(
       { id: admin._id, email: admin.email, name: admin.name, role: admin.role },
       JWT_SECRET,
-      { expiresIn: "8h" },
+      { expiresIn: "30m" },
     );
     res.json({ token, name: admin.name, role: admin.role });
   } catch (e) {
@@ -263,6 +277,10 @@ app.post("/tenant/login", async (req, res) => {
   const phone = sanitizePhone(req.body.phone);
   if (!email || !phone)
     return res.status(400).json({ error: "Email and phone required" });
+  if (!isValidEmail(email))
+    return res.status(400).json({ error: "Please enter a valid email address" });
+  if (!isValidPhone(phone))
+    return res.status(400).json({ error: "Please enter a valid phone number" });
   try {
     const user = await User.findOne({
       email,
@@ -444,9 +462,9 @@ app.post(
 // Grant re-upload access with 24hr window
 app.put("/admin/grant-reupload/:id", verifyAdmin, async (req, res) => {
   try {
-    const { passport, idCard, proof } = req.body;
+    const { passport, idCard, proof, agreementCopy } = req.body;
 
-    if (!passport && !idCard && !proof)
+    if (!passport && !idCard && !proof && !agreementCopy)
       return res.status(400).json({ error: "Select at least one document" });
 
     const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -455,6 +473,7 @@ app.put("/admin/grant-reupload/:id", verifyAdmin, async (req, res) => {
       canReuploadPassport: !!passport,
       canReuploadIdCard: !!idCard,
       canReuploadProof: !!proof,
+      canReuploadAgreement: !!agreementCopy,
       reuploadExpiresAt: expires,
     });
 
@@ -472,7 +491,7 @@ app.put(
     try {
       const { field } = req.body;
 
-      if (!["passport", "idCard", "paymentProof"].includes(field))
+      if (!["passport", "idCard", "paymentProof", "agreementCopy"].includes(field))
         return res.status(400).json({ error: "Invalid field" });
 
       const user = await User.findById(req.tenant.id);
@@ -489,6 +508,7 @@ app.put(
         passport: "canReuploadPassport",
         idCard: "canReuploadIdCard",
         paymentProof: "canReuploadProof",
+        agreementCopy: "canReuploadAgreement",
       };
       const flag = flagMap[field];
 
@@ -520,7 +540,8 @@ app.put(
       if (
         !user.canReuploadPassport &&
         !user.canReuploadIdCard &&
-        !user.canReuploadProof
+        !user.canReuploadProof &&
+        !user.canReuploadAgreement
       ) {
         user.reuploadExpiresAt = null;
       }
@@ -662,6 +683,16 @@ app.post(
         type = "tenant",
         termsAccepted,
       } = req.body;
+
+      if (!isValidName(name) || !isValidName(guardianName || "")) {
+        return res.status(400).json({ error: "Please enter valid name details." });
+      }
+      if (!isValidEmail(email)) {
+        return res.status(400).json({ error: "Please enter a valid email address." });
+      }
+      if (!isValidPhone(phone) || !isValidPhone(guardianPhone || "")) {
+        return res.status(400).json({ error: "Please enter valid 11-digit phone numbers." });
+      }
 
       if (
         !req.files?.passport?.[0] ||

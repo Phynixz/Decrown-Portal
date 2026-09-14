@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { Moon, Sun, Home, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { useTheme } from "../theme.js";
 import { setAdminAuth } from "../api.js";
+import { validateEmail } from "../utils/validation.js";
 import "../styles/login.css";
 
 export default function AdminLogin() {
@@ -18,8 +19,17 @@ export default function AdminLogin() {
   const [shaking, setShaking] = useState(false);
 
   async function doLogin() {
-    if (!email.trim() || !password) {
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail || !password) {
       setErr("Please enter your email and password.");
+      return;
+    }
+    if (!validateEmail(trimmedEmail)) {
+      setErr("Please enter a valid email address.");
+      return;
+    }
+    if (password.length < 6) {
+      setErr("Password must be at least 6 characters long.");
       return;
     }
     setErr("");
@@ -28,7 +38,7 @@ export default function AdminLogin() {
       const res = await fetch("/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim(), password }),
+        body: JSON.stringify({ email: trimmedEmail, password, remember }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Login failed");
