@@ -170,8 +170,16 @@
     color: var(--color-amber);
   }
   .stat-label {
-    @apply text-[10px] uppercase tracking-[0.8px] font-medium;
+    @apply text-[10px] uppercase tracking-[0.8px] font-medium flex items-center gap-1.5;
     color: var(--color-muted);
+  }
+  .revenue-toggle {
+    @apply bg-transparent border-none cursor-pointer text-[13px] p-0 leading-none transition-transform;
+    color: var(--color-muted);
+  }
+  .revenue-toggle:hover {
+    transform: scale(1.15);
+    color: var(--color-terra);
   }
 
   /* ── Tabs ────────────────────────────────────────── */

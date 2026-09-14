@@ -1,4 +1,8 @@
-﻿require("dotenv").config();
+﻿const dns = require("dns");
+
+dns.setServers(["8.8.8.8"]);
+
+require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -580,7 +584,9 @@ app.get("/user/:id", async (req, res) => {
     // Receipt is public, but a revoked tenant who sends their token must not
     // be able to view it (the portal blocks revoked logins; this is defense
     // in depth for sessions that are still active).
-    const bearer = (req.headers.authorization || "").replace("Bearer ", "").trim();
+    const bearer = (req.headers.authorization || "")
+      .replace("Bearer ", "")
+      .trim();
     if (bearer) {
       try {
         const d = jwt.verify(bearer, JWT_SECRET);
@@ -634,6 +640,7 @@ app.post(
     { name: "passport" },
     { name: "idCard" },
     { name: "paymentProof" },
+    { name: "agreementCopy" },
   ]),
   async (req, res) => {
     try {
@@ -728,6 +735,10 @@ app.post(
         paymentProof:
           req.files?.paymentProof?.[0]?.secure_url ||
           req.files?.paymentProof?.[0]?.path ||
+          null,
+        agreementCopy:
+          req.files?.agreementCopy?.[0]?.secure_url ||
+          req.files?.agreementCopy?.[0]?.path ||
           null,
         retainPending: true,
         receiptNumber: await generateReceiptNumber(location),

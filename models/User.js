@@ -21,6 +21,7 @@ const userSchema = new mongoose.Schema({
   passport: String,
   idCard: String,
   paymentProof: String,
+  agreementCopy: String,
   renewedFrom: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",

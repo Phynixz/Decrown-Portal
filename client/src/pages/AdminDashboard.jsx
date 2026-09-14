@@ -60,6 +60,7 @@ export default function AdminDashboard() {
 
   // Sidebar (mobile)
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [revenueHidden, setRevenueHidden] = useState(true);
 
   // Modals
   const [regModal, setRegModal] = useState(false);
@@ -708,8 +709,19 @@ export default function AdminDashboard() {
             <div className="stat-label">Available</div>
           </div>
           <div className="stat accent">
-            <div className="stat-value">{fmtNaira(revenue)}</div>
-            <div className="stat-label">Revenue</div>
+            <div className="stat-value">
+              {revenueHidden ? "••••••" : fmtNaira(revenue)}
+            </div>
+            <div className="stat-label">
+              Revenue
+              <button
+                className="revenue-toggle"
+                onClick={() => setRevenueHidden((h) => !h)}
+                title={revenueHidden ? "Show revenue" : "Hide revenue"}
+              >
+                {revenueHidden ? "👁‍🗨" : "👁"}
+              </button>
+            </div>
           </div>
           {pending.length > 0 && (
             <div className="stat warn">

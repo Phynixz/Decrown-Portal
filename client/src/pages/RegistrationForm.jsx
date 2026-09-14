@@ -32,11 +32,13 @@ export default function RegistrationForm() {
     passport: null,
     idCard: null,
     paymentProof: null,
+    agreementCopy: null,
   });
   const [previews, setPreviews] = useState({});
   const passportInput = useRef(null);
   const idCardInput = useRef(null);
   const proofInput = useRef(null);
+  const agreementInput = useRef(null);
 
   // --- Meta ---
   const [session, setSession] = useState("Loading session…");
@@ -134,6 +136,7 @@ export default function RegistrationForm() {
     passport: !!files.passport,
     idCard: !!files.idCard,
     paymentProof: !!files.paymentProof,
+    agreementCopy: !!files.agreementCopy,
   };
   const termsValid = termsAccepted;
 
@@ -166,6 +169,7 @@ export default function RegistrationForm() {
         ["passport", 4],
         ["idCard", 4],
         ["paymentProof", 4],
+        ["agreementCopy", 4],
       ];
       const first = order.find(([k]) => {
         if (k in fieldValid) return !fieldValid[k];
@@ -197,6 +201,7 @@ export default function RegistrationForm() {
       formData.append("passport", files.passport);
       formData.append("idCard", files.idCard);
       formData.append("paymentProof", files.paymentProof);
+      formData.append("agreementCopy", files.agreementCopy);
 
       const res = await fetch("/submit", { method: "POST", body: formData });
       const data = await res.json();
@@ -225,13 +230,14 @@ export default function RegistrationForm() {
       setLevel("");
       setRoomNo("");
       setPaymentDate("");
-      setFiles({ passport: null, idCard: null, paymentProof: null });
+      setFiles({ passport: null, idCard: null, paymentProof: null, agreementCopy: null });
       setPreviews({});
       setTermsAccepted(false);
       setShowErrors(false);
       if (passportInput.current) passportInput.current.value = "";
       if (idCardInput.current) idCardInput.current.value = "";
       if (proofInput.current) proofInput.current.value = "";
+      if (agreementInput.current) agreementInput.current.value = "";
     } catch {
       alert("❌ Network error. Please check your connection and try again.");
     } finally {
@@ -501,6 +507,7 @@ export default function RegistrationForm() {
                   { field: "passport", label: "Passport Photograph", icon: "📷", accept: "image/*" },
                   { field: "idCard", label: "ID Card", icon: "🪪", accept: "image/*,.pdf" },
                   { field: "paymentProof", label: "Payment Receipt", icon: "📄", accept: "image/*,.pdf" },
+                  { field: "agreementCopy", label: "Agreement Hard Copy", icon: "📋", accept: "image/*,.pdf" },
                 ].map(({ field, label, icon, accept }) => (
                   <div className="field" key={field}>
                     <label htmlFor={field}>{label}</label>
@@ -521,7 +528,9 @@ export default function RegistrationForm() {
                             ? passportInput
                             : field === "idCard"
                               ? idCardInput
-                              : proofInput
+                              : field === "paymentProof"
+                                ? proofInput
+                                : agreementInput
                         }
                         onChange={(e) => handleUpload(field, e.target.files[0])}
                       />
