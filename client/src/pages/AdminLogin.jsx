@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { Moon, Sun, Home, ArrowLeft } from "lucide-react";
 import { useTheme } from "../theme.js";
 import { setAdminAuth } from "../api.js";
 import "../styles/login.css";
@@ -92,7 +93,7 @@ export default function AdminLogin() {
             <div className="left-footer">
               <p>© 2025 De-Crown Cottage. All rights reserved.</p>
               <Link to="/portal" className="switch-link">
-                🏠 I'm a Tenant →
+                <Home size={14} /> I'm a Tenant →
               </Link>
             </div>
           </div>
@@ -104,7 +105,7 @@ export default function AdminLogin() {
               onClick={toggleTheme}
               title="Toggle dark mode"
             >
-              {dark ? "☀️" : "🌙"}
+              {dark ? <Sun size={16} /> : <Moon size={16} />}
             </button>
 
             <div className="login-inner">
@@ -169,7 +170,7 @@ export default function AdminLogin() {
                         onClick={() => setShowPwd((s) => !s)}
                         aria-label={showPwd ? "Hide password" : "Show password"}
                       >
-                        {showPwd ? "Hide" : "Show"}
+                        {showPwd ? <EyeOff size={14} /> : <Eye size={14} />}
                       </button>
                     </div>
                   </div>
@@ -205,10 +206,26 @@ export default function AdminLogin() {
                 {/* Tenant portal link */}
                 <div className="login-footer-links">
                   <p className="portal-link">
-                    🏠 <Link to="/portal">Go to Tenant Portal</Link>
+                    <Home
+                      size={14}
+                      style={{
+                        display: "inline",
+                        verticalAlign: "-2px",
+                        marginRight: 6,
+                      }}
+                    />
+                    <Link to="/portal">Go to Tenant Portal</Link>
                   </p>
                   <p className="back-link">
-                    <Link to="/">← Back to De-Crown</Link>
+                    <ArrowLeft
+                      size={14}
+                      style={{
+                        display: "inline",
+                        verticalAlign: "-2px",
+                        marginRight: 4,
+                      }}
+                    />
+                    <Link to="/">Back to De-Crown</Link>
                   </p>
                 </div>
               </div>

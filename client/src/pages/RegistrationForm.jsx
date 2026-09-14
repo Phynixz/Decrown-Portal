@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { Camera, CreditCard, FileText, File } from "lucide-react";
 import "../styles/form.css";
 
 const ROOM_COUNTS = { Malete: 10, "Ila-Orangun": 22 };
@@ -504,11 +505,11 @@ export default function RegistrationForm() {
               </div>
               <div className="fields-grid">
                 {[
-                  { field: "passport", label: "Passport Photograph", icon: "📷", accept: "image/*" },
-                  { field: "idCard", label: "ID Card", icon: "🪪", accept: "image/*,.pdf" },
-                  { field: "paymentProof", label: "Payment Receipt", icon: "📄", accept: "image/*,.pdf" },
-                  { field: "agreementCopy", label: "Agreement Hard Copy", icon: "📋", accept: "image/*,.pdf" },
-                ].map(({ field, label, icon, accept }) => (
+                  { field: "passport", label: "Passport Photograph", Icon: Camera, accept: "image/*" },
+                  { field: "idCard", label: "ID Card", Icon: CreditCard, accept: "image/*,.pdf" },
+                  { field: "paymentProof", label: "Payment Receipt", Icon: File, accept: "image/*,.pdf" },
+                  { field: "agreementCopy", label: "Agreement Hard Copy", Icon: FileText, accept: "image/*,.pdf" },
+                ].map(({ field, label, Icon, accept }) => (
                   <div className="field" key={field}>
                     <label htmlFor={field}>{label}</label>
                     <div
@@ -551,7 +552,7 @@ export default function RegistrationForm() {
                           </>
                         ) : (
                           <>
-                            <span className="upload-icon">{icon}</span>
+                            <span className="upload-icon"><Icon size={26} /></span>
                             <span>
                               Click to upload — JPG
                               {field === "passport" ? "" : ", PNG or PDF"}

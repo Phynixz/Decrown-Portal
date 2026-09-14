@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import {
+  Moon, Sun, Home, Menu, Eye, EyeOff, Upload, File, FileText,
+  Camera, CreditCard, Receipt, Ban, CheckCircle, XCircle, Clock,
+  Pencil, ShieldOff, Check, X, FileEdit, FolderOpen, Users,
+  Download, Settings, LogOut, ChevronDown,
+} from "lucide-react";
 import { useTheme } from "../theme.js";
 import {
   getToken,
@@ -593,7 +599,7 @@ export default function AdminDashboard() {
                 setSidebarOpen(false);
               }}
             >
-              🏠 {loc}{" "}
+              <Home size={14} /> {loc}{" "}
               <span className="loc-count">
                 {loc === "Malete" ? badges.Malete : badges["Ila-Orangun"]}
               </span>
@@ -662,7 +668,7 @@ export default function AdminDashboard() {
               )}
             </select>
             <button className="theme-btn" onClick={toggleTheme}>
-              {dark ? "🌙" : "☀️"}
+              {dark ? <Sun size={16} /> : <Moon size={16} />}
             </button>
             <button className="logout-btn" onClick={logout}>
               Sign Out
@@ -719,7 +725,7 @@ export default function AdminDashboard() {
                 onClick={() => setRevenueHidden((h) => !h)}
                 title={revenueHidden ? "Show revenue" : "Hide revenue"}
               >
-                {revenueHidden ? "👁‍🗨" : "👁"}
+                {revenueHidden ? <EyeOff size={14} /> : <Eye size={14} />}
               </button>
             </div>
           </div>
@@ -896,7 +902,7 @@ export default function AdminDashboard() {
                                   rel="noopener"
                                 >
                                   {r.paymentProof.toLowerCase().includes(".pdf")
-                                    ? "📄 PDF"
+                                    ? "PDF"
                                     : "🖼 Proof"}
                                 </a>
                               )}
@@ -907,7 +913,7 @@ export default function AdminDashboard() {
                                   target="_blank"
                                   rel="noopener"
                                 >
-                                  📋 Agreement
+                                  <FileText size={12} style={{ marginRight: 2 }} />Agreement
                                 </a>
                               )}
                               {r.retainPending ? (
@@ -937,9 +943,9 @@ export default function AdminDashboard() {
                                 </p>
                                 {r.changeLog.map((entry, i) => {
                                   const labelMap = {
-                                    passport: "📷 Passport",
-                                    idCard: "🪪 ID Card",
-                                    paymentProof: "📄 Payment Proof",
+                                    passport: "Passport",
+                                    idCard: "ID Card",
+                                    paymentProof: "Payment Proof",
                                   };
                                   return (
                                     <div
@@ -1272,7 +1278,7 @@ export default function AdminDashboard() {
           <div className="backdrop open" onClick={() => setDisapproveModal(false)}></div>
           <div className="modal open">
             <div className="modal-head">
-              <h3>❌ Reject Application</h3>
+              <h3><XCircle size={18} style={{ display: "inline", verticalAlign: "-3px", marginRight: 6 }} />Reject Application</h3>
               <button onClick={() => setDisapproveModal(false)}>✕</button>
             </div>
             <div className="modal-body">
@@ -1324,7 +1330,7 @@ export default function AdminDashboard() {
           <div className="backdrop open" onClick={() => setRevokeModal(false)}></div>
           <div className="modal open">
             <div className="modal-head">
-              <h3>🚫 Revoke Tenant</h3>
+              <h3><Ban size={18} style={{ display: "inline", verticalAlign: "-3px", marginRight: 6 }} />Revoke Tenant</h3>
               <button onClick={() => setRevokeModal(false)}>✕</button>
             </div>
             <div className="modal-body">
@@ -1376,7 +1382,7 @@ export default function AdminDashboard() {
           <div className="backdrop open" onClick={() => setReuploadModal(false)}></div>
           <div className="modal open">
             <div className="modal-head">
-              <h3>📤 Grant Re-upload Access</h3>
+              <h3><Upload size={18} style={{ display: "inline", verticalAlign: "-3px", marginRight: 6 }} />Grant Re-upload Access</h3>
               <button onClick={() => setReuploadModal(false)}>✕</button>
             </div>
             <div className="modal-body">
@@ -1551,10 +1557,10 @@ function RoomCard({ u, onOpenDrawer, onApprove, onDisapprove, onRevoke, onReuplo
           </div>
           <div className="approval-actions">
             <button className="approval-btn" onClick={onApprove}>
-              ✅ Approve
+              <Check size={12} style={{ marginRight: 2 }} />Approve
             </button>
             <button className="disapprove-btn" onClick={onDisapprove}>
-              ❌ Reject
+              <X size={12} style={{ marginRight: 2 }} />Reject
             </button>
           </div>
         </div>
@@ -1585,7 +1591,7 @@ function RoomCard({ u, onOpenDrawer, onApprove, onDisapprove, onRevoke, onReuplo
             {(u.type || "tenant") === "shop" && (
               <span className="badge badge-shop">Shop</span>
             )}
-            {isRevoked && <span className="badge badge-revoked">🚫 Revoked</span>}
+            {isRevoked && <span className="badge badge-revoked"><Ban size={9} style={{ marginRight: 2, verticalAlign: "-1px" }} />Revoked</span>}
           </div>
         </div>
         {u.roomNo && <div className="room-chip room-occupied">✔️ Occupied</div>}
@@ -1632,7 +1638,7 @@ function RoomCard({ u, onOpenDrawer, onApprove, onDisapprove, onRevoke, onReuplo
             target="_blank"
             rel="noopener"
           >
-            {u.paymentProof.toLowerCase().includes(".pdf") ? "📄 View PDF" : "🖼 View Proof"}
+            {u.paymentProof.toLowerCase().includes(".pdf") ? <><File size={12} style={{ marginRight: 2 }} />View PDF</> : <><File size={12} style={{ marginRight: 2 }} />View Proof</>}
           </a>
         ) : (
           <span className="cta cta-no-proof">No Proof</span>
@@ -1647,18 +1653,18 @@ function RoomCard({ u, onOpenDrawer, onApprove, onDisapprove, onRevoke, onReuplo
           History
         </button>
         <button className="cta cta-reupload" onClick={onReupload}>
-          📤 Re-upload
+          <Upload size={12} style={{ marginRight: 2 }} />Re-upload
         </button>
         {/* Pending-approval cards use the banner's Approve/Reject buttons;
             Revoke is only for approved/active tenants. */}
         {!u.retainPending &&
           (isRevoked ? (
             <button className="cta cta-unrevooke" onClick={onReinstate}>
-              ✅ Reinstate
+              <CheckCircle size={12} style={{ marginRight: 2 }} />Reinstate
             </button>
           ) : (
             <button className="cta cta-revoke" onClick={onRevoke}>
-              🚫 Revoke
+              <Ban size={12} style={{ marginRight: 2 }} />Revoke
             </button>
           ))}
       </div>

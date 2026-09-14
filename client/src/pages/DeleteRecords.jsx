@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { Moon, Sun } from "lucide-react";
 import { useTheme } from "../theme.js";
 import { getToken } from "../api.js";
 import "../styles/admin.css";
@@ -138,7 +139,7 @@ export default function DeleteRecords() {
         </div>
         <div className="topbar-right">
           <button className="theme-btn" onClick={toggleTheme}>
-            {dark ? "☀️" : "🌙"}
+            {dark ? <Sun size={16} /> : <Moon size={16} />}
           </button>
           <button className="logout-btn" onClick={() => navigate("/admin")}>
             ← Dashboard

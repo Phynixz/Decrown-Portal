@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { Clock, Camera } from "lucide-react";
 import { getTenantToken, fmtDate } from "../api.js";
 import "../styles/profile.css";
 
@@ -52,7 +53,7 @@ export default function TenantProfile() {
           <>
             {profile.retainPending ? (
               <div className="status-pending">
-                ⏳ Your profile is pending admin review
+                <Clock size={14} style={{ marginRight: 4, verticalAlign: "-2px" }} />Your profile is pending admin review
               </div>
             ) : (
               <div className="status-approved">
@@ -137,7 +138,7 @@ export default function TenantProfile() {
                 <div className="card-title">Uploaded Documents</div>
                 <div className="document-grid">
                   <div className={"doc-tile" + (profile.passport ? "" : " empty")}>
-                    <div className="doc-icon">📷</div>
+                    <div className="doc-icon"><Camera size={20} /></div>
                     <div className="doc-name">Passport</div>
                     <div className="doc-status">
                       {profile.passport ? (
