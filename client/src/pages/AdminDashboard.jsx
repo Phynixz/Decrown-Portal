@@ -1,10 +1,33 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {
-  Moon, Sun, Home, Menu, Eye, EyeOff, Upload, File, FileText,
-  Camera, CreditCard, Receipt, Ban, CheckCircle, XCircle, Clock,
-  Pencil, ShieldOff, Check, X, FileEdit, FolderOpen, Users,
-  Download, Settings, LogOut, ChevronDown,
+  Moon,
+  Sun,
+  Home,
+  Menu,
+  Eye,
+  EyeOff,
+  Upload,
+  File,
+  FileText,
+  Camera,
+  CreditCard,
+  Receipt,
+  Ban,
+  CheckCircle,
+  XCircle,
+  Clock,
+  Pencil,
+  ShieldOff,
+  Check,
+  X,
+  FileEdit,
+  FolderOpen,
+  Users,
+  Download,
+  Settings,
+  LogOut,
+  ChevronDown,
 } from "lucide-react";
 import { useTheme } from "../theme.js";
 import {
@@ -22,14 +45,40 @@ import "../styles/admin.css";
 
 const LOCATION_ROOMS = {
   Malete: [
-    "Room 1", "Room 2", "Room 3", "Room 4", "Room 5", "Room 6", "Room 7",
-    "Room 8", "Room 9", "Room 10",
+    "Room 1",
+    "Room 2",
+    "Room 3",
+    "Room 4",
+    "Room 5",
+    "Room 6",
+    "Room 7",
+    "Room 8",
+    "Room 9",
+    "Room 10",
   ],
   "Ila-Orangun": [
-    "Room 1", "Room 2", "Room 3", "Room 4", "Room 5", "Room 6", "Room 7",
-    "Room 8", "Room 9", "Room 10", "Room 11", "Room 12", "Room 13", "Room 14",
-    "Room 15", "Room 16", "Room 17", "Room 18", "Room 19", "Room 20",
-    "Room 21", "Room 22",
+    "Room 1",
+    "Room 2",
+    "Room 3",
+    "Room 4",
+    "Room 5",
+    "Room 6",
+    "Room 7",
+    "Room 8",
+    "Room 9",
+    "Room 10",
+    "Room 11",
+    "Room 12",
+    "Room 13",
+    "Room 14",
+    "Room 15",
+    "Room 16",
+    "Room 17",
+    "Room 18",
+    "Room 19",
+    "Room 20",
+    "Room 21",
+    "Room 22",
   ],
 };
 
@@ -61,7 +110,12 @@ export default function AdminDashboard() {
 
   // Drawer
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [drawer, setDrawer] = useState({ name: "", loc: "", img: "", history: [] });
+  const [drawer, setDrawer] = useState({
+    name: "",
+    loc: "",
+    img: "",
+    history: [],
+  });
   const [expandedRows, setExpandedRows] = useState({});
 
   // Sidebar (mobile)
@@ -85,7 +139,12 @@ export default function AdminDashboard() {
 
   const [renewModal, setRenewModal] = useState(false);
   const [renewTarget, setRenewTarget] = useState(null);
-  const [renewForm, setRenewForm] = useState({ email: "", phone: "", level: "", date: "" });
+  const [renewForm, setRenewForm] = useState({
+    email: "",
+    phone: "",
+    level: "",
+    date: "",
+  });
 
   const [approveModal, setApproveModal] = useState(false);
   const [approveTarget, setApproveTarget] = useState(null);
@@ -94,7 +153,9 @@ export default function AdminDashboard() {
 
   const [disapproveModal, setDisapproveModal] = useState(false);
   const [disapproveTarget, setDisapproveTarget] = useState(null);
-  const [disapproveReason, setDisapproveReason] = useState("Invalid payment proof");
+  const [disapproveReason, setDisapproveReason] = useState(
+    "Invalid payment proof",
+  );
   const [disapproveNote, setDisapproveNote] = useState("");
 
   const [revokeModal, setRevokeModal] = useState(false);
@@ -104,11 +165,20 @@ export default function AdminDashboard() {
 
   const [reuploadModal, setReuploadModal] = useState(false);
   const [reuploadTarget, setReuploadTarget] = useState(null);
-  const [reupChecks, setReupChecks] = useState({ passport: false, idCard: false, proof: false });
+  const [reupChecks, setReupChecks] = useState({
+    passport: false,
+    idCard: false,
+    proof: false,
+  });
 
   const [adminModal, setAdminModal] = useState(false);
   const [admins, setAdmins] = useState([]);
-  const [newAdmin, setNewAdmin] = useState({ name: "", email: "", password: "", role: "admin" });
+  const [newAdmin, setNewAdmin] = useState({
+    name: "",
+    email: "",
+    password: "",
+    role: "admin",
+  });
 
   const adminName = getAdminName();
   const adminRole = getAdminRole();
@@ -235,7 +305,12 @@ export default function AdminDashboard() {
 
   // ── Drawer ─────────────────────────────────────────────────────
   async function openDrawer(user) {
-    setDrawer({ name: user.name, loc: user.location, img: user.passport || avatarFor(user.name), history: [] });
+    setDrawer({
+      name: user.name,
+      loc: user.location,
+      img: user.passport || avatarFor(user.name),
+      history: [],
+    });
     setDrawerOpen(true);
     document.body.style.overflow = "hidden";
     try {
@@ -315,7 +390,9 @@ export default function AdminDashboard() {
       const opts = [];
       if (d.session) opts.push(d.session + " (current)");
       if (d.next && d.next !== d.session) opts.push(d.next + " (next)");
-      setRegSessions(opts.map((label) => ({ label, value: label.split(" ")[0] })));
+      setRegSessions(
+        opts.map((label) => ({ label, value: label.split(" ")[0] })),
+      );
     } catch {
       /* ignore */
     }
@@ -331,7 +408,11 @@ export default function AdminDashboard() {
     const close = txt === "CLOSE";
     if (!open && !close) return alert("Type CLOSE to close or OPEN to reopen");
     if (
-      !confirm("Are you sure you want to " + (open ? "open" : "close") + " registration?")
+      !confirm(
+        "Are you sure you want to " +
+          (open ? "open" : "close") +
+          " registration?",
+      )
     )
       return;
     try {
@@ -344,7 +425,9 @@ export default function AdminDashboard() {
       setRegistrationOpen(d.registrationOpen);
       setRegModal(false);
       alert(
-        "Registration " + (d.registrationOpen ? "opened" : "closed") + " successfully.",
+        "Registration " +
+          (d.registrationOpen ? "opened" : "closed") +
+          " successfully.",
       );
     } catch {
       alert("Failed to update registration state");
@@ -393,7 +476,12 @@ export default function AdminDashboard() {
     if (renewForm.level) body.level = renewForm.level;
     if (renewForm.date) body.paymentDate = renewForm.date;
     try {
-      const d = await sendJSON("POST", "/renew/" + renewTarget.id, body, getToken());
+      const d = await sendJSON(
+        "POST",
+        "/renew/" + renewTarget.id,
+        body,
+        getToken(),
+      );
       alert(d.message || "Renewed");
       setRenewModal(false);
       closeDrawer();
@@ -416,7 +504,9 @@ export default function AdminDashboard() {
     if (approveConfirm.trim().toUpperCase() !== "APPROVE")
       return alert("Please type APPROVE to confirm this approval.");
     if (
-      !confirm("This will approve the retention and mark the tenant as paid. Proceed?")
+      !confirm(
+        "This will approve the retention and mark the tenant as paid. Proceed?",
+      )
     )
       return;
     try {
@@ -498,13 +588,23 @@ export default function AdminDashboard() {
   // ── Grant re-upload ────────────────────────────────────────────
   function openReuploadModal(id, name) {
     setReuploadTarget({ id, name });
-    setReupChecks({ passport: false, idCard: false, proof: false, agreementCopy: false });
+    setReupChecks({
+      passport: false,
+      idCard: false,
+      proof: false,
+      agreementCopy: false,
+    });
     setReuploadModal(true);
   }
 
   async function confirmGrantReupload() {
     if (!reuploadTarget) return;
-    if (!reupChecks.passport && !reupChecks.idCard && !reupChecks.proof && !reupChecks.agreementCopy)
+    if (
+      !reupChecks.passport &&
+      !reupChecks.idCard &&
+      !reupChecks.proof &&
+      !reupChecks.agreementCopy
+    )
       return alert("Please select at least one document");
     try {
       await sendJSON(
@@ -641,12 +741,12 @@ export default function AdminDashboard() {
           Change Rent
         </button>
         <button
-          className={
-            "side-action" + (registrationOpen ? "" : " danger")
-          }
+          className={"side-action" + (registrationOpen ? "" : " danger")}
           onClick={openRegModal}
         >
-          {registrationOpen ? "Close New Registration" : "Open New Registration"}
+          {registrationOpen
+            ? "Close New Registration"
+            : "Open New Registration"}
         </button>
         <button className="side-action" onClick={exportUsers}>
           Export Excel
@@ -667,10 +767,7 @@ export default function AdminDashboard() {
       {/* Main */}
       <div className="main">
         <header className="topbar">
-          <button
-            className="menu-btn"
-            onClick={() => setSidebarOpen(true)}
-          >
+          <button className="menu-btn" onClick={() => setSidebarOpen(true)}>
             ☰
           </button>
           <div className="topbar-title-area">
@@ -775,7 +872,11 @@ export default function AdminDashboard() {
           ].map(([t, label]) => (
             <button
               key={t}
-              className={"tab" + (currentTab === t ? " active" : "") + (t === "shop" ? " tab-warn" : "")}
+              className={
+                "tab" +
+                (currentTab === t ? " active" : "") +
+                (t === "shop" ? " tab-warn" : "")
+              }
               onClick={() => setCurrentTab(t)}
             >
               {label}
@@ -798,12 +899,34 @@ export default function AdminDashboard() {
               {roomKeys.map((room) => {
                 const occupants = byRoom[room] || [];
                 if (occupants.length) {
-                  return occupants.map((u) => <RoomCard key={u._id} u={u} onOpenDrawer={() => openDrawer(u)} onApprove={() => openApproveModal(u._id, u.session, u.name)} onDisapprove={() => openDisapproveModal(u._id, u.name)} onRevoke={() => openRevokeModal(u._id, u.name)} onReupload={() => openReuploadModal(u._id, u.name)} onReinstate={() => reinstateUser(u._id)} />);
+                  return occupants.map((u) => (
+                    <RoomCard
+                      key={u._id}
+                      u={u}
+                      onOpenDrawer={() => openDrawer(u)}
+                      onApprove={() =>
+                        openApproveModal(u._id, u.session, u.name)
+                      }
+                      onDisapprove={() => openDisapproveModal(u._id, u.name)}
+                      onRevoke={() => openRevokeModal(u._id, u.name)}
+                      onReupload={() => openReuploadModal(u._id, u.name)}
+                      onReinstate={() => reinstateUser(u._id)}
+                    />
+                  ));
                 }
                 return <EmptyRoomCard key={room} room={room} />;
               })}
               {(byRoom.Unassigned || []).map((u) => (
-                <RoomCard key={u._id} u={u} onOpenDrawer={() => openDrawer(u)} onApprove={() => openApproveModal(u._id, u.session, u.name)} onDisapprove={() => openDisapproveModal(u._id, u.name)} onRevoke={() => openRevokeModal(u._id, u.name)} onReupload={() => openReuploadModal(u._id, u.name)} onReinstate={() => reinstateUser(u._id)} />
+                <RoomCard
+                  key={u._id}
+                  u={u}
+                  onOpenDrawer={() => openDrawer(u)}
+                  onApprove={() => openApproveModal(u._id, u.session, u.name)}
+                  onDisapprove={() => openDisapproveModal(u._id, u.name)}
+                  onRevoke={() => openRevokeModal(u._id, u.name)}
+                  onReupload={() => openReuploadModal(u._id, u.name)}
+                  onReinstate={() => reinstateUser(u._id)}
+                />
               ))}
             </>
           )}
@@ -830,7 +953,9 @@ export default function AdminDashboard() {
             <div className="drawer-body">
               {drawer.history[0] && (
                 <div>
-                  <div className="drawer-section-label">Contact Information</div>
+                  <div className="drawer-section-label">
+                    Contact Information
+                  </div>
                   <div className="drawer-info-grid">
                     {[
                       ["Email", drawer.history[0].email],
@@ -875,13 +1000,18 @@ export default function AdminDashboard() {
                               }))
                             }
                           >
-                            <span className="session-row-title">{r.session}</span>
+                            <span className="session-row-title">
+                              {r.session}
+                            </span>
                             <div className="session-row-meta">
                               <span className="session-row-amount">
                                 {fmtNaira(r.amount)}
-                              </span>              {r.retainPending && (
-                <span className="text-[11px] text-amber">⏳</span>
-              )}
+                              </span>{" "}
+                              {r.retainPending && (
+                                <span className="text-[11px] text-amber">
+                                  ⏳
+                                </span>
+                              )}
                               <span className="session-row-chevron">▼</span>
                             </div>
                           </div>
@@ -896,7 +1026,10 @@ export default function AdminDashboard() {
                                     ? "Awaiting payment"
                                     : fmtDate(r.paymentDate) || "—",
                                 ],
-                                ["Status", r.retainPending ? "Pending" : "Confirmed"],
+                                [
+                                  "Status",
+                                  r.retainPending ? "Pending" : "Confirmed",
+                                ],
                               ].map(([label, val]) => (
                                 <div className="sdet" key={label}>
                                   <div className="sdet-label">{label}</div>
@@ -942,7 +1075,11 @@ export default function AdminDashboard() {
                                   target="_blank"
                                   rel="noopener"
                                 >
-                                  <FileText size={12} style={{ marginRight: 2 }} />Agreement
+                                  <FileText
+                                    size={12}
+                                    style={{ marginRight: 2 }}
+                                  />
+                                  Agreement
                                 </a>
                               )}
                               {r.retainPending ? (
@@ -986,10 +1123,13 @@ export default function AdminDashboard() {
                                       </span>
                                       <span className="text-muted">
                                         {entry.note} ·{" "}
-                                        {new Date(entry.changedAt).toLocaleDateString(
-                                          "en-NG",
-                                          { day: "2-digit", month: "short", year: "numeric" },
-                                        )}
+                                        {new Date(
+                                          entry.changedAt,
+                                        ).toLocaleDateString("en-NG", {
+                                          day: "2-digit",
+                                          month: "short",
+                                          year: "numeric",
+                                        })}
                                       </span>
                                     </div>
                                   );
@@ -1019,7 +1159,10 @@ export default function AdminDashboard() {
       {/* ── Registration modal ────────────────────────────────── */}
       {regModal && (
         <>
-          <div className="backdrop open" onClick={() => setRegModal(false)}></div>
+          <div
+            className="backdrop open"
+            onClick={() => setRegModal(false)}
+          ></div>
           <div className="modal open">
             <div className="modal-head">
               <h3>Registration Control</h3>
@@ -1072,7 +1215,10 @@ export default function AdminDashboard() {
       {/* ── Edit tenant modal ─────────────────────────────────── */}
       {editModal && (
         <>
-          <div className="backdrop open" onClick={() => setEditModal(false)}></div>
+          <div
+            className="backdrop open"
+            onClick={() => setEditModal(false)}
+          ></div>
           <div className="modal open w-[600px]">
             <div className="modal-head">
               <h3>Edit Tenant Information</h3>
@@ -1091,7 +1237,9 @@ export default function AdminDashboard() {
                   <input
                     type={type}
                     value={editForm[key] || ""}
-                    onChange={(e) => setEditForm((f) => ({ ...f, [key]: e.target.value }))}
+                    onChange={(e) =>
+                      setEditForm((f) => ({ ...f, [key]: e.target.value }))
+                    }
                   />
                 </div>
               ))}
@@ -1099,7 +1247,9 @@ export default function AdminDashboard() {
                 <label>Location</label>
                 <select
                   value={editForm.location}
-                  onChange={(e) => setEditForm((f) => ({ ...f, location: e.target.value }))}
+                  onChange={(e) =>
+                    setEditForm((f) => ({ ...f, location: e.target.value }))
+                  }
                 >
                   <option value="Malete">Malete</option>
                   <option value="Ila-Orangun">Ila-Orangun</option>
@@ -1109,7 +1259,9 @@ export default function AdminDashboard() {
                 <label>Type</label>
                 <select
                   value={editForm.type}
-                  onChange={(e) => setEditForm((f) => ({ ...f, type: e.target.value }))}
+                  onChange={(e) =>
+                    setEditForm((f) => ({ ...f, type: e.target.value }))
+                  }
                 >
                   <option value="tenant">Tenant</option>
                   <option value="shop">Shop</option>
@@ -1126,8 +1278,16 @@ export default function AdminDashboard() {
                   <input
                     type={type}
                     value={editForm[key] || ""}
-                    placeholder={key === "level" ? "e.g., 100Level" : key === "session" ? "e.g., 2024/2025" : ""}
-                    onChange={(e) => setEditForm((f) => ({ ...f, [key]: e.target.value }))}
+                    placeholder={
+                      key === "level"
+                        ? "e.g., 100Level"
+                        : key === "session"
+                          ? "e.g., 2024/2025"
+                          : ""
+                    }
+                    onChange={(e) =>
+                      setEditForm((f) => ({ ...f, [key]: e.target.value }))
+                    }
                   />
                 </div>
               ))}
@@ -1136,15 +1296,24 @@ export default function AdminDashboard() {
                 <input
                   type="date"
                   value={editForm.paymentDate || ""}
-                  onChange={(e) => setEditForm((f) => ({ ...f, paymentDate: e.target.value }))}
+                  onChange={(e) =>
+                    setEditForm((f) => ({ ...f, paymentDate: e.target.value }))
+                  }
                 />
               </div>
             </div>
             <div className="modal-foot">
-              <button className="mbtn ghost" onClick={() => setEditModal(false)}>
+              <button
+                className="mbtn ghost"
+                onClick={() => setEditModal(false)}
+              >
                 Cancel
               </button>
-              <button className="mbtn primary" onClick={saveEdit} disabled={editSaving}>
+              <button
+                className="mbtn primary"
+                onClick={saveEdit}
+                disabled={editSaving}
+              >
                 {editSaving ? "Saving…" : "Save Changes"}
               </button>
             </div>
@@ -1155,7 +1324,10 @@ export default function AdminDashboard() {
       {/* ── Rent modal ────────────────────────────────────────── */}
       {rentModal && (
         <>
-          <div className="backdrop open" onClick={() => setRentModal(false)}></div>
+          <div
+            className="backdrop open"
+            onClick={() => setRentModal(false)}
+          ></div>
           <div className="modal open">
             <div className="modal-head">
               <h3>Update Rent Amounts</h3>
@@ -1182,7 +1354,10 @@ export default function AdminDashboard() {
               </div>
             </div>
             <div className="modal-foot">
-              <button className="mbtn ghost" onClick={() => setRentModal(false)}>
+              <button
+                className="mbtn ghost"
+                onClick={() => setRentModal(false)}
+              >
                 Cancel
               </button>
               <button className="mbtn primary" onClick={saveRent}>
@@ -1196,7 +1371,10 @@ export default function AdminDashboard() {
       {/* ── Renew modal ───────────────────────────────────────── */}
       {renewModal && (
         <>
-          <div className="backdrop open" onClick={() => setRenewModal(false)}></div>
+          <div
+            className="backdrop open"
+            onClick={() => setRenewModal(false)}
+          ></div>
           <div className="modal open">
             <div className="modal-head">
               <h3>Renew for Next Session</h3>
@@ -1204,7 +1382,8 @@ export default function AdminDashboard() {
             </div>
             <div className="modal-body">
               <div className="modal-info">
-                Renewing Room {renewTarget?.room} — Session {renewTarget?.session}
+                Renewing Room {renewTarget?.room} — Session{" "}
+                {renewTarget?.session}
               </div>
               <div className="mfield">
                 <label>New Email (optional)</label>
@@ -1212,7 +1391,9 @@ export default function AdminDashboard() {
                   type="email"
                   placeholder="Keep existing"
                   value={renewForm.email}
-                  onChange={(e) => setRenewForm((f) => ({ ...f, email: e.target.value }))}
+                  onChange={(e) =>
+                    setRenewForm((f) => ({ ...f, email: e.target.value }))
+                  }
                 />
               </div>
               <div className="mfield">
@@ -1221,17 +1402,27 @@ export default function AdminDashboard() {
                   type="tel"
                   placeholder="Keep existing"
                   value={renewForm.phone}
-                  onChange={(e) => setRenewForm((f) => ({ ...f, phone: e.target.value }))}
+                  onChange={(e) =>
+                    setRenewForm((f) => ({ ...f, phone: e.target.value }))
+                  }
                 />
               </div>
               <div className="mfield">
                 <label>Level</label>
                 <select
                   value={renewForm.level}
-                  onChange={(e) => setRenewForm((f) => ({ ...f, level: e.target.value }))}
+                  onChange={(e) =>
+                    setRenewForm((f) => ({ ...f, level: e.target.value }))
+                  }
                 >
                   <option value="">Keep current</option>
-                  {["100Level", "200Level", "300Level", "400Level", "500Level"].map((l) => (
+                  {[
+                    "100Level",
+                    "200Level",
+                    "300Level",
+                    "400Level",
+                    "500Level",
+                  ].map((l) => (
                     <option key={l}>{l}</option>
                   ))}
                 </select>
@@ -1241,12 +1432,17 @@ export default function AdminDashboard() {
                 <input
                   type="date"
                   value={renewForm.date}
-                  onChange={(e) => setRenewForm((f) => ({ ...f, date: e.target.value }))}
+                  onChange={(e) =>
+                    setRenewForm((f) => ({ ...f, date: e.target.value }))
+                  }
                 />
               </div>
             </div>
             <div className="modal-foot">
-              <button className="mbtn ghost" onClick={() => setRenewModal(false)}>
+              <button
+                className="mbtn ghost"
+                onClick={() => setRenewModal(false)}
+              >
                 Cancel
               </button>
               <button className="mbtn primary" onClick={confirmRenew}>
@@ -1260,7 +1456,10 @@ export default function AdminDashboard() {
       {/* ── Approve modal ─────────────────────────────────────── */}
       {approveModal && (
         <>
-          <div className="backdrop open" onClick={() => setApproveModal(false)}></div>
+          <div
+            className="backdrop open"
+            onClick={() => setApproveModal(false)}
+          ></div>
           <div className="modal open">
             <div className="modal-head">
               <h3>Approve Retention</h3>
@@ -1290,7 +1489,10 @@ export default function AdminDashboard() {
               </div>
             </div>
             <div className="modal-foot">
-              <button className="mbtn ghost" onClick={() => setApproveModal(false)}>
+              <button
+                className="mbtn ghost"
+                onClick={() => setApproveModal(false)}
+              >
                 Cancel
               </button>
               <button className="mbtn primary" onClick={confirmApprove}>
@@ -1304,10 +1506,23 @@ export default function AdminDashboard() {
       {/* ── Disapprove modal ──────────────────────────────────── */}
       {disapproveModal && (
         <>
-          <div className="backdrop open" onClick={() => setDisapproveModal(false)}></div>
+          <div
+            className="backdrop open"
+            onClick={() => setDisapproveModal(false)}
+          ></div>
           <div className="modal open">
             <div className="modal-head">
-              <h3><XCircle size={18} style={{ display: "inline", verticalAlign: "-3px", marginRight: 6 }} />Reject Application</h3>
+              <h3>
+                <XCircle
+                  size={18}
+                  style={{
+                    display: "inline",
+                    verticalAlign: "-3px",
+                    marginRight: 6,
+                  }}
+                />
+                Reject Application
+              </h3>
               <button onClick={() => setDisapproveModal(false)}>✕</button>
             </div>
             <div className="modal-body">
@@ -1321,10 +1536,18 @@ export default function AdminDashboard() {
                   value={disapproveReason}
                   onChange={(e) => setDisapproveReason(e.target.value)}
                 >
-                  <option value="Invalid payment proof">Invalid payment proof</option>
-                  <option value="Incomplete information">Incomplete information</option>
-                  <option value="Room no longer available">Room no longer available</option>
-                  <option value="Duplicate application">Duplicate application</option>
+                  <option value="Invalid payment proof">
+                    Invalid payment proof
+                  </option>
+                  <option value="Incomplete information">
+                    Incomplete information
+                  </option>
+                  <option value="Room no longer available">
+                    Room no longer available
+                  </option>
+                  <option value="Duplicate application">
+                    Duplicate application
+                  </option>
                   <option value="Other">Other</option>
                 </select>
               </div>
@@ -1339,7 +1562,10 @@ export default function AdminDashboard() {
               </div>
             </div>
             <div className="modal-foot">
-              <button className="mbtn ghost" onClick={() => setDisapproveModal(false)}>
+              <button
+                className="mbtn ghost"
+                onClick={() => setDisapproveModal(false)}
+              >
                 Cancel
               </button>
               <button
@@ -1356,10 +1582,23 @@ export default function AdminDashboard() {
       {/* ── Revoke modal ──────────────────────────────────────── */}
       {revokeModal && (
         <>
-          <div className="backdrop open" onClick={() => setRevokeModal(false)}></div>
+          <div
+            className="backdrop open"
+            onClick={() => setRevokeModal(false)}
+          ></div>
           <div className="modal open">
             <div className="modal-head">
-              <h3><Ban size={18} style={{ display: "inline", verticalAlign: "-3px", marginRight: 6 }} />Revoke Tenant</h3>
+              <h3>
+                <Ban
+                  size={18}
+                  style={{
+                    display: "inline",
+                    verticalAlign: "-3px",
+                    marginRight: 6,
+                  }}
+                />
+                Revoke Tenant
+              </h3>
               <button onClick={() => setRevokeModal(false)}>✕</button>
             </div>
             <div className="modal-body">
@@ -1374,9 +1613,13 @@ export default function AdminDashboard() {
                   onChange={(e) => setRevokeReason(e.target.value)}
                 >
                   <option value="Invalid documents">Invalid documents</option>
-                  <option value="Payment not verified">Payment not verified</option>
+                  <option value="Payment not verified">
+                    Payment not verified
+                  </option>
                   <option value="Policy violation">Policy violation</option>
-                  <option value="Fraudulent information">Fraudulent information</option>
+                  <option value="Fraudulent information">
+                    Fraudulent information
+                  </option>
                   <option value="Other">Other</option>
                 </select>
               </div>
@@ -1391,7 +1634,10 @@ export default function AdminDashboard() {
               </div>
             </div>
             <div className="modal-foot">
-              <button className="mbtn ghost" onClick={() => setRevokeModal(false)}>
+              <button
+                className="mbtn ghost"
+                onClick={() => setRevokeModal(false)}
+              >
                 Cancel
               </button>
               <button
@@ -1408,10 +1654,23 @@ export default function AdminDashboard() {
       {/* ── Grant re-upload modal ─────────────────────────────── */}
       {reuploadModal && (
         <>
-          <div className="backdrop open" onClick={() => setReuploadModal(false)}></div>
+          <div
+            className="backdrop open"
+            onClick={() => setReuploadModal(false)}
+          ></div>
           <div className="modal open">
             <div className="modal-head">
-              <h3><Upload size={18} style={{ display: "inline", verticalAlign: "-3px", marginRight: 6 }} />Grant Re-upload Access</h3>
+              <h3>
+                <Upload
+                  size={18}
+                  style={{
+                    display: "inline",
+                    verticalAlign: "-3px",
+                    marginRight: 6,
+                  }}
+                />
+                Grant Re-upload Access
+              </h3>
               <button onClick={() => setReuploadModal(false)}>✕</button>
             </div>
             <div className="modal-body">
@@ -1435,7 +1694,10 @@ export default function AdminDashboard() {
                       type="checkbox"
                       checked={reupChecks[key]}
                       onChange={(e) =>
-                        setReupChecks((c) => ({ ...c, [key]: e.target.checked }))
+                        setReupChecks((c) => ({
+                          ...c,
+                          [key]: e.target.checked,
+                        }))
                       }
                     />{" "}
                     {label}
@@ -1447,7 +1709,10 @@ export default function AdminDashboard() {
               </p>
             </div>
             <div className="modal-foot">
-              <button className="mbtn ghost" onClick={() => setReuploadModal(false)}>
+              <button
+                className="mbtn ghost"
+                onClick={() => setReuploadModal(false)}
+              >
                 Cancel
               </button>
               <button className="mbtn primary" onClick={confirmGrantReupload}>
@@ -1461,7 +1726,10 @@ export default function AdminDashboard() {
       {/* ── Admin manager modal ───────────────────────────────── */}
       {adminModal && (
         <>
-          <div className="backdrop open" onClick={() => setAdminModal(false)}></div>
+          <div
+            className="backdrop open"
+            onClick={() => setAdminModal(false)}
+          ></div>
           <div className="modal open wide">
             <div className="modal-head">
               <h3>Manage Admins</h3>
@@ -1469,7 +1737,9 @@ export default function AdminDashboard() {
             </div>
             <div className="modal-body">
               {admins.length === 0 ? (
-                <p style={{ color: "var(--muted)", fontSize: 13 }}>Loading...</p>
+                <p style={{ color: "var(--muted)", fontSize: 13 }}>
+                  Loading...
+                </p>
               ) : (
                 admins.map((a) => (
                   <div className="admin-row" key={a._id}>
@@ -1507,7 +1777,9 @@ export default function AdminDashboard() {
                     type={type}
                     placeholder={ph}
                     value={newAdmin[key]}
-                    onChange={(e) => setNewAdmin((a) => ({ ...a, [key]: e.target.value }))}
+                    onChange={(e) =>
+                      setNewAdmin((a) => ({ ...a, [key]: e.target.value }))
+                    }
                   />
                 </div>
               ))}
@@ -1515,7 +1787,9 @@ export default function AdminDashboard() {
                 <label>Role</label>
                 <select
                   value={newAdmin.role}
-                  onChange={(e) => setNewAdmin((a) => ({ ...a, role: e.target.value }))}
+                  onChange={(e) =>
+                    setNewAdmin((a) => ({ ...a, role: e.target.value }))
+                  }
                 >
                   <option value="admin">Admin</option>
                   <option value="superadmin">Superadmin</option>
@@ -1523,7 +1797,10 @@ export default function AdminDashboard() {
               </div>
             </div>
             <div className="modal-foot">
-              <button className="mbtn ghost" onClick={() => setAdminModal(false)}>
+              <button
+                className="mbtn ghost"
+                onClick={() => setAdminModal(false)}
+              >
                 Close
               </button>
               <button className="mbtn primary" onClick={createAdmin}>
@@ -1558,7 +1835,15 @@ function EmptyRoomCard({ room }) {
   );
 }
 
-function RoomCard({ u, onOpenDrawer, onApprove, onDisapprove, onRevoke, onReupload, onReinstate }) {
+function RoomCard({
+  u,
+  onOpenDrawer,
+  onApprove,
+  onDisapprove,
+  onRevoke,
+  onReupload,
+  onReinstate,
+}) {
   const img = u.passport || avatarFor(u.name);
   const date = u.paymentDate
     ? fmtDate(u.paymentDate)
@@ -1587,16 +1872,20 @@ function RoomCard({ u, onOpenDrawer, onApprove, onDisapprove, onRevoke, onReuplo
           </div>
           <div className="approval-actions">
             <button className="approval-btn" onClick={onApprove}>
-              <Check size={12} style={{ marginRight: 2 }} />Approve
+              <Check size={12} style={{ marginRight: 2 }} />
+              Approve
             </button>
             <button className="disapprove-btn" onClick={onDisapprove}>
-              <X size={12} style={{ marginRight: 2 }} />Reject
+              <X size={12} style={{ marginRight: 2 }} />
+              Reject
             </button>
           </div>
         </div>
       )}
 
-      <div className={"card-stripe" + (u.retainPending ? " stripe-red" : "")}></div>
+      <div
+        className={"card-stripe" + (u.retainPending ? " stripe-red" : "")}
+      ></div>
 
       <div className="card-head">
         <a
@@ -1614,14 +1903,24 @@ function RoomCard({ u, onOpenDrawer, onApprove, onDisapprove, onRevoke, onReuplo
           <div className="card-contact">{u.phone}</div>
           <div className="card-badges">
             <span className="badge badge-session">{u.session}</span>
-            {u.renewedFrom && <span className="badge badge-renewed">↻ Renewed</span>}
+            {u.renewedFrom && (
+              <span className="badge badge-renewed">↻ Renewed</span>
+            )}
             {u.retainPending && (
               <span className="badge badge-pending-red">● Pending</span>
             )}
             {(u.type || "tenant") === "shop" && (
               <span className="badge badge-shop">Shop</span>
             )}
-            {isRevoked && <span className="badge badge-revoked"><Ban size={9} style={{ marginRight: 2, verticalAlign: "-1px" }} />Revoked</span>}
+            {isRevoked && (
+              <span className="badge badge-revoked">
+                <Ban
+                  size={9}
+                  style={{ marginRight: 2, verticalAlign: "-1px" }}
+                />
+                Revoked
+              </span>
+            )}
           </div>
         </div>
         {u.roomNo && <div className="room-chip room-occupied">✔️ Occupied</div>}
@@ -1648,14 +1947,24 @@ function RoomCard({ u, onOpenDrawer, onApprove, onDisapprove, onRevoke, onReuplo
 
       <div className="card-actions">
         {u.passport ? (
-          <a className="cta cta-proof" href={u.passport} target="_blank" rel="noopener">
+          <a
+            className="cta cta-proof"
+            href={u.passport}
+            target="_blank"
+            rel="noopener"
+          >
             View Passport
           </a>
         ) : (
           <span className="cta cta-no-proof">No Passport</span>
         )}
         {u.idCard ? (
-          <a className="cta cta-proof" href={u.idCard} target="_blank" rel="noopener">
+          <a
+            className="cta cta-proof"
+            href={u.idCard}
+            target="_blank"
+            rel="noopener"
+          >
             View ID
           </a>
         ) : (
@@ -1668,7 +1977,17 @@ function RoomCard({ u, onOpenDrawer, onApprove, onDisapprove, onRevoke, onReuplo
             target="_blank"
             rel="noopener"
           >
-            {u.paymentProof.toLowerCase().includes(".pdf") ? <><File size={12} style={{ marginRight: 2 }} />View PDF</> : <><File size={12} style={{ marginRight: 2 }} />View Proof</>}
+            {u.paymentProof.toLowerCase().includes(".pdf") ? (
+              <>
+                <File size={12} style={{ marginRight: 2 }} />
+                View PDF
+              </>
+            ) : (
+              <>
+                <File size={12} style={{ marginRight: 2 }} />
+                View Proof
+              </>
+            )}
           </a>
         ) : (
           <span className="cta cta-no-proof">No Proof</span>
@@ -1683,18 +2002,21 @@ function RoomCard({ u, onOpenDrawer, onApprove, onDisapprove, onRevoke, onReuplo
           History
         </button>
         <button className="cta cta-reupload" onClick={onReupload}>
-          <Upload size={12} style={{ marginRight: 2 }} />Re-upload
+          <Upload size={12} style={{ marginRight: 2 }} />
+          Re-upload
         </button>
         {/* Pending-approval cards use the banner's Approve/Reject buttons;
             Revoke is only for approved/active tenants. */}
         {!u.retainPending &&
           (isRevoked ? (
             <button className="cta cta-unrevooke" onClick={onReinstate}>
-              <CheckCircle size={12} style={{ marginRight: 2 }} />Reinstate
+              <CheckCircle size={12} style={{ marginRight: 2 }} />
+              Reinstate
             </button>
           ) : (
             <button className="cta cta-revoke" onClick={onRevoke}>
-              <Ban size={12} style={{ marginRight: 2 }} />Revoke
+              <Ban size={12} style={{ marginRight: 2 }} />
+              Revoke
             </button>
           ))}
       </div>

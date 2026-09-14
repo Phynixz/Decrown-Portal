@@ -210,9 +210,13 @@ app.post("/admin/login", async (req, res) => {
   if (!email || !password)
     return res.status(400).json({ error: "Email and password required" });
   if (!isValidEmail(email))
-    return res.status(400).json({ error: "Please enter a valid email address" });
+    return res
+      .status(400)
+      .json({ error: "Please enter a valid email address" });
   if (password.length < 6)
-    return res.status(400).json({ error: "Password must be at least 6 characters" });
+    return res
+      .status(400)
+      .json({ error: "Password must be at least 6 characters" });
   try {
     const admin = await Admin.findOne({ email });
     if (!admin) return res.status(401).json({ error: "Invalid credentials" });
@@ -278,7 +282,9 @@ app.post("/tenant/login", async (req, res) => {
   if (!email || !phone)
     return res.status(400).json({ error: "Email and phone required" });
   if (!isValidEmail(email))
-    return res.status(400).json({ error: "Please enter a valid email address" });
+    return res
+      .status(400)
+      .json({ error: "Please enter a valid email address" });
   if (!isValidPhone(phone))
     return res.status(400).json({ error: "Please enter a valid phone number" });
   try {
@@ -491,7 +497,9 @@ app.put(
     try {
       const { field } = req.body;
 
-      if (!["passport", "idCard", "paymentProof", "agreementCopy"].includes(field))
+      if (
+        !["passport", "idCard", "paymentProof", "agreementCopy"].includes(field)
+      )
         return res.status(400).json({ error: "Invalid field" });
 
       const user = await User.findById(req.tenant.id);
@@ -685,13 +693,19 @@ app.post(
       } = req.body;
 
       if (!isValidName(name) || !isValidName(guardianName || "")) {
-        return res.status(400).json({ error: "Please enter valid name details." });
+        return res
+          .status(400)
+          .json({ error: "Please enter valid name details." });
       }
       if (!isValidEmail(email)) {
-        return res.status(400).json({ error: "Please enter a valid email address." });
+        return res
+          .status(400)
+          .json({ error: "Please enter a valid email address." });
       }
       if (!isValidPhone(phone) || !isValidPhone(guardianPhone || "")) {
-        return res.status(400).json({ error: "Please enter valid 11-digit phone numbers." });
+        return res
+          .status(400)
+          .json({ error: "Please enter valid 11-digit phone numbers." });
       }
 
       if (
