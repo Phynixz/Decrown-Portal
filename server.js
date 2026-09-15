@@ -580,12 +580,19 @@ async function getRegistrationState(session = getSession()) {
 
 async function isRegistrationOpen(session = getSession()) {
   const state = await getRegistrationState(session);
-  return state ? state.open : false;
+  return state ? state.open : true;
 }
 
 // ----- Public Routes -----
 app.get("/current-session", async (req, res) => {
-  const registrationOpen = await isRegistrationOpen(getNextSession());
+  const currentState = await getRegistrationState(getSession());
+  const nextState = await getRegistrationState(getNextSession());
+  const registrationOpen = currentState
+    ? currentState.open
+    : nextState
+      ? nextState.open
+      : true;
+
   res.json({
     session: getSession(),
     next: getNextSession(),

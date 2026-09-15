@@ -124,7 +124,7 @@ export default function AdminDashboard() {
 
   // Modals
   const [regModal, setRegModal] = useState(false);
-  const [regText, setRegText] = useState("");
+  const [regAction, setRegAction] = useState("open");
   const [regSession, setRegSession] = useState("");
   const [regSessions, setRegSessions] = useState([]);
 
@@ -390,47 +390,51 @@ export default function AdminDashboard() {
       const opts = [];
       if (d.session) opts.push(d.session + " (current)");
       if (d.next && d.next !== d.session) opts.push(d.next + " (next)");
-      setRegSessions(
-        opts.map((label) => ({ label, value: label.split(" ")[0] })),
-      );
+      const sessionOptions = opts.map((label) => ({
+        label,
+        value: label.split(" ")[0],
+      }));
+      setRegSessions(sessionOptions);
+      const defaultSession = sessionOptions.find((s) => s.label.includes("current"))?.value || d.session || "";
+      setRegSession(defaultSession);
+      setRegAction(d.registrationOpen ? "close" : "open");
     } catch {
-      /* ignore */
+      setRegSessions([]);
+      setRegSession("");
+      setRegAction("open");
     }
-    setRegText("");
-    setRegSession("");
     setRegModal(true);
   }
 
   async function confirmRegChange() {
-    const txt = regText.trim().toUpperCase();
-    if (!txt) return alert("Please type CLOSE or OPEN to confirm");
-    const open = txt === "OPEN";
-    const close = txt === "CLOSE";
-    if (!open && !close) return alert("Type CLOSE to close or OPEN to reopen");
-    if (
-      !confirm(
-        "Are you sure you want to " +
-          (open ? "open" : "close") +
-          " registration?",
-      )
-    )
+    const sessionToToggle = regSession || currentSession || "";
+    const open = regAction === "open";
+
+    if (!sessionToToggle) {
+      return alert("Please select a valid session before changing registration status.");
+    }
+
+    if (!confirm(`This will ${open ? "open" : "close"} registration for ${sessionToToggle}. Continue?`))
       return;
+
     try {
       const d = await sendJSON(
         "PUT",
         "/admin/set-registration",
-        { open, session: regSession },
+        { open, session: sessionToToggle },
         getToken(),
       );
       setRegistrationOpen(d.registrationOpen);
       setRegModal(false);
       alert(
-        "Registration " +
-          (d.registrationOpen ? "opened" : "closed") +
-          " successfully.",
+        "Registration for " +
+          sessionToToggle +
+          " is now " +
+          (d.registrationOpen ? "open" : "closed") +
+          ".",
       );
     } catch {
-      alert("Failed to update registration state");
+      alert("Failed to update the registration status.");
     }
   }
 
@@ -1165,39 +1169,56 @@ export default function AdminDashboard() {
           ></div>
           <div className="modal open">
             <div className="modal-head">
-              <h3>Registration Control</h3>
+              <h3>Registration Access</h3>
               <button onClick={() => setRegModal(false)}>✕</button>
             </div>
             <div className="modal-body">
               <p style={{ marginBottom: 10 }}>
-                Choose which session this action applies to and confirm the
-                change. Closing registration prevents new registrations and
-                retain requests until reopened.
+                Choose the session and set whether the public registration form is
+                available. Closing it prevents new applications and retention requests
+                until it is reopened.
               </p>
+
               <div className="mfield">
                 <label>Session</label>
                 <select
                   value={regSession}
                   onChange={(e) => setRegSession(e.target.value)}
                 >
-                  <option value="">(use current session)</option>
-                  {regSessions.map((s) => (
-                    <option key={s.value} value={s.value}>
-                      {s.label}
-                    </option>
-                  ))}
+                  {regSessions.length === 0 ? (
+                    <option value="">No session available</option>
+                  ) : (
+                    regSessions.map((s) => (
+                      <option key={s.value} value={s.value}>
+                        {s.label}
+                      </option>
+                    ))
+                  )}
                 </select>
               </div>
+
               <div className="mfield">
-                <label>
-                  Type <strong>CLOSE</strong> to confirm closing (or{" "}
-                  <strong>OPEN</strong> to reopen)
-                </label>
-                <input
-                  placeholder="Type CLOSE or OPEN to confirm"
-                  value={regText}
-                  onChange={(e) => setRegText(e.target.value)}
-                />
+                <label>Registration status</label>
+                <div className="flex gap-2 mt-2">
+                  <button
+                    type="button"
+                    className={"mbtn flex-1 " + (regAction === "open" ? "primary" : "ghost")}
+                    onClick={() => setRegAction("open")}
+                  >
+                    Open
+                  </button>
+                  <button
+                    type="button"
+                    className={"mbtn flex-1 " + (regAction === "close" ? "danger" : "ghost")}
+                    onClick={() => setRegAction("close")}
+                  >
+                    Close
+                  </button>
+                </div>
+                <p className="text-xs text-muted mt-2">
+                  This updates the availability of the public registration form for the
+                  selected session.
+                </p>
               </div>
             </div>
             <div className="modal-foot">
@@ -1205,7 +1226,7 @@ export default function AdminDashboard() {
                 Cancel
               </button>
               <button className="mbtn primary" onClick={confirmRegChange}>
-                Confirm
+                {regAction === "open" ? "Open Registration" : "Close Registration"}
               </button>
             </div>
           </div>
