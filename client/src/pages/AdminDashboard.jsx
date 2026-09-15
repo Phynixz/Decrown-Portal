@@ -395,7 +395,10 @@ export default function AdminDashboard() {
         value: label.split(" ")[0],
       }));
       setRegSessions(sessionOptions);
-      const defaultSession = sessionOptions.find((s) => s.label.includes("current"))?.value || d.session || "";
+      const defaultSession =
+        sessionOptions.find((s) => s.label.includes("current"))?.value ||
+        d.session ||
+        "";
       setRegSession(defaultSession);
       setRegAction(d.registrationOpen ? "close" : "open");
     } catch {
@@ -411,10 +414,16 @@ export default function AdminDashboard() {
     const open = regAction === "open";
 
     if (!sessionToToggle) {
-      return alert("Please select a valid session before changing registration status.");
+      return alert(
+        "Please select a valid session before changing registration status.",
+      );
     }
 
-    if (!confirm(`This will ${open ? "open" : "close"} registration for ${sessionToToggle}. Continue?`))
+    if (
+      !confirm(
+        `This will ${open ? "open" : "close"} registration for ${sessionToToggle}. Continue?`,
+      )
+    )
       return;
 
     try {
@@ -1174,9 +1183,9 @@ export default function AdminDashboard() {
             </div>
             <div className="modal-body">
               <p style={{ marginBottom: 10 }}>
-                Choose the session and set whether the public registration form is
-                available. Closing it prevents new applications and retention requests
-                until it is reopened.
+                Choose the session and set whether the public registration form
+                is available. Closing it prevents new applications and retention
+                requests until it is reopened.
               </p>
 
               <div className="mfield">
@@ -1202,22 +1211,28 @@ export default function AdminDashboard() {
                 <div className="flex gap-2 mt-2">
                   <button
                     type="button"
-                    className={"mbtn flex-1 " + (regAction === "open" ? "primary" : "ghost")}
+                    className={
+                      "mbtn flex-1 " +
+                      (regAction === "open" ? "primary" : "ghost")
+                    }
                     onClick={() => setRegAction("open")}
                   >
                     Open
                   </button>
                   <button
                     type="button"
-                    className={"mbtn flex-1 " + (regAction === "close" ? "danger" : "ghost")}
+                    className={
+                      "mbtn flex-1 " +
+                      (regAction === "close" ? "danger" : "ghost")
+                    }
                     onClick={() => setRegAction("close")}
                   >
                     Close
                   </button>
                 </div>
                 <p className="text-xs text-muted mt-2">
-                  This updates the availability of the public registration form for the
-                  selected session.
+                  This updates the availability of the public registration form
+                  for the selected session.
                 </p>
               </div>
             </div>
@@ -1226,7 +1241,9 @@ export default function AdminDashboard() {
                 Cancel
               </button>
               <button className="mbtn primary" onClick={confirmRegChange}>
-                {regAction === "open" ? "Open Registration" : "Close Registration"}
+                {regAction === "open"
+                  ? "Open Registration"
+                  : "Close Registration"}
               </button>
             </div>
           </div>
