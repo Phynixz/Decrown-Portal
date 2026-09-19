@@ -1,10 +1,30 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  Moon, Sun, Home, ArrowLeft, FileText, File, Camera, CreditCard,
-  Receipt, FileEdit, Upload, Ban, CheckCircle, XCircle, Clock, Lock,
-  User, DollarSign, Calendar, CalendarDays, GraduationCap, FolderOpen,
-  Pencil, AlertTriangle,
+  Moon,
+  Sun,
+  Home,
+  ArrowLeft,
+  FileText,
+  File,
+  Camera,
+  CreditCard,
+  Receipt,
+  FileEdit,
+  Upload,
+  Ban,
+  CheckCircle,
+  XCircle,
+  Clock,
+  Lock,
+  User,
+  DollarSign,
+  Calendar,
+  CalendarDays,
+  GraduationCap,
+  FolderOpen,
+  Pencil,
+  AlertTriangle,
 } from "lucide-react";
 import { useTheme } from "../theme.js";
 import {
@@ -45,9 +65,16 @@ export default function TenantPortal() {
   const [selId, setSelId] = useState("");
 
   // Re-upload state
-  const [reupFiles, setReupFiles] = useState({ passport: null, idCard: null, paymentProof: null, agreementCopy: null });
+  const [reupFiles, setReupFiles] = useState({
+    passport: null,
+    idCard: null,
+    paymentProof: null,
+    agreementCopy: null,
+  });
   const [reupLabels, setReupLabels] = useState({});
-  const [retainLabel, setRetainLabel] = useState("📎 Choose file (JPG, PNG or PDF)");
+  const [retainLabel, setRetainLabel] = useState(
+    "📎 Choose file (JPG, PNG or PDF)",
+  );
 
   // Profile modal
   const [profileOpen, setProfileOpen] = useState(false);
@@ -198,7 +225,8 @@ export default function TenantPortal() {
         headers: { Authorization: token },
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Unable to request retention.");
+      if (!res.ok)
+        throw new Error(data.error || "Unable to request retention.");
       await loadHistory(token);
       alert(
         "Retention request created. Please upload your payment receipt in the next step.",
@@ -265,7 +293,8 @@ export default function TenantPortal() {
     profile?.canReuploadAgreement
   );
   const reupExpired =
-    profile?.reuploadExpiresAt && new Date(profile.reuploadExpiresAt) < new Date();
+    profile?.reuploadExpiresAt &&
+    new Date(profile.reuploadExpiresAt) < new Date();
   const showReupload = hasReupAccess && !reupExpired;
   const hoursLeft = profile?.reuploadExpiresAt
     ? Math.ceil(
@@ -316,7 +345,9 @@ export default function TenantPortal() {
       <div className="dc-portal">
         <div className="revoked-screen">
           <div className="revoked-card">
-            <div className="revoked-icon"><Ban size={40} /></div>
+            <div className="revoked-icon">
+              <Ban size={40} />
+            </div>
             <h2>Access Revoked</h2>
             <p>
               Your portal access has been revoked by management. You can no
@@ -365,8 +396,8 @@ export default function TenantPortal() {
                 <p className="welcome-label">Welcome Back</p>
                 <h2>Your home away from home.</h2>
                 <p className="welcome-desc">
-                  Sign in to view your room, receipts, and manage your
-                  campus accommodation.
+                  Sign in to view your room, receipts, and manage your campus
+                  accommodation.
                 </p>
 
                 <dl className="stats-grid">
@@ -410,8 +441,8 @@ export default function TenantPortal() {
                 <p className="login-label">Tenant Portal</p>
                 <h1 className="login-title">Welcome back</h1>
                 <p className="login-subtitle">
-                  Enter your registered email and phone number to access
-                  your room, receipts, and accommodation details.
+                  Enter your registered email and phone number to access your
+                  room, receipts, and accommodation details.
                 </p>
 
                 <div>
@@ -470,8 +501,15 @@ export default function TenantPortal() {
 
                   <div className="login-footer-links">
                     <p className="portal-link">
-                      <FileEdit size={14} style={{ display: "inline", verticalAlign: "-2px", marginRight: 6 }} />
-                    <Link to="/register">New tenant? Register here</Link>
+                      <FileEdit
+                        size={14}
+                        style={{
+                          display: "inline",
+                          verticalAlign: "-2px",
+                          marginRight: 6,
+                        }}
+                      />
+                      <Link to="/register">New tenant? Register here</Link>
                     </p>
                     <p className="back-link">
                       <Link to="/">← Back to De-Crown</Link>
@@ -504,10 +542,34 @@ export default function TenantPortal() {
     h < 12 ? "Good morning," : h < 17 ? "Good afternoon," : "Good evening,";
 
   const reupItems = [
-    { field: "passport", label: "Passport Photo", accept: "image/*", hint: "Click to select image", Icon: Camera },
-    { field: "idCard", label: "ID Card", accept: "image/*,.pdf", hint: "Click to select image or PDF", Icon: CreditCard },
-    { field: "paymentProof", label: "Payment Proof", accept: "image/*,.pdf", hint: "Click to select image or PDF", Icon: File },
-    { field: "agreementCopy", label: "Agreement Copy", accept: "image/*,.pdf", hint: "Click to select image or PDF", Icon: FileText },
+    {
+      field: "passport",
+      label: "Passport Photo",
+      accept: "image/*",
+      hint: "Click to select image",
+      Icon: Camera,
+    },
+    {
+      field: "idCard",
+      label: "ID Card",
+      accept: "image/*,.pdf",
+      hint: "Click to select image or PDF",
+      Icon: CreditCard,
+    },
+    {
+      field: "paymentProof",
+      label: "Payment Proof",
+      accept: "image/*,.pdf",
+      hint: "Click to select image or PDF",
+      Icon: File,
+    },
+    {
+      field: "agreementCopy",
+      label: "Agreement Copy",
+      accept: "image/*,.pdf",
+      hint: "Click to select image or PDF",
+      Icon: FileText,
+    },
   ];
 
   return (
@@ -518,15 +580,23 @@ export default function TenantPortal() {
             <img src="/d420ac751563a3d498bd84cdf69386bb.jpg" alt="logo" />
             <span>De-Crown Cottage</span>
           </div>
-          <div className="nav-right">              <button
+          <div className="nav-right">
+            {" "}
+            <button
               className="theme-btn"
               onClick={toggleTheme}
               title="Toggle dark mode"
             >
               {dark ? <Sun size={16} /> : <Moon size={16} />}
             </button>
-            <button className="btn-profile" onClick={() => setProfileOpen(true)}>
-              <User size={14} style={{ marginRight: 4, verticalAlign: "-2px" }} />
+            <button
+              className="btn-profile"
+              onClick={() => setProfileOpen(true)}
+            >
+              <User
+                size={14}
+                style={{ marginRight: 4, verticalAlign: "-2px" }}
+              />
               View Profile
             </button>
             <button className="btn-signout" onClick={signOut}>
@@ -546,7 +616,9 @@ export default function TenantPortal() {
           {profile.status === "revoked" && (
             <div className="revoked-banner" style={{ display: "flex" }}>
               <div className="revoked-banner-left">
-                <span className="revoked-icon"><Ban size={28} /></span>
+                <span className="revoked-icon">
+                  <Ban size={28} />
+                </span>
                 <div>
                   <div className="revoked-title">
                     Your Application Has Been Flagged
@@ -555,7 +627,9 @@ export default function TenantPortal() {
                     Reason: {profile.revokeReason || "Not specified"}
                   </div>
                   {profile.revokeNote && (
-                    <div className="revoked-note">Note: {profile.revokeNote}</div>
+                    <div className="revoked-note">
+                      Note: {profile.revokeNote}
+                    </div>
                   )}
                 </div>
               </div>
@@ -581,10 +655,16 @@ export default function TenantPortal() {
               [Calendar, "Session", profile.session || "—"],
               [GraduationCap, "Level", profile.level || "—"],
               [DollarSign, "Rent Paid", fmtNaira(profile.amount)],
-              [CalendarDays, "Payment Date", fmtDate(profile.paymentDate) || "—"],
+              [
+                CalendarDays,
+                "Payment Date",
+                fmtDate(profile.paymentDate) || "—",
+              ],
             ].map(([Icon, label, val]) => (
               <div className="info-card" key={label}>
-                <div className="info-icon"><Icon size={20} /></div>
+                <div className="info-icon">
+                  <Icon size={20} />
+                </div>
                 <span className="info-label">{label}</span>
                 <span className="info-val">{val}</span>
               </div>
@@ -599,7 +679,17 @@ export default function TenantPortal() {
 
           <div className="retain-card">
             <div className="retain-left">
-              <h3><FileText size={18} style={{ display: "inline", verticalAlign: "-3px", marginRight: 6 }} />Retain Your Room</h3>
+              <h3>
+                <FileText
+                  size={18}
+                  style={{
+                    display: "inline",
+                    verticalAlign: "-3px",
+                    marginRight: 6,
+                  }}
+                />
+                Retain Your Room
+              </h3>
               <p>
                 Reserve your room for the next session. You will upload your
                 payment receipt here — your room is confirmed once admin
@@ -616,7 +706,14 @@ export default function TenantPortal() {
                     onClick={retainRoom}
                     disabled={!registrationOpen}
                   >
-                    {registrationOpen ? <><Lock size={14} style={{ marginRight: 4 }} />Request Retention</> : "Registration Closed"}
+                    {registrationOpen ? (
+                      <>
+                        <Lock size={14} style={{ marginRight: 4 }} />
+                        Request Retention
+                      </>
+                    ) : (
+                      "Registration Closed"
+                    )}
                   </button>
                 </div>
               )}
@@ -641,7 +738,8 @@ export default function TenantPortal() {
                     onClick={uploadReceipt}
                     disabled={!reupFiles.paymentProof}
                   >
-                    <Upload size={14} style={{ marginRight: 4 }} />Submit Receipt
+                    <Upload size={14} style={{ marginRight: 4 }} />
+                    Submit Receipt
                   </button>
                 </div>
               )}
@@ -671,7 +769,17 @@ export default function TenantPortal() {
           {showReupload && (
             <div className="reupload-section" id="reuploadSection">
               <div className="reupload-header">
-                <h3><Upload size={18} style={{ display: "inline", verticalAlign: "-3px", marginRight: 6 }} />Re-upload Documents</h3>
+                <h3>
+                  <Upload
+                    size={18}
+                    style={{
+                      display: "inline",
+                      verticalAlign: "-3px",
+                      marginRight: 6,
+                    }}
+                  />
+                  Re-upload Documents
+                </h3>
                 <p>
                   Admin has granted you access to re-upload the following
                   documents. Access expires in 24 hours.
@@ -710,7 +818,8 @@ export default function TenantPortal() {
                         onClick={() => submitReupload(field)}
                         disabled={!reupFiles[field]}
                       >
-                        <Upload size={12} style={{ marginRight: 4 }} />Upload {field === "paymentProof" ? "Proof" : cap(field)}
+                        <Upload size={12} style={{ marginRight: 4 }} />
+                        Upload {field === "paymentProof" ? "Proof" : cap(field)}
                       </button>
                     </div>
                   ))}
@@ -720,7 +829,9 @@ export default function TenantPortal() {
 
           <div className="actions-grid">
             <button className="action-tile" onClick={viewReceipt}>
-              <span className="action-icon"><Receipt size={26} /></span>
+              <span className="action-icon">
+                <Receipt size={26} />
+              </span>
               <span>View Receipt</span>
             </button>
             <a
@@ -737,7 +848,9 @@ export default function TenantPortal() {
                 }
               }}
             >
-              <span className="action-icon"><File size={26} /></span>
+              <span className="action-icon">
+                <File size={26} />
+              </span>
               <span>Payment Proof</span>
             </a>
             {profile.agreementCopy && (
@@ -747,28 +860,40 @@ export default function TenantPortal() {
                 rel="noopener"
                 className="action-tile"
               >
-                <span className="action-icon"><FileText size={26} /></span>
+                <span className="action-icon">
+                  <FileText size={26} />
+                </span>
                 <span>Agreement Copy</span>
               </a>
             )}
             <Link
               to="/register"
               className={
-                "action-tile" + (registrationOpen ? "" : " pointer-events-none opacity-50")
+                "action-tile" +
+                (registrationOpen ? "" : " pointer-events-none opacity-50")
               }
             >
-              <span className="action-icon"><FileEdit size={26} /></span>
+              <span className="action-icon">
+                <FileEdit size={26} />
+              </span>
               <span>New Registration</span>
             </Link>
           </div>
 
           <div className="history-section">
             <div className="history-header">
-              <h3><FolderOpen size={18} style={{ display: "inline", verticalAlign: "-3px", marginRight: 6 }} />Session History</h3>
-              <select
-                value={selId}
-                onChange={(e) => setSelId(e.target.value)}
-              >
+              <h3>
+                <FolderOpen
+                  size={18}
+                  style={{
+                    display: "inline",
+                    verticalAlign: "-3px",
+                    marginRight: 6,
+                  }}
+                />
+                Session History
+              </h3>
+              <select value={selId} onChange={(e) => setSelId(e.target.value)}>
                 <option value="">Select a session…</option>
                 {history.map((r) => (
                   <option key={r._id} value={r._id}>
@@ -789,7 +914,9 @@ export default function TenantPortal() {
                     ["Payment Date", fmtDate(selRec.paymentDate) || "—"],
                     [
                       "Status",
-                      selRec.retainPending ? "⏳ Pending approval" : "✅ Confirmed",
+                      selRec.retainPending
+                        ? "⏳ Pending approval"
+                        : "✅ Confirmed",
                     ],
                   ].map(([label, val]) => (
                     <div className="hdet" key={label}>
@@ -801,11 +928,13 @@ export default function TenantPortal() {
 
                 <div className="history-actions">
                   <button className="hbtn" onClick={openHistoryReceipt}>
-                    <Receipt size={14} style={{ marginRight: 4 }} />Generate Receipt
+                    <Receipt size={14} style={{ marginRight: 4 }} />
+                    Generate Receipt
                   </button>
                   <a
                     className={
-                      "hbtn hbtn-proof" + (selRec.paymentProof ? "" : " opacity-45")
+                      "hbtn hbtn-proof" +
+                      (selRec.paymentProof ? "" : " opacity-45")
                     }
                     href={selRec.paymentProof || "#"}
                     target="_blank"
@@ -817,7 +946,8 @@ export default function TenantPortal() {
                       }
                     }}
                   >
-                    <File size={14} style={{ marginRight: 4 }} />View Proof
+                    <File size={14} style={{ marginRight: 4 }} />
+                    View Proof
                   </a>
                 </div>
 
@@ -874,7 +1004,17 @@ export default function TenantPortal() {
           ></div>
           <div className="profile-modal" style={{ display: "flex" }}>
             <div className="profile-modal-head">
-              <h3><User size={18} style={{ display: "inline", verticalAlign: "-3px", marginRight: 6 }} />My Profile</h3>
+              <h3>
+                <User
+                  size={18}
+                  style={{
+                    display: "inline",
+                    verticalAlign: "-3px",
+                    marginRight: 6,
+                  }}
+                />
+                My Profile
+              </h3>
               <button onClick={() => setProfileOpen(false)}>✕</button>
             </div>
             <div className="profile-modal-body">
@@ -910,7 +1050,12 @@ export default function TenantPortal() {
                     ["pPassportLink", "Passport", profile.passport, Camera],
                     ["pIdLink", "ID Card", profile.idCard, CreditCard],
                     ["pProofLink", "Payment Proof", profile.paymentProof, File],
-                    ["pAgreementLink", "Agreement", profile.agreementCopy, FileText],
+                    [
+                      "pAgreementLink",
+                      "Agreement",
+                      profile.agreementCopy,
+                      FileText,
+                    ],
                   ].map(([id, label, href, Icon]) => (
                     <a
                       key={id}
@@ -925,7 +1070,11 @@ export default function TenantPortal() {
                         if (!href) e.preventDefault();
                       }}
                     >
-                      <Icon size={12} style={{ marginRight: 4, verticalAlign: "-1px" }} />{label}
+                      <Icon
+                        size={12}
+                        style={{ marginRight: 4, verticalAlign: "-1px" }}
+                      />
+                      {label}
                     </a>
                   ))}
                 </div>

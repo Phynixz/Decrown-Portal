@@ -1,32 +1,33 @@
 const multer = require("multer");
-const cloudinary = require("cloudinary").v2;
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 
-if (
-  !process.env.CLOUDINARY_CLOUD_NAME ||
-  !process.env.CLOUDINARY_API_KEY ||
-  !process.env.CLOUDINARY_API_SECRET
-) {
-  throw new Error(
-    "Missing Cloudinary config: CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET",
-  );
+const hasCloudinaryConfig =
+  !!process.env.CLOUDINARY_CLOUD_NAME &&
+  !!process.env.CLOUDINARY_API_KEY &&
+  !!process.env.CLOUDINARY_API_SECRET;
+
+let storage;
+
+if (hasCloudinaryConfig) {
+  const cloudinary = require("cloudinary").v2;
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+  });
+
+  storage = new CloudinaryStorage({
+    cloudinary,
+    params: async (req, file) => {
+      const isPDF = file.mimetype === "application/pdf";
+      return {
+        folder: "receipt-system",
+        resource_type: isPDF ? "raw" : "image",
+      };
+    },
+  });
+} else {
+  storage = multer.memoryStorage();
 }
-
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: async (req, file) => {
-    const isPDF = file.mimetype === "application/pdf";
-    return {
-      folder: "receipt-system",
-      resource_type: isPDF ? "raw" : "image",
-    };
-  },
-});
 
 module.exports = multer({ storage });

@@ -1,6 +1,11 @@
-﻿require("dotenv").config();
+﻿const dns = require("dns");
+
+dns.setServers(["8.8.8.8", "1.1.1.1"]);
+
+require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
+const { MongoMemoryServer } = require("mongodb-memory-server");
 const cors = require("cors");
 const path = require("path");
 const jwt = require("jsonwebtoken");
@@ -13,15 +18,10 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || "*";
 const NODE_ENV = process.env.NODE_ENV || "development";
 
-if (!MONGO_URI || !JWT_SECRET) {
-  const missing = [];
-  if (!MONGO_URI) missing.push("MONGO_URI");
-  if (!JWT_SECRET) missing.push("JWT_SECRET");
+if (!JWT_SECRET) {
+  console.error("\n❌ Missing required environment variable(s): JWT_SECRET");
   console.error(
-    `\n❌ Missing required environment variable(s): ${missing.join(", ")}`,
-  );
-  console.error(
-    "Set them in your hosting dashboard (e.g. Render → Environment tab) or in a .env file for local development.\n",
+    "Set JWT_SECRET in your hosting dashboard or in a .env file for local development.\n",
   );
   process.exit(1);
 }
@@ -33,9 +33,9 @@ const User = require("./models/User");
 const Admin = require("./models/Admin");
 const Settings = require("./models/Settings");
 const Registration = require("./models/Registration");
+const platformRoutes = require("./routes/platform");
 const upload = require("./multer");
 
-// â”€â”€â”€ Middleware â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 app.use(cookieParser());
 app.use(
   cors({
@@ -62,6 +62,7 @@ const CLIENT_INDEX = path.join(CLIENT_DIST, "index.html");
 if (fs.existsSync(CLIENT_DIST)) {
   app.use(express.static(CLIENT_DIST));
 }
+app.use(platformRoutes);
 function getSession() {
   const now = new Date();
   const year = now.getFullYear();
@@ -1206,10 +1207,37 @@ app.use((req, res, next) => {
   res.sendFile(CLIENT_INDEX);
 });
 
-mongoose
-  .connect(MONGO_URI)
-  .then(async () => {
-    console.log(" MongoDB connected");
+async function connectDatabase() {
+  const targetUri = MONGO_URI || "mongodb://127.0.0.1:27017/receipt-test";
+
+  try {
+    await mongoose.connect(targetUri);
+    return targetUri;
+  } catch (error) {
+    const localDbUnavailable =
+      !MONGO_URI ||
+      /127\.0\.0\.1|localhost/.test(targetUri) ||
+      /ECONNREFUSED|failed to connect|could not connect to any servers/i.test(
+        error?.message || "",
+      );
+
+    if (NODE_ENV === "production" || !localDbUnavailable) {
+      throw error;
+    }
+
+    console.warn(
+      "Local MongoDB not available; starting an in-memory MongoDB instance for local development.",
+    );
+    const memoryServer = await MongoMemoryServer.create();
+    const memoryUri = memoryServer.getUri();
+    await mongoose.connect(memoryUri);
+    return memoryUri;
+  }
+}
+
+connectDatabase()
+  .then(async (uri) => {
+    console.log(` MongoDB connected: ${uri}`);
     await seed();
     app.listen(PORT, () => console.log(` Server on port ${PORT}`));
   })

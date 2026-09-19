@@ -1,0 +1,62 @@
+/* Additive styles for ClientSignup.jsx — login.css already provides the
+   base field/button/panel classes this reuses. Nothing here overrides
+   existing rules. */
+
+.subdomain-wrap {
+  display: flex;
+  align-items: stretch;
+}
+
+.subdomain-wrap input {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  flex: 1;
+}
+
+.subdomain-suffix {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  border: 1.5px solid var(--border, #d8dee5);
+  border-left: none;
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+  background: var(--input, #f4f6f8);
+  color: var(--text2, #6b7280);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.code-input {
+  text-align: center;
+  letter-spacing: 8px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.resend-link {
+  display: block;
+  margin: 14px auto 0;
+  background: none;
+  border: none;
+  color: var(--terra, #a8482a);
+  font-size: 13px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.resend-link:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.pending-panel {
+  text-align: center;
+}
+
+.pending-back-btn {
+  display: inline-block;
+  margin-top: 20px;
+  text-align: center;
+  text-decoration: none;
+}

@@ -31,7 +31,9 @@ export function isTokenExpired(token) {
 
 export function getAdminName() {
   return (
-    localStorage.getItem("adminName") || sessionStorage.getItem("adminName") || ""
+    localStorage.getItem("adminName") ||
+    sessionStorage.getItem("adminName") ||
+    ""
   );
 }
 
@@ -46,7 +48,8 @@ export function getAdminRole() {
 export function setAdminAuth(token, name, role, remember) {
   const store = remember ? localStorage : sessionStorage;
   const expiry =
-    Date.now() + (remember ? ADMIN_REMEMBER_TIMEOUT_MS : ADMIN_SESSION_TIMEOUT_MS);
+    Date.now() +
+    (remember ? ADMIN_REMEMBER_TIMEOUT_MS : ADMIN_SESSION_TIMEOUT_MS);
   store.setItem("token", "Bearer " + token);
   store.setItem("adminName", name);
   store.setItem("adminRole", role);
@@ -67,7 +70,10 @@ export function getTenantToken() {
 
 export function setTenantToken(token) {
   sessionStorage.setItem("tenantToken", "Bearer " + token);
-  sessionStorage.setItem("tenantSessionExpiresAt", String(Date.now() + 24 * 60 * 60 * 1000));
+  sessionStorage.setItem(
+    "tenantSessionExpiresAt",
+    String(Date.now() + 24 * 60 * 60 * 1000),
+  );
 }
 
 export function clearTenantToken() {

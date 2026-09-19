@@ -36,6 +36,11 @@ export default defineConfig({
       "/revoke": "http://localhost:3000",
       "/reinstate": "http://localhost:3000",
       "/export-users": "http://localhost:3000",
+      "/client/signup": "http://localhost:3000",
+      "/client/verify-email": "http://localhost:3000",
+      "/client/resend-code": "http://localhost:3000",
+      "/platform/login": "http://localhost:3000",
+      "/platform/clients": "http://localhost:3000",
     },
   },
 });

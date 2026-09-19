@@ -5,6 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
+    "dev": "concurrently \"npm start\" \"npm run dev:client\"",
     "dev:client": "npm --prefix client run dev",
     "build": "npm --prefix client run build",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -25,5 +26,9 @@
     "mongoose": "^9.4.1",
     "multer": "^2.1.1",
     "multer-storage-cloudinary": "^4.0.0"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5",
+    "mongodb-memory-server": "^11.2.0"
   }
 }

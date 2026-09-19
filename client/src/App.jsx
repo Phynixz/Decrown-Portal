@@ -7,12 +7,18 @@ import TenantPortal from "./pages/TenantPortal.jsx";
 import Receipt from "./pages/Receipt.jsx";
 import Terms from "./pages/Terms.jsx";
 import TenantProfile from "./pages/TenantProfile.jsx";
+import ClientSignup from "./pages/ClientSignup.jsx";
+import PlatformLogin from "./pages/PlatformLogin.jsx";
+import ApprovalQueue from "./pages/ApprovalQueue.jsx";
 
 export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<AdminLogin />} />
+      <Route path="/signup" element={<ClientSignup />} />
+      <Route path="/platform/login" element={<PlatformLogin />} />
+      <Route path="/platform/queue" element={<ApprovalQueue />} />
       <Route path="/register" element={<RegistrationForm />} />
       <Route path="/admin" element={<AdminDashboard />} />
       <Route path="/delete" element={<DeleteRecords />} />

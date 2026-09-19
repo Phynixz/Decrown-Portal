@@ -226,6 +226,9 @@ export default function AdminLogin() {
                     />
                     <Link to="/portal">Go to Tenant Portal</Link>
                   </p>
+                  <p className="portal-link">
+                    <Link to="/signup">Set up a platform</Link>
+                  </p>
                   <p className="back-link">
                     <ArrowLeft
                       size={14}
