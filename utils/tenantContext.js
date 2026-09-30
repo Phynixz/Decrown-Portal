@@ -11,7 +11,13 @@ function normalizeRootDomain(value) {
 
 async function resolveTenant(req, res, next) {
   const rootDomain = normalizeRootDomain(process.env.PLATFORM_ROOT_DOMAIN);
-  const hostname = String(req.hostname || "").toLowerCase();
+  const localHost =
+    process.env.NODE_ENV !== "production"
+      ? req.headers["x-local-tenant-host"]
+      : "";
+  const hostname = String(localHost || req.hostname || "")
+    .split(":")[0]
+    .toLowerCase();
   if (
     !rootDomain ||
     hostname === rootDomain ||

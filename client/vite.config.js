@@ -2,6 +2,19 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 
+function tenantAwareProxy(options = {}) {
+  return {
+    target: "http://localhost:3000",
+    configure(proxy) {
+      proxy.on("proxyReq", (proxyReq, request) => {
+        const host = request.headers.host || "";
+        proxyReq.setHeader("x-local-tenant-host", host.split(":")[0]);
+      });
+    },
+    ...options,
+  };
+}
+
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
@@ -11,36 +24,47 @@ export default defineConfig({
       // Forward API requests to the Express backend during dev.
       // Note: only /admin/* API endpoints are proxied — the /admin page
       // itself is a client-side route served by Vite.
-      "/admin/login": "http://localhost:3000",
-      "/admin/list": "http://localhost:3000",
-      "/admin/create": "http://localhost:3000",
-      "/admin/grant-reupload": "http://localhost:3000",
-      "/admin/get-amounts": "http://localhost:3000",
-      "/admin/set-registration": "http://localhost:3000",
-      "/admin/set-amount": "http://localhost:3000",
-      "/admin/user": "http://localhost:3000",
-      "/tenant/login": "http://localhost:3000",
-      "/tenant/me": "http://localhost:3000",
-      "/tenant/history": "http://localhost:3000",
-      "/tenant/retain": "http://localhost:3000",
-      "/tenant/upload-retain-proof": "http://localhost:3000",
-      "/tenant/reupload": "http://localhost:3000",
-      "/current-session": "http://localhost:3000",
-      "/current-amount": "http://localhost:3000",
-      "/user": "http://localhost:3000",
-      "/submit": "http://localhost:3000",
-      "/users": "http://localhost:3000",
-      "/renew": "http://localhost:3000",
-      "/approve-retain": "http://localhost:3000",
-      "/disapprove": "http://localhost:3000",
-      "/revoke": "http://localhost:3000",
-      "/reinstate": "http://localhost:3000",
-      "/export-users": "http://localhost:3000",
-      "/client/signup": "http://localhost:3000",
-      "/client/verify-email": "http://localhost:3000",
-      "/client/resend-code": "http://localhost:3000",
-      "/platform/login": "http://localhost:3000",
-      "/platform/clients": "http://localhost:3000",
+      "/admin/login": tenantAwareProxy(),
+      "/admin/list": tenantAwareProxy(),
+      "/admin/create": tenantAwareProxy(),
+      "/admin/grant-reupload": tenantAwareProxy(),
+      "/admin/get-amounts": tenantAwareProxy(),
+      "/admin/properties": tenantAwareProxy(),
+      "/admin/set-registration": tenantAwareProxy(),
+      "/admin/set-amount": tenantAwareProxy(),
+      "/admin/user": tenantAwareProxy(),
+      "/tenant/login": tenantAwareProxy(),
+      "/tenant/me": tenantAwareProxy(),
+      "/tenant/history": tenantAwareProxy(),
+      "/tenant/retain": tenantAwareProxy(),
+      "/tenant/upload-retain-proof": tenantAwareProxy(),
+      "/tenant/reupload": tenantAwareProxy(),
+      "/current-session": tenantAwareProxy(),
+      "/tenant-config": tenantAwareProxy(),
+      "/current-amount": tenantAwareProxy(),
+      "/user": tenantAwareProxy(),
+      "/submit": tenantAwareProxy(),
+      "/users": tenantAwareProxy(),
+      "/renew": tenantAwareProxy(),
+      "/approve-retain": tenantAwareProxy(),
+      "/disapprove": tenantAwareProxy(),
+      "/revoke": tenantAwareProxy(),
+      "/reinstate": tenantAwareProxy(),
+      "/export-users": tenantAwareProxy(),
+      "/client/signup": tenantAwareProxy(),
+      "/client/verify-email": tenantAwareProxy(),
+      "/client/resend-code": tenantAwareProxy(),
+      "/platform/login": tenantAwareProxy({
+        bypass(req) {
+          if (req.method === "GET") return req.url;
+        },
+      }),
+      "/platform/clients": tenantAwareProxy({
+        bypass(req) {
+          if (req.method === "GET" && !req.headers.authorization)
+            return req.url;
+        },
+      }),
     },
   },
 });

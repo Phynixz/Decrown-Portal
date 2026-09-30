@@ -3,6 +3,7 @@ const { after, before, test } = require("node:test");
 const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
 const { MongoMemoryServer } = require("mongodb-memory-server");
+const PlatformAdmin = require("../models/PlatformAdmin");
 const {
   createTenantModelProxies,
   getTenantModels,
@@ -100,4 +101,15 @@ test("provisions isolated properties, units, admins, and tenant records", async 
     });
   });
   assert.equal(proxiedCount, 1);
+});
+
+test("creates platform admins with a working password hash", async () => {
+  const admin = await PlatformAdmin.create({
+    name: "Test Platform Admin",
+    email: `platform-${Date.now()}@example.com`,
+    password: "platform-test-password",
+  });
+
+  assert.equal(await admin.comparePassword("platform-test-password"), true);
+  assert.equal(await admin.comparePassword("wrong-password"), false);
 });
