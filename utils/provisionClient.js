@@ -7,7 +7,10 @@ async function provisionClient(client) {
   for (const location of client.locations) {
     let property = await Property.findOne({ name: location });
     if (!property) {
-      property = await Property.create({ name: location, propertyType: "hostel" });
+      property = await Property.create({
+        name: location,
+        propertyType: "hostel",
+      });
     }
 
     const existingSettings = await Settings.findOne({ location });

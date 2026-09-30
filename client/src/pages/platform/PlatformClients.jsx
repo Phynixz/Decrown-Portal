@@ -26,14 +26,20 @@ const FILTERS = [
 ];
 
 const STATUS_STYLES = {
-  pending_approval: "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400",
-  active: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400",
+  pending_approval:
+    "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400",
+  active:
+    "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400",
   rejected: "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400",
   suspended: "bg-slate-100 text-slate-600 dark:bg-white/5 dark:text-slate-300",
-  pending_verification: "bg-slate-100 text-slate-500 dark:bg-white/5 dark:text-slate-400",
+  pending_verification:
+    "bg-slate-100 text-slate-500 dark:bg-white/5 dark:text-slate-400",
 };
 
 export default function PlatformClients() {
+  const role = sessionStorage.getItem("platformRole");
+  const isOwner = role === "owner";
+  const canReview = isOwner || role === "reviewer";
   const [filter, setFilter] = useState("pending_approval");
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -80,7 +86,9 @@ export default function PlatformClients() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-ink dark:text-ink-dark tracking-tight">Clients</h1>
+        <h1 className="text-2xl font-bold text-ink dark:text-ink-dark tracking-tight">
+          Clients
+        </h1>
         <p className="text-sm text-muted dark:text-muted-dark mt-1">
           Review sign-ups and manage every business on the platform.
         </p>
@@ -136,7 +144,9 @@ export default function PlatformClients() {
                       {c.status.replace("_", " ")}
                     </span>
                   </div>
-                  <p className="text-xs text-muted dark:text-muted-dark mb-3">Contact: {c.contactName}</p>
+                  <p className="text-xs text-muted dark:text-muted-dark mb-3">
+                    Contact: {c.contactName}
+                  </p>
 
                   <div className="flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-muted dark:text-muted-dark">
                     <span className="flex items-center gap-1.5">
@@ -164,7 +174,7 @@ export default function PlatformClients() {
                 </div>
 
                 <div className="flex gap-2 shrink-0">
-                  {c.status === "pending_approval" && (
+                  {canReview && c.status === "pending_approval" && (
                     <>
                       <button
                         disabled={busyId === c._id}
@@ -182,7 +192,8 @@ export default function PlatformClients() {
                       <button
                         disabled={busyId === c._id}
                         onClick={() => {
-                          const reason = prompt("Reason for rejecting (optional):") || "";
+                          const reason =
+                            prompt("Reason for rejecting (optional):") || "";
                           act(c._id, "reject", null, { reason });
                         }}
                         className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-semibold transition-colors disabled:opacity-50"
@@ -191,7 +202,7 @@ export default function PlatformClients() {
                       </button>
                     </>
                   )}
-                  {c.status === "active" && (
+                  {isOwner && c.status === "active" && (
                     <button
                       disabled={busyId === c._id}
                       onClick={() =>
@@ -206,10 +217,16 @@ export default function PlatformClients() {
                       <PauseCircle className="w-3.5 h-3.5" /> Suspend
                     </button>
                   )}
-                  {c.status === "suspended" && (
+                  {isOwner && c.status === "suspended" && (
                     <button
                       disabled={busyId === c._id}
-                      onClick={() => act(c._id, "reactivate", `Reactivate ${c.businessName}?`)}
+                      onClick={() =>
+                        act(
+                          c._id,
+                          "reactivate",
+                          `Reactivate ${c.businessName}?`,
+                        )
+                      }
                       className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-ink dark:bg-accent text-white dark:text-ink text-xs font-semibold transition-colors disabled:opacity-50"
                     >
                       <PlayCircle className="w-3.5 h-3.5" /> Reactivate

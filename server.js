@@ -36,9 +36,13 @@ if (NODE_ENV === "production") {
     "CLOUDINARY_CLOUD_NAME",
     "CLOUDINARY_API_KEY",
     "CLOUDINARY_API_SECRET",
+    "PLATFORM_ADMIN_NAME",
+    "PLATFORM_ADMIN_EMAIL",
+    "PLATFORM_ADMIN_PASSWORD",
   ];
   const missing = requiredProductionEnv.filter((name) => !process.env[name]);
-  if (JWT_SECRET.length < 32) missing.push("JWT_SECRET (minimum 32 characters)");
+  if (JWT_SECRET.length < 32)
+    missing.push("JWT_SECRET (minimum 32 characters)");
   if (missing.length) {
     console.error(`Missing production configuration: ${missing.join(", ")}`);
     process.exit(1);
@@ -52,6 +56,7 @@ const { createTenantModelProxies } = require("./utils/tenantModels");
 const tenantModels = createTenantModelProxies();
 const { User, Admin, Settings, Registration, Property, Unit } = tenantModels;
 const Client = require("./models/Client");
+const ensurePlatformOwner = require("./utils/ensurePlatformOwner");
 const platformRoutes = require("./routes/platform");
 const resolveTenant = require("./utils/tenantContext");
 const upload = require("./multer");
@@ -104,7 +109,9 @@ function verifyAdmin(req, res, next) {
     const tokenClientId = String(d.clientId || "");
     const requestClientId = String(req.tenantClient?._id || "");
     if (tokenClientId !== requestClientId)
-      return res.status(403).json({ error: "Not authorized for this platform" });
+      return res
+        .status(403)
+        .json({ error: "Not authorized for this platform" });
     req.admin = d;
     next();
   } catch {
@@ -228,7 +235,9 @@ function verifyTenant(req, res, next) {
     const tokenClientId = String(d.clientId || "");
     const requestClientId = String(req.tenantClient?._id || "");
     if (tokenClientId !== requestClientId)
-      return res.status(403).json({ error: "Not authorized for this platform" });
+      return res
+        .status(403)
+        .json({ error: "Not authorized for this platform" });
     req.tenant = d;
     next();
   } catch {
@@ -602,16 +611,16 @@ app.put(
 
       // Log the change
       if (!user.changeLog) user.changeLog = [];
-        locations = settings.map((setting) => ({
-          name: setting.location,
-          rentAmount: setting.rentAmount,
-          roomCount: setting.roomCount ?? 10,
-        })),
-      user.changeLog.push({
-        field: field,
-        changedAt: new Date(),
-        note: field + " updated by tenant",
-      });
+      ((locations = settings.map((setting) => ({
+        name: setting.location,
+        rentAmount: setting.rentAmount,
+        roomCount: setting.roomCount ?? 10,
+      }))),
+        user.changeLog.push({
+          field: field,
+          changedAt: new Date(),
+          note: field + " updated by tenant",
+        }));
 
       await user.save();
       res.json({ message: "Document updated successfully" });
@@ -669,13 +678,18 @@ app.get("/tenant-config", async (req, res) => {
     const locations = await Promise.all(
       properties.map(async (property) => {
         const units = property._id
-          ? await Unit.find({ propertyId: property._id, status: { $ne: "inactive" } }).sort({ unitCode: 1 })
+          ? await Unit.find({
+              propertyId: property._id,
+              status: { $ne: "inactive" },
+            }).sort({ unitCode: 1 })
           : [];
         const occupied = await User.find({
           location: property.name,
           session: getSession(),
         }).select("unitId roomNo");
-        const occupiedIds = new Set(occupied.map((user) => String(user.unitId || "")));
+        const occupiedIds = new Set(
+          occupied.map((user) => String(user.unitId || "")),
+        );
         const occupiedLabels = new Set(occupied.map((user) => user.roomNo));
         const settings = await Settings.findOne({ location: property.name });
         return {
@@ -691,7 +705,8 @@ app.get("/tenant-config", async (req, res) => {
             unitType: unit.unitType,
             status:
               unit.status === "available" &&
-              (occupiedIds.has(String(unit._id)) || occupiedLabels.has(unit.label))
+              (occupiedIds.has(String(unit._id)) ||
+                occupiedLabels.has(unit.label))
                 ? "occupied"
                 : unit.status,
             rentAmount: unit.rentAmount,
@@ -714,17 +729,22 @@ app.get("/current-amount", async (req, res) => {
     const { location, unit: unitLabel } = req.query;
     if (!location) return res.status(400).json({ error: "location required" });
     const safeLocation = sanitizeLocation(location, req.tenantClient);
-    if (!safeLocation) return res.status(400).json({ error: "Invalid location" });
+    if (!safeLocation)
+      return res.status(400).json({ error: "Invalid location" });
     const s = await Settings.findOne({ location: safeLocation });
     if (!s) return res.status(404).json({ error: "Settings not found" });
-    const property = await Property.findOne({ name: safeLocation, status: "active" });
-    const unit = property && unitLabel
-      ? await Unit.findOne({
-          propertyId: property._id,
-          label: sanitizeString(unitLabel),
-          status: "available",
-        })
-      : null;
+    const property = await Property.findOne({
+      name: safeLocation,
+      status: "active",
+    });
+    const unit =
+      property && unitLabel
+        ? await Unit.findOne({
+            propertyId: property._id,
+            label: sanitizeString(unitLabel),
+            status: "available",
+          })
+        : null;
     res.json({ amount: unit?.rentAmount ?? s.rentAmount });
   } catch (e) {
     res.status(500).json({ error: e.message });
@@ -873,7 +893,10 @@ app.post(
       const setting = await Settings.findOne({ location: safeLocation });
       if (!setting)
         return res.status(400).json({ error: "Location is not configured" });
-      const property = await Property.findOne({ name: safeLocation, status: "active" });
+      const property = await Property.findOne({
+        name: safeLocation,
+        status: "active",
+      });
       const unit = property
         ? await Unit.findOne({
             propertyId: property._id,
@@ -1001,7 +1024,9 @@ app.get("/admin/properties", verifyAdmin, async (req, res) => {
       properties.map(async (property) => ({
         ...property.toObject(),
         settings: await Settings.findOne({ location: property.name }),
-        units: await Unit.find({ propertyId: property._id }).sort({ unitCode: 1 }),
+        units: await Unit.find({ propertyId: property._id }).sort({
+          unitCode: 1,
+        }),
       })),
     );
     res.json(result);
@@ -1013,10 +1038,19 @@ app.get("/admin/properties", verifyAdmin, async (req, res) => {
 app.post("/admin/properties", verifyAdmin, async (req, res) => {
   try {
     const name = sanitizeString(req.body.name);
-    const propertyType = sanitizeString(req.body.propertyType || "hostel").toLowerCase();
+    const propertyType = sanitizeString(
+      req.body.propertyType || "hostel",
+    ).toLowerCase();
     const address = sanitizeString(req.body.address);
     const rentAmount = Number(req.body.rentAmount ?? 0);
-    const supportedTypes = ["hostel", "apartment", "house", "commercial", "mixed", "other"];
+    const supportedTypes = [
+      "hostel",
+      "apartment",
+      "house",
+      "commercial",
+      "mixed",
+      "other",
+    ];
     if (
       !name ||
       name.length > 100 ||
@@ -1050,10 +1084,20 @@ app.put("/admin/properties/:id", verifyAdmin, async (req, res) => {
     if (!isValidObjectId(req.params.id))
       return res.status(400).json({ error: "Invalid property ID" });
     const updates = {};
-    if (req.body.address != null) updates.address = sanitizeString(req.body.address);
+    if (req.body.address != null)
+      updates.address = sanitizeString(req.body.address);
     if (req.body.propertyType != null) {
       const type = sanitizeString(req.body.propertyType).toLowerCase();
-      if (!["hostel", "apartment", "house", "commercial", "mixed", "other"].includes(type))
+      if (
+        ![
+          "hostel",
+          "apartment",
+          "house",
+          "commercial",
+          "mixed",
+          "other",
+        ].includes(type)
+      )
         return res.status(400).json({ error: "Invalid property type" });
       updates.propertyType = type;
     }
@@ -1077,7 +1121,10 @@ app.post("/admin/properties/:id/units", verifyAdmin, async (req, res) => {
   try {
     if (!isValidObjectId(req.params.id))
       return res.status(400).json({ error: "Invalid property ID" });
-    const property = await Property.findOne({ _id: req.params.id, status: "active" });
+    const property = await Property.findOne({
+      _id: req.params.id,
+      status: "active",
+    });
     if (!property) return res.status(404).json({ error: "Property not found" });
     const unitCode = sanitizeString(req.body.unitCode);
     const label = sanitizeString(req.body.label);
@@ -1087,8 +1134,14 @@ app.post("/admin/properties/:id/units", verifyAdmin, async (req, res) => {
         ? null
         : Number(req.body.rentAmount);
     if (!unitCode || !label || unitCode.length > 60 || label.length > 100)
-      return res.status(400).json({ error: "Unit code and label are required" });
-    if (!["room", "apartment", "house", "shop", "office", "other"].includes(unitType))
+      return res
+        .status(400)
+        .json({ error: "Unit code and label are required" });
+    if (
+      !["room", "apartment", "house", "shop", "office", "other"].includes(
+        unitType,
+      )
+    )
       return res.status(400).json({ error: "Invalid unit type" });
     if (rentAmount != null && (!Number.isFinite(rentAmount) || rentAmount < 0))
       return res.status(400).json({ error: "Invalid unit rent" });
@@ -1103,53 +1156,75 @@ app.post("/admin/properties/:id/units", verifyAdmin, async (req, res) => {
     res.status(201).json(unit);
   } catch (error) {
     if (error.code === 11000)
-      return res.status(409).json({ error: "Unit code already exists for this property" });
+      return res
+        .status(409)
+        .json({ error: "Unit code already exists for this property" });
     res.status(500).json({ error: error.message });
   }
 });
 
-app.put("/admin/properties/:id/units/:unitId", verifyAdmin, async (req, res) => {
-  try {
-    if (!isValidObjectId(req.params.id) || !isValidObjectId(req.params.unitId))
-      return res.status(400).json({ error: "Invalid property or unit ID" });
-    const unit = await Unit.findOne({
-      _id: req.params.unitId,
-      propertyId: req.params.id,
-    });
-    if (!unit) return res.status(404).json({ error: "Unit not found" });
-    for (const field of ["unitCode", "label"]) {
-      if (req.body[field] != null) {
-        const value = sanitizeString(req.body[field]);
-        if (!value || value.length > (field === "label" ? 100 : 60))
-          return res.status(400).json({ error: `Invalid ${field}` });
-        unit[field] = value;
+app.put(
+  "/admin/properties/:id/units/:unitId",
+  verifyAdmin,
+  async (req, res) => {
+    try {
+      if (
+        !isValidObjectId(req.params.id) ||
+        !isValidObjectId(req.params.unitId)
+      )
+        return res.status(400).json({ error: "Invalid property or unit ID" });
+      const unit = await Unit.findOne({
+        _id: req.params.unitId,
+        propertyId: req.params.id,
+      });
+      if (!unit) return res.status(404).json({ error: "Unit not found" });
+      for (const field of ["unitCode", "label"]) {
+        if (req.body[field] != null) {
+          const value = sanitizeString(req.body[field]);
+          if (!value || value.length > (field === "label" ? 100 : 60))
+            return res.status(400).json({ error: `Invalid ${field}` });
+          unit[field] = value;
+        }
       }
+      if (req.body.unitType != null) unit.unitType = req.body.unitType;
+      if (req.body.status != null) unit.status = req.body.status;
+      if (req.body.rentAmount != null)
+        unit.rentAmount = Number(req.body.rentAmount);
+      await unit.save();
+      res.json(unit);
+    } catch (error) {
+      if (error.code === 11000)
+        return res
+          .status(409)
+          .json({ error: "Unit code already exists for this property" });
+      res.status(400).json({ error: error.message });
     }
-    if (req.body.unitType != null) unit.unitType = req.body.unitType;
-    if (req.body.status != null) unit.status = req.body.status;
-    if (req.body.rentAmount != null) unit.rentAmount = Number(req.body.rentAmount);
-    await unit.save();
-    res.json(unit);
-  } catch (error) {
-    if (error.code === 11000)
-      return res.status(409).json({ error: "Unit code already exists for this property" });
-    res.status(400).json({ error: error.message });
-  }
-});
+  },
+);
 
-app.delete("/admin/properties/:id/units/:unitId", verifyAdmin, async (req, res) => {
-  try {
-    if (!isValidObjectId(req.params.id) || !isValidObjectId(req.params.unitId))
-      return res.status(400).json({ error: "Invalid property or unit ID" });
-    const unit = await Unit.findOne({ _id: req.params.unitId, propertyId: req.params.id });
-    if (!unit) return res.status(404).json({ error: "Unit not found" });
-    unit.status = "inactive";
-    await unit.save();
-    res.json({ message: "Unit archived" });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+app.delete(
+  "/admin/properties/:id/units/:unitId",
+  verifyAdmin,
+  async (req, res) => {
+    try {
+      if (
+        !isValidObjectId(req.params.id) ||
+        !isValidObjectId(req.params.unitId)
+      )
+        return res.status(400).json({ error: "Invalid property or unit ID" });
+      const unit = await Unit.findOne({
+        _id: req.params.unitId,
+        propertyId: req.params.id,
+      });
+      if (!unit) return res.status(404).json({ error: "Unit not found" });
+      unit.status = "inactive";
+      await unit.save();
+      res.json({ message: "Unit archived" });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+);
 
 app.put("/admin/set-registration", verifyAdmin, async (req, res) => {
   try {
@@ -1183,18 +1258,22 @@ app.put("/admin/set-amount", verifyAdmin, async (req, res) => {
         const updates = { rentAmount };
         if (item.roomCount != null) {
           const roomCount = Number(item.roomCount);
-          if (!Number.isInteger(roomCount) || roomCount < 0 || roomCount > 10000)
+          if (
+            !Number.isInteger(roomCount) ||
+            roomCount < 0 ||
+            roomCount > 10000
+          )
             return res.status(400).json({ error: "Invalid room count" });
           updates.roomCount = roomCount;
         }
         if (!location || !Number.isFinite(rentAmount) || rentAmount < 0) {
           return res.status(400).json({ error: "Invalid location settings" });
         }
-        await Settings.findOneAndUpdate(
-          { location },
-          updates,
-          { upsert: true, new: true, runValidators: true },
-        );
+        await Settings.findOneAndUpdate({ location }, updates, {
+          upsert: true,
+          new: true,
+          runValidators: true,
+        });
       }
     }
     if (malete != null)
@@ -1469,7 +1548,9 @@ app.put("/admin/user/:id", verifyAdmin, async (req, res) => {
           })
         : null;
       if (!property || !unit)
-        return res.status(400).json({ error: "Select a valid property and unit" });
+        return res
+          .status(400)
+          .json({ error: "Select a valid property and unit" });
       const assignmentChanged =
         user.propertyId?.toString() !== property._id.toString() ||
         user.unitId?.toString() !== unit._id.toString();
@@ -1483,7 +1564,9 @@ app.put("/admin/user/:id", verifyAdmin, async (req, res) => {
           session: user.session,
         });
         if (occupied)
-          return res.status(409).json({ error: "That unit is assigned for this session" });
+          return res
+            .status(409)
+            .json({ error: "That unit is assigned for this session" });
       }
       user.propertyId = property._id;
       user.unitId = unit._id;
@@ -1498,7 +1581,8 @@ app.put("/admin/user/:id", verifyAdmin, async (req, res) => {
 
 app.use((error, req, res, next) => {
   if (res.headersSent) return next(error);
-  const tooLarge = error instanceof MulterError && error.code === "LIMIT_FILE_SIZE";
+  const tooLarge =
+    error instanceof MulterError && error.code === "LIMIT_FILE_SIZE";
   const status = tooLarge ? 413 : 400;
   res.status(status).json({
     error: tooLarge ? "Uploaded file exceeds the 5MB limit" : error.message,
@@ -1506,6 +1590,7 @@ app.use((error, req, res, next) => {
 });
 
 async function seed() {
+  await ensurePlatformOwner();
   for (const { name: loc, unitCount } of [
     { name: "Malete", unitCount: 10 },
     { name: "Ila-Orangun", unitCount: 22 },
@@ -1551,42 +1636,6 @@ async function seed() {
         },
         { $set: { propertyId: property._id, unitId: unit._id } },
       );
-    }
-  }
-  if ((await Admin.countDocuments()) === 0) {
-    const defaults = [
-      {
-        name: "Super Admin",
-        email: process.env.ADMIN_EMAIL_1,
-        password: process.env.ADMIN_PASS_1,
-        role: "superadmin",
-      },
-      {
-        name: "Admin Two",
-        email: process.env.ADMIN_EMAIL_2,
-        password: process.env.ADMIN_PASS_2,
-        role: "admin",
-      },
-      {
-        name: "Admin Three",
-        email: process.env.ADMIN_EMAIL_3,
-        password: process.env.ADMIN_PASS_3,
-        role: "admin",
-      },
-    ].filter((admin) => admin.email && admin.password);
-
-    if (defaults.length === 0) {
-      console.warn(
-        "No default admin credentials found in environment variables. Set ADMIN_EMAIL_1/ADMIN_PASS_1, etc.",
-      );
-    } else {
-      for (const d of defaults) await new Admin(d).save();
-      console.log(`âœ… ${defaults.length} default admin(s) seeded`);
-      if (NODE_ENV !== "production") {
-        defaults.forEach((d) =>
-          console.log(`   â†’ ${d.email}  /  ${d.password}`),
-        );
-      }
     }
   }
 }

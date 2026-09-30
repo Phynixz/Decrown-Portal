@@ -30,7 +30,8 @@ export default function App() {
             primaryColor,
           );
         }
-        if (config.businessName) document.title = `${config.businessName} | Property Portal`;
+        if (config.businessName)
+          document.title = `${config.businessName} | Property Portal`;
       })
       .catch(() => {});
     return () => {

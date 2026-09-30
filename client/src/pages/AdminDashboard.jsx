@@ -215,7 +215,8 @@ export default function AdminDashboard() {
             config.locations.map((location) => ({
               ...location,
               rentAmount:
-                current.find((item) => item.name === location.name)?.rentAmount || 0,
+                current.find((item) => item.name === location.name)
+                  ?.rentAmount || 0,
             })),
           );
           setCurrentLocation((current) =>
@@ -499,7 +500,12 @@ export default function AdminDashboard() {
     e.preventDefault();
     try {
       await sendJSON("POST", "/admin/properties", propertyDraft, getToken());
-      setPropertyDraft({ name: "", address: "", propertyType: "hostel", rentAmount: "" });
+      setPropertyDraft({
+        name: "",
+        address: "",
+        propertyType: "hostel",
+        rentAmount: "",
+      });
       await refreshPropertyInventory();
       const config = await getJSON("/tenant-config");
       setLocations(config.locations || []);
@@ -581,7 +587,8 @@ export default function AdminDashboard() {
         headers: { Authorization: getToken() },
       }).then(async (response) => {
         const data = await response.json();
-        if (!response.ok) throw new Error(data.error || "Could not archive unit");
+        if (!response.ok)
+          throw new Error(data.error || "Could not archive unit");
       });
       await refreshPropertyInventory();
       const config = await getJSON("/tenant-config");
@@ -859,9 +866,7 @@ export default function AdminDashboard() {
               }}
             >
               <Home size={14} /> {loc}{" "}
-              <span className="loc-count">
-                {badges[loc] || 0}
-              </span>
+              <span className="loc-count">{badges[loc] || 0}</span>
             </button>
           ))}
         </nav>
@@ -1561,7 +1566,10 @@ export default function AdminDashboard() {
                     maxLength={100}
                     value={propertyDraft.name}
                     onChange={(e) =>
-                      setPropertyDraft((draft) => ({ ...draft, name: e.target.value }))
+                      setPropertyDraft((draft) => ({
+                        ...draft,
+                        name: e.target.value,
+                      }))
                     }
                   />
                 </div>
@@ -1589,7 +1597,10 @@ export default function AdminDashboard() {
                   <input
                     value={propertyDraft.address}
                     onChange={(e) =>
-                      setPropertyDraft((draft) => ({ ...draft, address: e.target.value }))
+                      setPropertyDraft((draft) => ({
+                        ...draft,
+                        address: e.target.value,
+                      }))
                     }
                   />
                 </div>
@@ -1643,7 +1654,10 @@ export default function AdminDashboard() {
                     placeholder="A-204"
                     value={unitDraft.unitCode}
                     onChange={(e) =>
-                      setUnitDraft((draft) => ({ ...draft, unitCode: e.target.value }))
+                      setUnitDraft((draft) => ({
+                        ...draft,
+                        unitCode: e.target.value,
+                      }))
                     }
                   />
                 </div>
@@ -1654,7 +1668,10 @@ export default function AdminDashboard() {
                     placeholder="Apartment 204"
                     value={unitDraft.label}
                     onChange={(e) =>
-                      setUnitDraft((draft) => ({ ...draft, label: e.target.value }))
+                      setUnitDraft((draft) => ({
+                        ...draft,
+                        label: e.target.value,
+                      }))
                     }
                   />
                 </div>
@@ -1663,7 +1680,10 @@ export default function AdminDashboard() {
                   <select
                     value={unitDraft.unitType}
                     onChange={(e) =>
-                      setUnitDraft((draft) => ({ ...draft, unitType: e.target.value }))
+                      setUnitDraft((draft) => ({
+                        ...draft,
+                        unitType: e.target.value,
+                      }))
                     }
                   >
                     <option value="room">Room</option>
@@ -1707,7 +1727,9 @@ export default function AdminDashboard() {
                         )
                       }
                     >
-                      {property.status === "active" ? "Archive property" : "Restore property"}
+                      {property.status === "active"
+                        ? "Archive property"
+                        : "Restore property"}
                     </button>
                   </header>
                   <ul>
@@ -1735,7 +1757,9 @@ export default function AdminDashboard() {
                             </button>
                             <button
                               className="mbtn ghost"
-                              onClick={() => archiveUnit(property._id, unit._id)}
+                              onClick={() =>
+                                archiveUnit(property._id, unit._id)
+                              }
                             >
                               Archive unit
                             </button>
@@ -2226,10 +2250,16 @@ function EmptyRoomCard({ room, status = "available", unitType = "room" }) {
         <div className="card-identity">
           <div className="card-name">{room}</div>
           <div className="card-contact">
-            {unavailable ? "Unavailable for new applications" : "Available for this session"}
+            {unavailable
+              ? "Unavailable for new applications"
+              : "Available for this session"}
           </div>
         </div>
-        <div className={"room-chip " + (unavailable ? "room-pending" : "room-available")}>
+        <div
+          className={
+            "room-chip " + (unavailable ? "room-pending" : "room-available")
+          }
+        >
           {statusLabel}
         </div>
       </div>

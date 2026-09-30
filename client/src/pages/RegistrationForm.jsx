@@ -71,9 +71,9 @@ export default function RegistrationForm() {
   }, []);
 
   const availableUnits =
-    locations.find((item) => item.name === location)?.units?.filter(
-      (unit) => unit.status === "available",
-    ) || [];
+    locations
+      .find((item) => item.name === location)
+      ?.units?.filter((unit) => unit.status === "available") || [];
 
   // Load the property's default rent, or the selected unit's override.
   useEffect(() => {
@@ -102,7 +102,8 @@ export default function RegistrationForm() {
       alert("File must be under 5MB.");
       if (field === "passport" && passportInput.current)
         passportInput.current.value = "";
-      if (field === "idCard" && idCardInput.current) idCardInput.current.value = "";
+      if (field === "idCard" && idCardInput.current)
+        idCardInput.current.value = "";
       if (field === "paymentProof" && proofInput.current)
         proofInput.current.value = "";
       return;
@@ -142,7 +143,11 @@ export default function RegistrationForm() {
   const dateValid =
     !!paymentDate &&
     new Date(paymentDate) <= new Date(new Date().setHours(23, 59, 59));
-  const selectValid = { location: !!location, level: !!level, roomNo: !!roomNo };
+  const selectValid = {
+    location: !!location,
+    level: !!level,
+    roomNo: !!roomNo,
+  };
   const fileValid = {
     passport: !!files.passport,
     idCard: !!files.idCard,
@@ -241,7 +246,12 @@ export default function RegistrationForm() {
       setLevel("");
       setRoomNo("");
       setPaymentDate("");
-      setFiles({ passport: null, idCard: null, paymentProof: null, agreementCopy: null });
+      setFiles({
+        passport: null,
+        idCard: null,
+        paymentProof: null,
+        agreementCopy: null,
+      });
       setPreviews({});
       setTermsAccepted(false);
       setShowErrors(false);
@@ -299,7 +309,9 @@ export default function RegistrationForm() {
                   <div className="step-num">{i + 1}</div>
                   <div className="step-text">{label}</div>
                 </div>
-                {i < STEP_LABELS.length - 1 && <div className="step-connector" />}
+                {i < STEP_LABELS.length - 1 && (
+                  <div className="step-connector" />
+                )}
               </div>
             ))}
           </div>
@@ -340,7 +352,9 @@ export default function RegistrationForm() {
                   <label htmlFor="locationSelect">Campus Location</label>
                   <select
                     id="locationSelect"
-                    className={"location-select" + err(location, selectValid.location)}
+                    className={
+                      "location-select" + err(location, selectValid.location)
+                    }
                     value={location}
                     onChange={(e) => {
                       setLocation(e.target.value);
@@ -351,9 +365,9 @@ export default function RegistrationForm() {
                     {locations
                       .filter((item) => item.status === "active")
                       .map((item) => (
-                      <option key={item.name} value={item.name}>
-                        {item.name}
-                      </option>
+                        <option key={item.name} value={item.name}>
+                          {item.name}
+                        </option>
                       ))}
                   </select>
                   <small className="err-msg">
@@ -382,7 +396,9 @@ export default function RegistrationForm() {
                   <small className="hint">
                     As it appears on your ID — 3 to 50 letters
                   </small>
-                  <small className="err-msg">Name must be 3–50 letters only</small>
+                  <small className="err-msg">
+                    Name must be 3–50 letters only
+                  </small>
                 </div>
                 <div className="field">
                   <label htmlFor="email">Email Address</label>
@@ -418,7 +434,9 @@ export default function RegistrationForm() {
               </div>
               <div className="fields-grid">
                 <div className="field full">
-                  <label htmlFor="GuardianName">Parent / Guarantor's Full Name</label>
+                  <label htmlFor="GuardianName">
+                    Parent / Guarantor's Full Name
+                  </label>
                   <input
                     type="text"
                     id="GuardianName"
@@ -427,7 +445,9 @@ export default function RegistrationForm() {
                     value={guardianName}
                     onChange={(e) => setGuardianName(e.target.value)}
                   />
-                  <small className="err-msg">Name must be 3–50 letters only</small>
+                  <small className="err-msg">
+                    Name must be 3–50 letters only
+                  </small>
                 </div>
                 <div className="field full">
                   <label htmlFor="guardianPhone">Guardian's Phone</label>
@@ -447,7 +467,8 @@ export default function RegistrationForm() {
             {/* Section 4 — Room & Payment */}
             <div className="form-section" id="sec-4">
               <div className="section-label">
-                <span className="section-num">04</span> Room &amp; Payment Details
+                <span className="section-num">04</span> Room &amp; Payment
+                Details
               </div>
               <div className="fields-grid">
                 <div className="field">
@@ -459,13 +480,17 @@ export default function RegistrationForm() {
                     onChange={(e) => setLevel(e.target.value)}
                   >
                     <option value="">Select Level</option>
-                    {["100Level", "200Level", "300Level", "400Level", "500Level"].map(
-                      (l) => (
-                        <option key={l} value={l}>
-                          {l.replace("Level", " Level")}
-                        </option>
-                      ),
-                    )}
+                    {[
+                      "100Level",
+                      "200Level",
+                      "300Level",
+                      "400Level",
+                      "500Level",
+                    ].map((l) => (
+                      <option key={l} value={l}>
+                        {l.replace("Level", " Level")}
+                      </option>
+                    ))}
                   </select>
                   <small className="err-msg">Please select your level</small>
                 </div>
@@ -517,10 +542,30 @@ export default function RegistrationForm() {
               </div>
               <div className="fields-grid">
                 {[
-                  { field: "passport", label: "Passport Photograph", Icon: Camera, accept: "image/*" },
-                  { field: "idCard", label: "ID Card", Icon: CreditCard, accept: "image/*,.pdf" },
-                  { field: "paymentProof", label: "Payment Receipt", Icon: File, accept: "image/*,.pdf" },
-                  { field: "agreementCopy", label: "Agreement Hard Copy", Icon: FileText, accept: "image/*,.pdf" },
+                  {
+                    field: "passport",
+                    label: "Passport Photograph",
+                    Icon: Camera,
+                    accept: "image/*",
+                  },
+                  {
+                    field: "idCard",
+                    label: "ID Card",
+                    Icon: CreditCard,
+                    accept: "image/*,.pdf",
+                  },
+                  {
+                    field: "paymentProof",
+                    label: "Payment Receipt",
+                    Icon: File,
+                    accept: "image/*,.pdf",
+                  },
+                  {
+                    field: "agreementCopy",
+                    label: "Agreement Hard Copy",
+                    Icon: FileText,
+                    accept: "image/*,.pdf",
+                  },
                 ].map(({ field, label, Icon, accept }) => (
                   <div className="field" key={field}>
                     <label htmlFor={field}>{label}</label>
@@ -548,7 +593,8 @@ export default function RegistrationForm() {
                         onChange={(e) => handleUpload(field, e.target.files[0])}
                       />
                       <div className="upload-placeholder">
-                        {previews[field] && typeof previews[field] === "string" &&
+                        {previews[field] &&
+                        typeof previews[field] === "string" &&
                         previews[field].startsWith("data:") ? (
                           <img
                             src={previews[field]}
@@ -564,7 +610,9 @@ export default function RegistrationForm() {
                           </>
                         ) : (
                           <>
-                            <span className="upload-icon"><Icon size={26} /></span>
+                            <span className="upload-icon">
+                              <Icon size={26} />
+                            </span>
                             <span>
                               Click to upload — JPG
                               {field === "passport" ? "" : ", PNG or PDF"}
@@ -574,7 +622,10 @@ export default function RegistrationForm() {
                       </div>
                     </div>
                     <small className="err-msg">
-                      Please upload {field === "passport" ? "a passport photo" : "your " + label.toLowerCase()}
+                      Please upload{" "}
+                      {field === "passport"
+                        ? "a passport photo"
+                        : "your " + label.toLowerCase()}
                     </small>
                   </div>
                 ))}

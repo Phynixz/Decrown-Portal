@@ -48,8 +48,12 @@ test("provisions isolated properties, units, admins, and tenant records", async 
   ]);
   const modelsA = getTenantModels(dbA);
   const modelsB = getTenantModels(dbB);
-  const propertyA = await modelsA.Property.findOne({ name: clientA.locations[0] });
-  const propertyB = await modelsB.Property.findOne({ name: clientB.locations[0] });
+  const propertyA = await modelsA.Property.findOne({
+    name: clientA.locations[0],
+  });
+  const propertyB = await modelsB.Property.findOne({
+    name: clientB.locations[0],
+  });
   const unitA = await modelsA.Unit.findOne({ propertyId: propertyA._id });
   const unitB = await modelsB.Unit.findOne({ propertyId: propertyB._id });
 
@@ -82,7 +86,9 @@ test("provisions isolated properties, units, admins, and tenant records", async 
   assert.equal(await modelsA.User.countDocuments(), 1);
   assert.equal(await modelsB.User.countDocuments(), 1);
   assert.equal(
-    await modelsA.User.countDocuments({ email: `tenant-bravo-${suffix}@example.com` }),
+    await modelsA.User.countDocuments({
+      email: `tenant-bravo-${suffix}@example.com`,
+    }),
     0,
   );
 

@@ -43,11 +43,25 @@ export default function ClientSignup() {
     const trimmedEmail = email.trim();
     const sub = subdomain.trim();
     const selectedLocations = [
-      ...new Set(locations.split(",").map((location) => location.trim()).filter(Boolean)),
+      ...new Set(
+        locations
+          .split(",")
+          .map((location) => location.trim())
+          .filter(Boolean),
+      ),
     ];
 
-    if (!name || !contact || !trimmedEmail || !sub || !password || !selectedLocations.length) {
-      setErr("Please fill in all required fields, including at least one location.");
+    if (
+      !name ||
+      !contact ||
+      !trimmedEmail ||
+      !sub ||
+      !password ||
+      !selectedLocations.length
+    ) {
+      setErr(
+        "Please fill in all required fields, including at least one location.",
+      );
       return;
     }
     if (!validateEmail(trimmedEmail)) {

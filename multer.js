@@ -45,7 +45,9 @@ module.exports = multer({
   limits: { fileSize: 5 * 1024 * 1024, files: 4, fields: 30 },
   fileFilter(req, file, callback) {
     if (!allowedMimeTypes.has(file.mimetype)) {
-      return callback(new Error("Only JPEG, PNG, WebP, GIF, and PDF files are allowed"));
+      return callback(
+        new Error("Only JPEG, PNG, WebP, GIF, and PDF files are allowed"),
+      );
     }
     callback(null, true);
   },

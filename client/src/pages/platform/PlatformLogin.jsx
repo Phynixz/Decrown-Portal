@@ -45,6 +45,7 @@ export default function PlatformLogin() {
       });
       sessionStorage.setItem("platformToken", "Bearer " + data.token);
       sessionStorage.setItem("platformName", data.name);
+      sessionStorage.setItem("platformRole", data.role);
       navigate("/platform");
     } catch (e) {
       setErr(e.message);
@@ -68,7 +69,9 @@ export default function PlatformLogin() {
           <div className="w-10 h-10 rounded-xl bg-accent/20 border border-accent/40 flex items-center justify-center">
             <ShieldCheck className="w-5 h-5 text-accent-light" />
           </div>
-          <span className="text-lg font-semibold tracking-tight">Platform Control</span>
+          <span className="text-lg font-semibold tracking-tight">
+            Platform Control
+          </span>
         </div>
 
         <div className="relative max-w-md">
@@ -79,8 +82,9 @@ export default function PlatformLogin() {
             Every client, one command center.
           </h1>
           <p className="text-white/60 text-[15px] leading-relaxed">
-            Review new sign-ups, approve or reject applications, and manage every business
-            running on the platform — all from a single dashboard.
+            Review new sign-ups, approve or reject applications, and manage
+            every business running on the platform — all from a single
+            dashboard.
           </p>
         </div>
 
@@ -164,7 +168,11 @@ export default function PlatformLogin() {
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted dark:text-muted-dark hover:text-ink dark:hover:text-ink-dark transition-colors"
                   aria-label={showPwd ? "Hide password" : "Show password"}
                 >
-                  {showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showPwd ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
                 </button>
               </div>
             </div>

@@ -107,35 +107,38 @@ deliberately, once Phase 1 is proven and once the full existing codebase
 
 ## 5. What's built vs. what's next
 
-See `PROGRESS.md` for the live, checkbox-level tracker. Summary:
+**Built (Phase 1 — Platform Foundation & Client Onboarding):**
 
-**Built (Phase 1):**
+- Backend: `Client`, `PlatformAdmin`, `PlatformStaff`, and `PlatformAudit` models
+- Signup, email verification, and resend routes (`routes/platform.js`, `utils/email.js`)
+- Overall platform owner auto-sync from environment (`utils/ensurePlatformOwner.js`)
+- Role-based staff access (`owner`, `reviewer`, `viewer`) with audit logging (`utils/platformPermissions.js`)
+- Frontend: client signup page (`ClientSignup.jsx`), platform login (`PlatformLogin.jsx`), unified platform portal (`PlatformLayout.jsx`, `PlatformOverview.jsx`, `PlatformClients.jsx`, `PlatformSettings.jsx`)
 
-- Backend: `Client` + `PlatformAdmin` models, signup/verify/resend routes,
-  platform-admin login, approve/reject routes (`models/Client.js`,
-  `models/PlatformAdmin.js`, `routes/platform.js`, `utils/email.js`)
-- One-time setup script for your own login (`create-platform-admin.js`)
-- Frontend: client signup page (`ClientSignup.jsx`), your login page
-  (`PlatformLogin.jsx`), your approval queue dashboard (`ApprovalQueue.jsx`)
+**Built (Phase 2 — Multi-Tenancy & Tenant Inventory):**
 
-**Still required before production:**
+- Separate MongoDB database provisioning per approved client (`utils/provisionClient.js`)
+- Request-local database scoping using `AsyncLocalStorage` and Mongoose proxies (`utils/tenantModels.js`)
+- Subdomain-aware request routing with local development header fallback (`utils/tenantContext.js`)
+- Dynamic property and unit management replacing hardcoded campus rooms (`models/Property.js`, `models/Unit.js`)
+- Dynamic unit availability and occupancy checks in registration and admin views
+- Tenant branding and business name propagation (`/tenant-config` in `App.jsx`)
+- Safe De-Crown legacy data migration script with dry-run support (`migrate-legacy-tenant.js`)
+- Comprehensive integration test suites passing in-memory (`tests/`)
 
-- Create the first `PlatformAdmin` with `create-platform-admin.js`
-- Add and test Resend environment variables
-- Run the complete signup-to-approval smoke test
-- Deploy the verified changes to Render
+**Still required before live production:**
 
-**Not started (Phase 2 — blocked):**
+- Configure production environment variables in Render (`PLATFORM_ROOT_DOMAIN`, Resend, Cloudinary, Atlas)
+- Set up wildcard DNS and TLS certificate for `*.yourplatform.com`
+- Dry-run and apply legacy De-Crown migration (`npm run migrate:legacy`)
+- Run end-to-end signup-to-registration smoke test on staging environment
 
-- Actual database provisioning when a client is approved
-- `clientId`/multi-database scoping of `User`, `Admin`, `Settings`, `Registration`
-- Subdomain-aware request routing
-- Pulling locations/branding/bank details from `Client` instead of hardcoded values
+**Next phase (Phase 3 — Real-Estate Workflows):**
 
-**Blocking Phase 2:** need `models/User.js`, `models/Admin.js`,
-`models/Settings.js`, `models/Registration.js`, `multer.js`, and the full
-`server.js` (only the top ~245 lines and bottom ~250 lines have been
-reviewed so far — the middle section with most routes hasn't been seen).
+- Lease agreements and date-based occupancy
+- Automated recurring invoices and payment processing (Paystack/Stripe)
+- Maintenance requests and issue tracking
+- Tiered subscription and billing plans
 
 ---
 

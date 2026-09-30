@@ -25,6 +25,11 @@ export default function PlatformLayout() {
   const { dark, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const name = sessionStorage.getItem("platformName") || "Operator";
+  const role = sessionStorage.getItem("platformRole") || "viewer";
+  const visibleNavItems =
+    role === "owner"
+      ? NAV_ITEMS
+      : NAV_ITEMS.filter((item) => item.to !== "/platform/settings");
 
   useEffect(() => {
     if (!getPlatformToken()) navigate("/platform/login", { replace: true });
@@ -33,6 +38,7 @@ export default function PlatformLayout() {
   function logout() {
     sessionStorage.removeItem("platformToken");
     sessionStorage.removeItem("platformName");
+    sessionStorage.removeItem("platformRole");
     navigate("/platform/login", { replace: true });
   }
 
@@ -43,11 +49,13 @@ export default function PlatformLayout() {
           <div className="w-8 h-8 rounded-lg bg-accent/20 border border-accent/40 flex items-center justify-center">
             <ShieldCheck className="w-4 h-4 text-accent-light" />
           </div>
-          <span className="font-semibold tracking-tight text-sm">Overall Admin</span>
+          <span className="font-semibold tracking-tight text-sm">
+            Overall Admin
+          </span>
         </div>
 
         <nav className="flex-1 px-3 py-2 space-y-1">
-          {NAV_ITEMS.map(({ to, label, icon: Icon, end }) => (
+          {visibleNavItems.map(({ to, label, icon: Icon, end }) => (
             <NavLink
               key={to}
               to={to}
@@ -79,8 +87,12 @@ export default function PlatformLayout() {
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-16 shrink-0 flex items-center justify-between px-6 sm:px-8 border-b border-border dark:border-border-dark bg-card dark:bg-card-dark">
           <div>
-            <p className="text-xs text-muted dark:text-muted-dark">Signed in as</p>
-            <p className="text-sm font-semibold text-ink dark:text-ink-dark">{name}</p>
+            <p className="text-xs text-muted dark:text-muted-dark">
+              Signed in as
+            </p>
+            <p className="text-sm font-semibold text-ink dark:text-ink-dark">
+              {name} · {role === "owner" ? "Overall Admin" : role}
+            </p>
           </div>
           <button
             onClick={toggleTheme}

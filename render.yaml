@@ -31,15 +31,9 @@ services:
         sync: false
       - key: PLATFORM_EMAIL_FROM
         sync: false
-      - key: ADMIN_EMAIL_1
+      - key: PLATFORM_ADMIN_NAME
         sync: false
-      - key: ADMIN_PASS_1
+      - key: PLATFORM_ADMIN_EMAIL
         sync: false
-      - key: ADMIN_EMAIL_2
-        sync: false
-      - key: ADMIN_PASS_2
-        sync: false
-      - key: ADMIN_EMAIL_3
-        sync: false
-      - key: ADMIN_PASS_3
+      - key: PLATFORM_ADMIN_PASSWORD
         sync: false
