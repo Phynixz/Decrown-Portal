@@ -2,7 +2,7 @@
 
 **Master planning document.** This is the single source of truth for the
 business plan, architecture decisions, and build status. `PROGRESS.md`
-tracks task-by-task status; this file explains the *why* behind each
+tracks task-by-task status; this file explains the _why_ behind each
 decision so anyone picking this up later understands the reasoning, not
 just the checklist.
 
@@ -26,27 +26,29 @@ than a special case.
 
 ## 2. Key decisions made so far
 
-| Decision | Choice | Reasoning |
-|---|---|---|
-| Multi-tenancy isolation model | **Separate MongoDB database per client**, one shared Atlas cluster | Real data isolation (a query bug in one client's routes can't leak into another's) without the operational overhead of fully separate deployments. Appropriate at the target scale (see below) — a shared-collection + `tenantId` filter approach would be cheaper but riskier given the app stores passports, IDs, and payment proofs. |
-| Client onboarding | **Self-serve signup, but gated behind manual approval** before the platform goes live | Balances low-friction growth with keeping control over who gets a platform, especially early on. |
-| Pricing/billing | **Not decided yet** — building the technical platform first | No Paystack/Stripe integration yet. The `Client.status` field is deliberately built to double as a future billing-status field (`trial`, `past_due`, etc.) without restructuring. |
-| Target scale | **A handful of clients (3–10) over the next 6–12 months** | Confirms the shared-cluster/separate-DB approach is right-sized — not over- or under-engineered. |
-| Routing/branding | **Subdomains** (`clientname.yourplatform.com`) | Cleaner than path-based routing, feels like the client's own product. Custom domains are a later, premium-tier addition, not needed on day one. |
-| Signup auth | **Custom/manual** (bcrypt + JWT + email verification code), not Firebase/Supabase | The app already has a full identity system in MongoDB. Adding a second auth provider for just the signup flow would create two sources of truth for "who is this," and introduces a whole extra stack (Postgres, for Supabase) for one small feature. At this volume, Firebase/Supabase's scaling benefits don't apply. |
-| Verification email | **Resend** (transactional email API) | Generous free tier, far less setup than raw SMTP. Swappable later — the email-sending logic is isolated in one file. |
+| Decision                      | Choice                                                                                | Reasoning                                                                                                                                                                                                                                                                                                                               |
+| ----------------------------- | ------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Multi-tenancy isolation model | **Separate MongoDB database per client**, one shared Atlas cluster                    | Real data isolation (a query bug in one client's routes can't leak into another's) without the operational overhead of fully separate deployments. Appropriate at the target scale (see below) — a shared-collection + `tenantId` filter approach would be cheaper but riskier given the app stores passports, IDs, and payment proofs. |
+| Client onboarding             | **Self-serve signup, but gated behind manual approval** before the platform goes live | Balances low-friction growth with keeping control over who gets a platform, especially early on.                                                                                                                                                                                                                                        |
+| Pricing/billing               | **Not decided yet** — building the technical platform first                           | No Paystack/Stripe integration yet. The `Client.status` field is deliberately built to double as a future billing-status field (`trial`, `past_due`, etc.) without restructuring.                                                                                                                                                       |
+| Target scale                  | **A handful of clients (3–10) over the next 6–12 months**                             | Confirms the shared-cluster/separate-DB approach is right-sized — not over- or under-engineered.                                                                                                                                                                                                                                        |
+| Routing/branding              | **Subdomains** (`clientname.yourplatform.com`)                                        | Cleaner than path-based routing, feels like the client's own product. Custom domains are a later, premium-tier addition, not needed on day one.                                                                                                                                                                                         |
+| Signup auth                   | **Custom/manual** (bcrypt + JWT + email verification code), not Firebase/Supabase     | The app already has a full identity system in MongoDB. Adding a second auth provider for just the signup flow would create two sources of truth for "who is this," and introduces a whole extra stack (Postgres, for Supabase) for one small feature. At this volume, Firebase/Supabase's scaling benefits don't apply.                 |
+| Verification email            | **Resend** (transactional email API)                                                  | Generous free tier, far less setup than raw SMTP. Swappable later — the email-sending logic is isolated in one file.                                                                                                                                                                                                                    |
 
 ---
 
 ## 3. Architecture overview
 
 ### Current (single-tenant) shape
+
 ```
 One Express server → One MongoDB database → One set of Admin/User records
 Hardcoded: locations ["Malete", "Ila-Orangun"], branding, bank details, Terms text
 ```
 
 ### Target (multi-tenant) shape
+
 ```
 One Express server (shared)
   → Client Management layer (Phase 1 — built)
@@ -63,6 +65,7 @@ One Express server (shared)
 ```
 
 ### Why a two-phase build
+
 Phase 1 (the "front door" — signup, verification, your approval queue) is
 purely additive and carries zero risk to the existing De-Crown Cottage
 app. Phase 2 (actually provisioning a working platform on approval) is the
@@ -75,6 +78,7 @@ deliberately, once Phase 1 is proven and once the full existing codebase
 ## 4. Data model
 
 ### `Client` (new — the top-level record per business)
+
 - `businessName`, `contactName`, `email`, `phone`
 - `subdomain` — unique, used for routing once Phase 2 lands
 - `passwordHash` — the business owner's platform login
@@ -87,11 +91,13 @@ deliberately, once Phase 1 is proven and once the full existing codebase
 - `dbName` — filled in during Phase 2 provisioning
 
 ### `PlatformAdmin` (new — your login, not a client's)
+
 - `name`, `email`, `password` (bcrypt-hashed)
 - Kept as a separate model/collection deliberately, so it keeps working
   unchanged once Phase 2 splits client data into separate databases.
 
 ### Existing models (unchanged so far, will be scoped in Phase 2)
+
 - `User` — the hostel tenant/shop record (name, email, room, session, payment info, uploaded docs)
 - `Admin` — per-client staff logins (currently global, will become per-client)
 - `Settings` — per-location config (rent amount, registration open/closed)
@@ -104,6 +110,7 @@ deliberately, once Phase 1 is proven and once the full existing codebase
 See `PROGRESS.md` for the live, checkbox-level tracker. Summary:
 
 **Built (Phase 1):**
+
 - Backend: `Client` + `PlatformAdmin` models, signup/verify/resend routes,
   platform-admin login, approve/reject routes (`models/Client.js`,
   `models/PlatformAdmin.js`, `routes/platform.js`, `utils/email.js`)
@@ -112,12 +119,14 @@ See `PROGRESS.md` for the live, checkbox-level tracker. Summary:
   (`PlatformLogin.jsx`), your approval queue dashboard (`ApprovalQueue.jsx`)
 
 **Still required before production:**
+
 - Create the first `PlatformAdmin` with `create-platform-admin.js`
 - Add and test Resend environment variables
 - Run the complete signup-to-approval smoke test
 - Deploy the verified changes to Render
 
 **Not started (Phase 2 — blocked):**
+
 - Actual database provisioning when a client is approved
 - `clientId`/multi-database scoping of `User`, `Admin`, `Settings`, `Registration`
 - Subdomain-aware request routing

@@ -12,6 +12,7 @@ const jwt = require("jsonwebtoken");
 const fs = require("fs");
 const ExcelJS = require("exceljs");
 const cookieParser = require("cookie-parser");
+const MulterError = require("multer").MulterError;
 
 const MONGO_URI = process.env.MONGO_URI;
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -26,14 +27,33 @@ if (!JWT_SECRET) {
   process.exit(1);
 }
 
+if (NODE_ENV === "production") {
+  const requiredProductionEnv = [
+    "MONGO_URI",
+    "PLATFORM_ROOT_DOMAIN",
+    "RESEND_API_KEY",
+    "PLATFORM_EMAIL_FROM",
+    "CLOUDINARY_CLOUD_NAME",
+    "CLOUDINARY_API_KEY",
+    "CLOUDINARY_API_SECRET",
+  ];
+  const missing = requiredProductionEnv.filter((name) => !process.env[name]);
+  if (JWT_SECRET.length < 32) missing.push("JWT_SECRET (minimum 32 characters)");
+  if (missing.length) {
+    console.error(`Missing production configuration: ${missing.join(", ")}`);
+    process.exit(1);
+  }
+}
+
 const app = express();
 const PORT = parseInt(process.env.PORT, 10) || 3000;
 
-const User = require("./models/User");
-const Admin = require("./models/Admin");
-const Settings = require("./models/Settings");
-const Registration = require("./models/Registration");
+const { createTenantModelProxies } = require("./utils/tenantModels");
+const tenantModels = createTenantModelProxies();
+const { User, Admin, Settings, Registration, Property, Unit } = tenantModels;
+const Client = require("./models/Client");
 const platformRoutes = require("./routes/platform");
+const resolveTenant = require("./utils/tenantContext");
 const upload = require("./multer");
 
 app.use(cookieParser());
@@ -63,6 +83,7 @@ if (fs.existsSync(CLIENT_DIST)) {
   app.use(express.static(CLIENT_DIST));
 }
 app.use(platformRoutes);
+app.use(resolveTenant);
 function getSession() {
   const now = new Date();
   const year = now.getFullYear();
@@ -80,6 +101,10 @@ function verifyAdmin(req, res, next) {
     const d = jwt.verify(token, JWT_SECRET);
     if (d.role !== "admin" && d.role !== "superadmin")
       return res.status(403).json({ error: "Not authorized" });
+    const tokenClientId = String(d.clientId || "");
+    const requestClientId = String(req.tenantClient?._id || "");
+    if (tokenClientId !== requestClientId)
+      return res.status(403).json({ error: "Not authorized for this platform" });
     req.admin = d;
     next();
   } catch {
@@ -145,9 +170,12 @@ function sanitizePhone(value) {
   return sanitizeString(value).replace(/[^0-9+]/g, "");
 }
 
-function sanitizeLocation(value) {
+function sanitizeLocation(value, client) {
   const loc = sanitizeString(value);
-  return ["Malete", "Ila-Orangun"].includes(loc) ? loc : "";
+  const allowedLocations = client?.locations?.length
+    ? client.locations
+    : ["Malete", "Ila-Orangun"];
+  return allowedLocations.includes(loc) ? loc : "";
 }
 
 function sanitizeType(value) {
@@ -197,6 +225,10 @@ function verifyTenant(req, res, next) {
     const d = jwt.verify(token, JWT_SECRET);
     if (d.type !== "tenant")
       return res.status(403).json({ error: "Not a tenant token" });
+    const tokenClientId = String(d.clientId || "");
+    const requestClientId = String(req.tenantClient?._id || "");
+    if (tokenClientId !== requestClientId)
+      return res.status(403).json({ error: "Not authorized for this platform" });
     req.tenant = d;
     next();
   } catch {
@@ -224,7 +256,13 @@ app.post("/admin/login", async (req, res) => {
     const valid = await admin.comparePassword(password);
     if (!valid) return res.status(401).json({ error: "Invalid credentials" });
     const token = jwt.sign(
-      { id: admin._id, email: admin.email, name: admin.name, role: admin.role },
+      {
+        id: admin._id,
+        email: admin.email,
+        name: admin.name,
+        role: admin.role,
+        ...(req.tenantClient && { clientId: String(req.tenantClient._id) }),
+      },
       JWT_SECRET,
       { expiresIn: "30m" },
     );
@@ -304,7 +342,12 @@ app.post("/tenant/login", async (req, res) => {
           (user.revokeReason ? `: ${user.revokeReason}` : "."),
       });
     const token = jwt.sign(
-      { id: user._id, email: user.email, type: "tenant" },
+      {
+        id: user._id,
+        email: user.email,
+        type: "tenant",
+        ...(req.tenantClient && { clientId: String(req.tenantClient._id) }),
+      },
       JWT_SECRET,
       { expiresIn: "24h" },
     );
@@ -398,6 +441,8 @@ app.post("/tenant/retain", verifyTenant, async (req, res) => {
     const setting = await Settings.findOne({ location: orig.location });
     const renewed = await new User({
       location: orig.location,
+      propertyId: orig.propertyId,
+      unitId: orig.unitId,
       type: orig.type || "tenant",
       name: orig.name,
       email: orig.email,
@@ -557,6 +602,11 @@ app.put(
 
       // Log the change
       if (!user.changeLog) user.changeLog = [];
+        locations = settings.map((setting) => ({
+          name: setting.location,
+          rentAmount: setting.rentAmount,
+          roomCount: setting.roomCount ?? 10,
+        })),
       user.changeLog.push({
         field: field,
         changedAt: new Date(),
@@ -601,13 +651,81 @@ app.get("/current-session", async (req, res) => {
   });
 });
 
+app.get("/tenant-config", async (req, res) => {
+  try {
+    let properties = await Property.find().sort({ name: 1 });
+    if (!properties.length) {
+      const locations = req.tenantClient?.locations?.length
+        ? req.tenantClient.locations
+        : ["Malete", "Ila-Orangun"];
+      properties = locations.map((name) => ({
+        _id: null,
+        name,
+        propertyType: "hostel",
+        status: "active",
+        address: "",
+      }));
+    }
+    const locations = await Promise.all(
+      properties.map(async (property) => {
+        const units = property._id
+          ? await Unit.find({ propertyId: property._id, status: { $ne: "inactive" } }).sort({ unitCode: 1 })
+          : [];
+        const occupied = await User.find({
+          location: property.name,
+          session: getSession(),
+        }).select("unitId roomNo");
+        const occupiedIds = new Set(occupied.map((user) => String(user.unitId || "")));
+        const occupiedLabels = new Set(occupied.map((user) => user.roomNo));
+        const settings = await Settings.findOne({ location: property.name });
+        return {
+          id: property._id,
+          name: property.name,
+          propertyType: property.propertyType,
+          status: property.status,
+          address: property.address,
+          rentAmount: settings?.rentAmount ?? 0,
+          units: units.map((unit) => ({
+            id: unit._id,
+            label: unit.label,
+            unitType: unit.unitType,
+            status:
+              unit.status === "available" &&
+              (occupiedIds.has(String(unit._id)) || occupiedLabels.has(unit.label))
+                ? "occupied"
+                : unit.status,
+            rentAmount: unit.rentAmount,
+          })),
+        };
+      }),
+    );
+    res.json({
+      businessName: req.tenantClient?.businessName || "De-Crown Cottage",
+      branding: req.tenantClient?.branding || {},
+      locations,
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.get("/current-amount", async (req, res) => {
   try {
-    const { location } = req.query;
+    const { location, unit: unitLabel } = req.query;
     if (!location) return res.status(400).json({ error: "location required" });
-    const s = await Settings.findOne({ location });
+    const safeLocation = sanitizeLocation(location, req.tenantClient);
+    if (!safeLocation) return res.status(400).json({ error: "Invalid location" });
+    const s = await Settings.findOne({ location: safeLocation });
     if (!s) return res.status(404).json({ error: "Settings not found" });
-    res.json({ amount: s.rentAmount });
+    const property = await Property.findOne({ name: safeLocation, status: "active" });
+    const unit = property && unitLabel
+      ? await Unit.findOne({
+          propertyId: property._id,
+          label: sanitizeString(unitLabel),
+          status: "available",
+        })
+      : null;
+    res.json({ amount: unit?.rentAmount ?? s.rentAmount });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
@@ -652,7 +770,6 @@ app.get("/user/:id", async (req, res) => {
       amount: u.amount,
       paymentDate: u.paymentDate,
       passport: u.passport,
-      idCard: u.idCard,
       paymentProof: u.paymentProof,
       retainPending: u.retainPending,
       renewedFrom: u.renewedFrom,
@@ -738,7 +855,7 @@ app.post(
           .json({ error: "You must accept the terms and conditions." });
       }
 
-      const safeLocation = sanitizeLocation(location);
+      const safeLocation = sanitizeLocation(location, req.tenantClient);
       const safeName = sanitizeString(name);
       const safeEmail = sanitizeEmail(email);
       const safePhone = sanitizePhone(phone);
@@ -753,6 +870,19 @@ app.post(
         return res.status(400).json({ error: "Invalid location" });
 
       const session = getSession();
+      const setting = await Settings.findOne({ location: safeLocation });
+      if (!setting)
+        return res.status(400).json({ error: "Location is not configured" });
+      const property = await Property.findOne({ name: safeLocation, status: "active" });
+      const unit = property
+        ? await Unit.findOne({
+            propertyId: property._id,
+            label: safeRoomNo,
+            status: "available",
+          })
+        : null;
+      if (!unit)
+        return res.status(400).json({ error: "That unit is unavailable" });
       const roomTaken = await User.findOne({
         location: safeLocation,
         roomNo: safeRoomNo,
@@ -763,9 +893,10 @@ app.post(
           .status(400)
           .json({ error: "Room already occupied for this session" });
 
-      const setting = await Settings.findOne({ location: safeLocation });
       await new User({
         location: safeLocation,
+        propertyId: property._id,
+        unitId: unit._id,
         type: safeType,
         name: safeName,
         email: safeEmail,
@@ -775,7 +906,7 @@ app.post(
         session,
         level: safeLevel,
         roomNo: safeRoomNo,
-        amount: setting?.rentAmount ?? 0,
+        amount: unit.rentAmount ?? setting.rentAmount,
         paymentDate: safePaymentDate,
         passport:
           req.files?.passport?.[0]?.secure_url ||
@@ -822,7 +953,7 @@ app.get("/users", verifyAdmin, async (req, res) => {
   try {
     const filter = {};
     if (req.query.location)
-      filter.location = sanitizeLocation(req.query.location);
+      filter.location = sanitizeLocation(req.query.location, req.tenantClient);
     if (req.query.session) filter.session = sanitizeSession(req.query.session);
     if (req.query.type) filter.type = sanitizeType(req.query.type);
     if (req.query.email) filter.email = sanitizeEmail(req.query.email);
@@ -846,6 +977,12 @@ app.get("/admin/get-amounts", verifyAdmin, async (req, res) => {
       malete: null,
       ila: null,
       registrationOpen: state ? state.open : false,
+      locations: settings.map((setting) => ({
+        name: setting.location,
+        rentAmount: setting.rentAmount,
+        roomCount:
+          setting.roomCount ?? (setting.location === "Ila-Orangun" ? 22 : 10),
+      })),
     };
     settings.forEach((s) => {
       if (s.location === "Malete") r.malete = s.rentAmount;
@@ -854,6 +991,163 @@ app.get("/admin/get-amounts", verifyAdmin, async (req, res) => {
     res.json(r);
   } catch (e) {
     res.status(500).json({ error: e.message });
+  }
+});
+
+app.get("/admin/properties", verifyAdmin, async (req, res) => {
+  try {
+    const properties = await Property.find().sort({ name: 1 });
+    const result = await Promise.all(
+      properties.map(async (property) => ({
+        ...property.toObject(),
+        settings: await Settings.findOne({ location: property.name }),
+        units: await Unit.find({ propertyId: property._id }).sort({ unitCode: 1 }),
+      })),
+    );
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post("/admin/properties", verifyAdmin, async (req, res) => {
+  try {
+    const name = sanitizeString(req.body.name);
+    const propertyType = sanitizeString(req.body.propertyType || "hostel").toLowerCase();
+    const address = sanitizeString(req.body.address);
+    const rentAmount = Number(req.body.rentAmount ?? 0);
+    const supportedTypes = ["hostel", "apartment", "house", "commercial", "mixed", "other"];
+    if (
+      !name ||
+      name.length > 100 ||
+      !supportedTypes.includes(propertyType) ||
+      !Number.isFinite(rentAmount) ||
+      rentAmount < 0
+    ) {
+      return res.status(400).json({ error: "Invalid property details" });
+    }
+    if (await Property.findOne({ name }))
+      return res.status(409).json({ error: "Property already exists" });
+
+    const property = await Property.create({ name, propertyType, address });
+    await Settings.create({ location: name, rentAmount, roomCount: 0 });
+    if (req.tenantClient) {
+      await Client.updateOne(
+        { _id: req.tenantClient._id },
+        { $addToSet: { locations: name } },
+      );
+    }
+    res.status(201).json({ ...property.toObject(), units: [] });
+  } catch (error) {
+    if (error.code === 11000)
+      return res.status(409).json({ error: "Property already exists" });
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.put("/admin/properties/:id", verifyAdmin, async (req, res) => {
+  try {
+    if (!isValidObjectId(req.params.id))
+      return res.status(400).json({ error: "Invalid property ID" });
+    const updates = {};
+    if (req.body.address != null) updates.address = sanitizeString(req.body.address);
+    if (req.body.propertyType != null) {
+      const type = sanitizeString(req.body.propertyType).toLowerCase();
+      if (!["hostel", "apartment", "house", "commercial", "mixed", "other"].includes(type))
+        return res.status(400).json({ error: "Invalid property type" });
+      updates.propertyType = type;
+    }
+    if (req.body.status != null) {
+      if (!["active", "archived"].includes(req.body.status))
+        return res.status(400).json({ error: "Invalid property status" });
+      updates.status = req.body.status;
+    }
+    const property = await Property.findByIdAndUpdate(req.params.id, updates, {
+      new: true,
+      runValidators: true,
+    });
+    if (!property) return res.status(404).json({ error: "Property not found" });
+    res.json(property);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post("/admin/properties/:id/units", verifyAdmin, async (req, res) => {
+  try {
+    if (!isValidObjectId(req.params.id))
+      return res.status(400).json({ error: "Invalid property ID" });
+    const property = await Property.findOne({ _id: req.params.id, status: "active" });
+    if (!property) return res.status(404).json({ error: "Property not found" });
+    const unitCode = sanitizeString(req.body.unitCode);
+    const label = sanitizeString(req.body.label);
+    const unitType = sanitizeString(req.body.unitType || "room").toLowerCase();
+    const rentAmount =
+      req.body.rentAmount == null || req.body.rentAmount === ""
+        ? null
+        : Number(req.body.rentAmount);
+    if (!unitCode || !label || unitCode.length > 60 || label.length > 100)
+      return res.status(400).json({ error: "Unit code and label are required" });
+    if (!["room", "apartment", "house", "shop", "office", "other"].includes(unitType))
+      return res.status(400).json({ error: "Invalid unit type" });
+    if (rentAmount != null && (!Number.isFinite(rentAmount) || rentAmount < 0))
+      return res.status(400).json({ error: "Invalid unit rent" });
+    const unit = await Unit.create({
+      propertyId: property._id,
+      location: property.name,
+      unitCode,
+      label,
+      unitType,
+      rentAmount,
+    });
+    res.status(201).json(unit);
+  } catch (error) {
+    if (error.code === 11000)
+      return res.status(409).json({ error: "Unit code already exists for this property" });
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.put("/admin/properties/:id/units/:unitId", verifyAdmin, async (req, res) => {
+  try {
+    if (!isValidObjectId(req.params.id) || !isValidObjectId(req.params.unitId))
+      return res.status(400).json({ error: "Invalid property or unit ID" });
+    const unit = await Unit.findOne({
+      _id: req.params.unitId,
+      propertyId: req.params.id,
+    });
+    if (!unit) return res.status(404).json({ error: "Unit not found" });
+    for (const field of ["unitCode", "label"]) {
+      if (req.body[field] != null) {
+        const value = sanitizeString(req.body[field]);
+        if (!value || value.length > (field === "label" ? 100 : 60))
+          return res.status(400).json({ error: `Invalid ${field}` });
+        unit[field] = value;
+      }
+    }
+    if (req.body.unitType != null) unit.unitType = req.body.unitType;
+    if (req.body.status != null) unit.status = req.body.status;
+    if (req.body.rentAmount != null) unit.rentAmount = Number(req.body.rentAmount);
+    await unit.save();
+    res.json(unit);
+  } catch (error) {
+    if (error.code === 11000)
+      return res.status(409).json({ error: "Unit code already exists for this property" });
+    res.status(400).json({ error: error.message });
+  }
+});
+
+app.delete("/admin/properties/:id/units/:unitId", verifyAdmin, async (req, res) => {
+  try {
+    if (!isValidObjectId(req.params.id) || !isValidObjectId(req.params.unitId))
+      return res.status(400).json({ error: "Invalid property or unit ID" });
+    const unit = await Unit.findOne({ _id: req.params.unitId, propertyId: req.params.id });
+    if (!unit) return res.status(404).json({ error: "Unit not found" });
+    unit.status = "inactive";
+    await unit.save();
+    res.json({ message: "Unit archived" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -882,17 +1176,38 @@ app.put("/admin/set-registration", verifyAdmin, async (req, res) => {
 app.put("/admin/set-amount", verifyAdmin, async (req, res) => {
   try {
     const { malete, ila } = req.body;
+    if (Array.isArray(req.body.locations)) {
+      for (const item of req.body.locations) {
+        const location = sanitizeLocation(item.name, req.tenantClient);
+        const rentAmount = Number(item.rentAmount);
+        const updates = { rentAmount };
+        if (item.roomCount != null) {
+          const roomCount = Number(item.roomCount);
+          if (!Number.isInteger(roomCount) || roomCount < 0 || roomCount > 10000)
+            return res.status(400).json({ error: "Invalid room count" });
+          updates.roomCount = roomCount;
+        }
+        if (!location || !Number.isFinite(rentAmount) || rentAmount < 0) {
+          return res.status(400).json({ error: "Invalid location settings" });
+        }
+        await Settings.findOneAndUpdate(
+          { location },
+          updates,
+          { upsert: true, new: true, runValidators: true },
+        );
+      }
+    }
     if (malete != null)
       await Settings.findOneAndUpdate(
         { location: "Malete" },
         { rentAmount: +malete },
-        { upsert: true },
+        { upsert: true, runValidators: true },
       );
     if (ila != null)
       await Settings.findOneAndUpdate(
         { location: "Ila-Orangun" },
         { rentAmount: +ila },
-        { upsert: true },
+        { upsert: true, runValidators: true },
       );
     res.json({ message: "Updated" });
   } catch (e) {
@@ -919,6 +1234,8 @@ app.post("/renew/:id", verifyAdmin, async (req, res) => {
     const setting = await Settings.findOne({ location: orig.location });
     await new User({
       location: orig.location,
+      propertyId: orig.propertyId,
+      unitId: orig.unitId,
       type: orig.type || "tenant",
       name: orig.name,
       email: req.body.email || orig.email,
@@ -1003,8 +1320,9 @@ app.delete("/users/delete-bulk", verifyAdmin, async (req, res) => {
 app.get("/export-users", verifyAdmin, async (req, res) => {
   try {
     const users = await User.find();
+    const locations = await Settings.find().distinct("location");
     const wb = new ExcelJS.Workbook();
-    for (const loc of ["Malete", "Ila-Orangun"]) {
+    for (const loc of locations) {
       for (const type of ["tenant", "shop"]) {
         const ws = wb.addWorksheet(`${loc} ${type}s`);
         ws.columns = [
@@ -1130,13 +1448,46 @@ app.put("/admin/user/:id", verifyAdmin, async (req, res) => {
     if (phone) user.phone = sanitizeString(phone);
     if (guardianName) user.guardianName = sanitizeString(guardianName);
     if (guardianPhone) user.guardianPhone = sanitizeString(guardianPhone);
-    if (location) user.location = location;
+    if (location) user.location = sanitizeLocation(location, req.tenantClient);
     if (type) user.type = type;
     if (level) user.level = sanitizeString(level);
     if (roomNo) user.roomNo = sanitizeString(roomNo);
     if (session) user.session = sanitizeString(session);
     if (amount != null) user.amount = Number(amount);
     if (paymentDate) user.paymentDate = sanitizeString(paymentDate);
+
+    if (location || roomNo) {
+      const property = await Property.findOne({
+        name: user.location,
+        status: "active",
+      });
+      const unit = property
+        ? await Unit.findOne({
+            propertyId: property._id,
+            label: user.roomNo,
+            status: { $ne: "inactive" },
+          })
+        : null;
+      if (!property || !unit)
+        return res.status(400).json({ error: "Select a valid property and unit" });
+      const assignmentChanged =
+        user.propertyId?.toString() !== property._id.toString() ||
+        user.unitId?.toString() !== unit._id.toString();
+      if (assignmentChanged) {
+        if (unit.status !== "available")
+          return res.status(400).json({ error: "That unit is unavailable" });
+        const occupied = await User.findOne({
+          _id: { $ne: user._id },
+          location: user.location,
+          roomNo: user.roomNo,
+          session: user.session,
+        });
+        if (occupied)
+          return res.status(409).json({ error: "That unit is assigned for this session" });
+      }
+      user.propertyId = property._id;
+      user.unitId = unit._id;
+    }
 
     await user.save();
     res.json({ message: "User updated successfully", user });
@@ -1145,18 +1496,60 @@ app.put("/admin/user/:id", verifyAdmin, async (req, res) => {
   }
 });
 
+app.use((error, req, res, next) => {
+  if (res.headersSent) return next(error);
+  const tooLarge = error instanceof MulterError && error.code === "LIMIT_FILE_SIZE";
+  const status = tooLarge ? 413 : 400;
+  res.status(status).json({
+    error: tooLarge ? "Uploaded file exceeds the 5MB limit" : error.message,
+  });
+});
+
 async function seed() {
-  for (const loc of ["Malete", "Ila-Orangun"]) {
+  for (const { name: loc, unitCount } of [
+    { name: "Malete", unitCount: 10 },
+    { name: "Ila-Orangun", unitCount: 22 },
+  ]) {
+    let property = await Property.findOne({ name: loc });
+    if (!property) property = await Property.create({ name: loc });
     if (!(await Settings.findOne({ location: loc }))) {
       await Settings.create({
         location: loc,
         rentAmount: 150000,
         registrationOpen: true,
+        roomCount: unitCount,
       });
     } else {
       await Settings.updateOne(
         { location: loc, registrationOpen: { $exists: false } },
         { $set: { registrationOpen: true } },
+      );
+    }
+    for (let index = 1; index <= unitCount; index += 1) {
+      await Unit.updateOne(
+        { propertyId: property._id, unitCode: `room-${index}` },
+        {
+          $setOnInsert: {
+            propertyId: property._id,
+            location: loc,
+            unitCode: `room-${index}`,
+            label: `Room ${index}`,
+            unitType: "room",
+          },
+        },
+        { upsert: true },
+      );
+      const unit = await Unit.findOne({
+        propertyId: property._id,
+        unitCode: `room-${index}`,
+      });
+      await User.updateMany(
+        {
+          location: loc,
+          roomNo: unit.label,
+          $or: [{ propertyId: null }, { propertyId: { $exists: false } }],
+        },
+        { $set: { propertyId: property._id, unitId: unit._id } },
       );
     }
   }

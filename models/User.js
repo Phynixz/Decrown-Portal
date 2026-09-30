@@ -1,7 +1,17 @@
 ﻿const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({
-  location: { type: String, enum: ["Malete", "Ila-Orangun"], required: true },
+  location: { type: String, required: true, trim: true },
+  propertyId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Property",
+    default: null,
+  },
+  unitId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Unit",
+    default: null,
+  },
   type: { type: String, enum: ["tenant", "shop"], default: "tenant" },
   name: { type: String, required: true, trim: true },
   email: {

@@ -3,8 +3,6 @@ import { Link } from "react-router-dom";
 import { Camera, CreditCard, FileText, File } from "lucide-react";
 import "../styles/form.css";
 
-const ROOM_COUNTS = { Malete: 10, "Ila-Orangun": 22 };
-
 const RULES = {
   name: (v) => /^[a-zA-Z\s]{3,50}$/.test(v.trim()),
   guardianName: (v) => /^[a-zA-Z\s]{3,50}$/.test(v.trim()),
@@ -45,13 +43,14 @@ export default function RegistrationForm() {
   const [session, setSession] = useState("Loading session…");
   const [registrationOpen, setRegistrationOpen] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [locations, setLocations] = useState([]);
 
   const displayLocation =
     location === "Malete"
       ? "Malete Campus"
-      : location === "Ila-Orangun"
-        ? "Ila-Orangun Campus"
-        : "Choose Campus";
+      : location
+        ? `${location} Campus`
+        : "Choose Location";
 
   // Load session metadata on mount
   useEffect(() => {
@@ -65,9 +64,18 @@ export default function RegistrationForm() {
         /* ignore */
       }
     })();
+    fetch("/tenant-config")
+      .then((res) => res.json())
+      .then((data) => setLocations(data.locations || []))
+      .catch(() => setLocations([]));
   }, []);
 
-  // Load rent amount when location changes
+  const availableUnits =
+    locations.find((item) => item.name === location)?.units?.filter(
+      (unit) => unit.status === "available",
+    ) || [];
+
+  // Load the property's default rent, or the selected unit's override.
   useEffect(() => {
     if (!location) {
       setAmount("");
@@ -76,7 +84,9 @@ export default function RegistrationForm() {
     (async () => {
       try {
         const res = await fetch(
-          "/current-amount?location=" + encodeURIComponent(location),
+          "/current-amount?location=" +
+            encodeURIComponent(location) +
+            (roomNo ? "&unit=" + encodeURIComponent(roomNo) : ""),
         );
         const data = await res.json();
         if (res.ok) setAmount("₦" + Number(data.amount).toLocaleString());
@@ -84,7 +94,7 @@ export default function RegistrationForm() {
         /* ignore */
       }
     })();
-  }, [location]);
+  }, [location, roomNo]);
 
   function handleUpload(field, file) {
     if (!file) return;
@@ -338,8 +348,13 @@ export default function RegistrationForm() {
                     }}
                   >
                     <option value="">Select Location</option>
-                    <option value="Malete">Malete Campus</option>
-                    <option value="Ila-Orangun">Ila-Orangun Campus</option>
+                    {locations
+                      .filter((item) => item.status === "active")
+                      .map((item) => (
+                      <option key={item.name} value={item.name}>
+                        {item.name}
+                      </option>
+                      ))}
                   </select>
                   <small className="err-msg">
                     Please select a campus location
@@ -463,14 +478,11 @@ export default function RegistrationForm() {
                     onChange={(e) => setRoomNo(e.target.value)}
                   >
                     <option value="">Select Room</option>
-                    {Array.from(
-                      { length: ROOM_COUNTS[location] || 0 },
-                      (_, i) => (
-                        <option key={i} value={"Room " + (i + 1)}>
-                          Room {i + 1}
-                        </option>
-                      ),
-                    )}
+                    {availableUnits.map((unit) => (
+                      <option key={unit.id} value={unit.label}>
+                        {unit.label}
+                      </option>
+                    ))}
                   </select>
                   <small className="err-msg">Please select a room</small>
                 </div>

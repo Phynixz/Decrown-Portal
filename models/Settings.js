@@ -3,8 +3,8 @@ const mongoose = require("mongoose");
 const settingsSchema = new mongoose.Schema({
   location: {
     type: String,
-    enum: ["Malete", "Ila-Orangun"],
     required: true,
+    trim: true,
     unique: true,
   },
   rentAmount: {
@@ -14,6 +14,10 @@ const settingsSchema = new mongoose.Schema({
   registrationOpen: {
     type: Boolean,
     default: true,
+  },
+  roomCount: {
+    type: Number,
+    min: 0,
   },
 });
 

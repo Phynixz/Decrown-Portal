@@ -43,45 +43,6 @@ import {
 } from "../api.js";
 import "../styles/admin.css";
 
-const LOCATION_ROOMS = {
-  Malete: [
-    "Room 1",
-    "Room 2",
-    "Room 3",
-    "Room 4",
-    "Room 5",
-    "Room 6",
-    "Room 7",
-    "Room 8",
-    "Room 9",
-    "Room 10",
-  ],
-  "Ila-Orangun": [
-    "Room 1",
-    "Room 2",
-    "Room 3",
-    "Room 4",
-    "Room 5",
-    "Room 6",
-    "Room 7",
-    "Room 8",
-    "Room 9",
-    "Room 10",
-    "Room 11",
-    "Room 12",
-    "Room 13",
-    "Room 14",
-    "Room 15",
-    "Room 16",
-    "Room 17",
-    "Room 18",
-    "Room 19",
-    "Room 20",
-    "Room 21",
-    "Room 22",
-  ],
-};
-
 const avatarFor = (name) =>
   "https://ui-avatars.com/api/?name=" +
   encodeURIComponent(name || "?") +
@@ -99,6 +60,7 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
 
   const [allUsers, setAllUsers] = useState([]);
+  const [locations, setLocations] = useState([]);
   const [currentLocation, setCurrentLocation] = useState("Malete");
   const [currentTab, setCurrentTab] = useState("all");
   const [currentSession, setCurrentSession] = useState(null);
@@ -106,7 +68,7 @@ export default function AdminDashboard() {
   const [sessionFilter, setSessionFilter] = useState("all");
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState("");
-  const [badges, setBadges] = useState({ Malete: 0, "Ila-Orangun": 0 });
+  const [badges, setBadges] = useState({});
 
   // Drawer
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -129,8 +91,22 @@ export default function AdminDashboard() {
   const [regSessions, setRegSessions] = useState([]);
 
   const [rentModal, setRentModal] = useState(false);
-  const [rentMalete, setRentMalete] = useState("");
-  const [rentIla, setRentIla] = useState("");
+  const [rentValues, setRentValues] = useState([]);
+  const [inventoryModal, setInventoryModal] = useState(false);
+  const [propertyInventory, setPropertyInventory] = useState([]);
+  const [propertyDraft, setPropertyDraft] = useState({
+    name: "",
+    address: "",
+    propertyType: "hostel",
+    rentAmount: "",
+  });
+  const [unitDraft, setUnitDraft] = useState({
+    propertyId: "",
+    unitCode: "",
+    label: "",
+    unitType: "room",
+    rentAmount: "",
+  });
 
   const [editModal, setEditModal] = useState(false);
   const [editUser, setEditUser] = useState(null);
@@ -183,7 +159,10 @@ export default function AdminDashboard() {
   const adminName = getAdminName();
   const adminRole = getAdminRole();
 
-  const roomKeys = LOCATION_ROOMS[currentLocation] || [];
+  const currentProperty = locations.find(
+    (location) => location.name === currentLocation,
+  );
+  const roomKeys = (currentProperty?.units || []).map((unit) => unit.label);
 
   // ── Guards ─────────────────────────────────────────────────────
   useEffect(() => {
@@ -229,6 +208,25 @@ export default function AdminDashboard() {
       } catch {
         /* ignore */
       }
+      try {
+        const config = await getJSON("/tenant-config");
+        if (config.locations?.length) {
+          setLocations((current) =>
+            config.locations.map((location) => ({
+              ...location,
+              rentAmount:
+                current.find((item) => item.name === location.name)?.rentAmount || 0,
+            })),
+          );
+          setCurrentLocation((current) =>
+            config.locations.some((location) => location.name === current)
+              ? current
+              : config.locations[0].name,
+          );
+        }
+      } catch {
+        /* ignore */
+      }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -250,7 +248,7 @@ export default function AdminDashboard() {
   }, []);
 
   const refreshBadges = useCallback(async () => {
-    for (const loc of ["Malete", "Ila-Orangun"]) {
+    for (const { name: loc } of locations) {
       try {
         const d = await getJSON(
           "/users?location=" + encodeURIComponent(loc),
@@ -261,7 +259,7 @@ export default function AdminDashboard() {
         /* ignore */
       }
     }
-  }, []);
+  }, [locations]);
 
   useEffect(() => {
     loadUsers(currentLocation);
@@ -452,25 +450,144 @@ export default function AdminDashboard() {
     setRentModal(true);
     try {
       const d = await getJSON("/admin/get-amounts", getToken());
-      setRentMalete(d.malete != null ? d.malete : "");
-      setRentIla(d.ila != null ? d.ila : "");
+      setRentValues(
+        (d.locations || []).map((location) => ({
+          ...location,
+          rentAmount: String(location.rentAmount ?? ""),
+        })),
+      );
     } catch {
       /* ignore */
     }
   }
 
   async function saveRent() {
-    if (!rentMalete.trim() && !rentIla.trim())
-      return alert("Enter at least one value");
-    const payload = {};
-    if (rentMalete.trim()) payload.malete = +rentMalete;
-    if (rentIla.trim()) payload.ila = +rentIla;
+    if (!rentValues.length) return alert("No locations are configured");
+    const payload = {
+      locations: rentValues.map((location) => ({
+        name: location.name,
+        rentAmount: Number(location.rentAmount),
+      })),
+    };
     try {
       await sendJSON("PUT", "/admin/set-amount", payload, getToken());
       alert("Rent updated");
       setRentModal(false);
     } catch {
       alert("Update failed");
+    }
+  }
+
+  async function refreshPropertyInventory() {
+    const properties = await getJSON("/admin/properties", getToken());
+    setPropertyInventory(properties);
+    if (!unitDraft.propertyId && properties[0]) {
+      setUnitDraft((draft) => ({ ...draft, propertyId: properties[0]._id }));
+    }
+  }
+
+  async function openInventoryModal() {
+    setInventoryModal(true);
+    try {
+      await refreshPropertyInventory();
+    } catch (error) {
+      alert("Could not load property inventory: " + error.message);
+    }
+  }
+
+  async function createProperty(e) {
+    e.preventDefault();
+    try {
+      await sendJSON("POST", "/admin/properties", propertyDraft, getToken());
+      setPropertyDraft({ name: "", address: "", propertyType: "hostel", rentAmount: "" });
+      await refreshPropertyInventory();
+      const config = await getJSON("/tenant-config");
+      setLocations(config.locations || []);
+    } catch (error) {
+      alert(error.message);
+    }
+  }
+
+  async function createUnit(e) {
+    e.preventDefault();
+    if (!unitDraft.propertyId) return alert("Select a property first");
+    try {
+      await sendJSON(
+        "POST",
+        `/admin/properties/${unitDraft.propertyId}/units`,
+        unitDraft,
+        getToken(),
+      );
+      setUnitDraft((draft) => ({
+        ...draft,
+        unitCode: "",
+        label: "",
+        rentAmount: "",
+      }));
+      await refreshPropertyInventory();
+      const config = await getJSON("/tenant-config");
+      setLocations(config.locations || []);
+    } catch (error) {
+      alert(error.message);
+    }
+  }
+
+  async function updateUnit(propertyId, unitId, updates) {
+    try {
+      await sendJSON(
+        "PUT",
+        `/admin/properties/${propertyId}/units/${unitId}`,
+        updates,
+        getToken(),
+      );
+      await refreshPropertyInventory();
+      const config = await getJSON("/tenant-config");
+      setLocations(config.locations || []);
+    } catch (error) {
+      alert(error.message);
+    }
+  }
+
+  async function updatePropertyStatus(propertyId, status) {
+    try {
+      await sendJSON(
+        "PUT",
+        `/admin/properties/${propertyId}`,
+        { status },
+        getToken(),
+      );
+      await refreshPropertyInventory();
+      const config = await getJSON("/tenant-config");
+      setLocations(config.locations || []);
+      if (
+        status === "archived" &&
+        !config.locations?.some(
+          (location) =>
+            location.name === currentLocation && location.status === "active",
+        )
+      ) {
+        setCurrentLocation(config.locations?.[0]?.name || "");
+      }
+    } catch (error) {
+      alert(error.message);
+    }
+  }
+
+  async function archiveUnit(propertyId, unitId) {
+    if (!confirm("Archive this unit from new applications?")) return;
+    try {
+      await fetch(`/admin/properties/${propertyId}/units/${unitId}`, {
+        method: "DELETE",
+        headers: { Authorization: getToken() },
+      }).then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Could not archive unit");
+      });
+      await refreshPropertyInventory();
+      const config = await getJSON("/tenant-config");
+      setLocations(config.locations || []);
+    } catch (error) {
+      alert(error.message);
     }
   }
 
@@ -732,7 +849,7 @@ export default function AdminDashboard() {
 
         <div className="nav-label">Locations</div>
         <nav>
-          {["Malete", "Ila-Orangun"].map((loc) => (
+          {locations.map(({ name: loc }) => (
             <button
               key={loc}
               className={"loc-btn" + (currentLocation === loc ? " active" : "")}
@@ -743,13 +860,16 @@ export default function AdminDashboard() {
             >
               <Home size={14} /> {loc}{" "}
               <span className="loc-count">
-                {loc === "Malete" ? badges.Malete : badges["Ila-Orangun"]}
+                {badges[loc] || 0}
               </span>
             </button>
           ))}
         </nav>
 
         <div className="nav-label">Tools</div>
+        <button className="side-action" onClick={openInventoryModal}>
+          Manage Properties &amp; Units
+        </button>
         <button className="side-action" onClick={openRentModal}>
           Change Rent
         </button>
@@ -927,7 +1047,17 @@ export default function AdminDashboard() {
                     />
                   ));
                 }
-                return <EmptyRoomCard key={room} room={room} />;
+                const unit = currentProperty?.units?.find(
+                  (item) => item.label === room,
+                );
+                return (
+                  <EmptyRoomCard
+                    key={room}
+                    room={room}
+                    status={unit?.status}
+                    unitType={unit?.unitType}
+                  />
+                );
               })}
               {(byRoom.Unassigned || []).map((u) => (
                 <RoomCard
@@ -1257,7 +1387,7 @@ export default function AdminDashboard() {
             className="backdrop open"
             onClick={() => setEditModal(false)}
           ></div>
-          <div className="modal open w-[600px]">
+          <div className="modal open w-150">
             <div className="modal-head">
               <h3>Edit Tenant Information</h3>
               <button onClick={() => setEditModal(false)}>✕</button>
@@ -1289,8 +1419,11 @@ export default function AdminDashboard() {
                     setEditForm((f) => ({ ...f, location: e.target.value }))
                   }
                 >
-                  <option value="Malete">Malete</option>
-                  <option value="Ila-Orangun">Ila-Orangun</option>
+                  {locations.map(({ name }) => (
+                    <option key={name} value={name}>
+                      {name}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="mfield">
@@ -1372,24 +1505,25 @@ export default function AdminDashboard() {
               <button onClick={() => setRentModal(false)}>✕</button>
             </div>
             <div className="modal-body">
-              <div className="mfield">
-                <label>Malete (₦)</label>
-                <input
-                  type="number"
-                  placeholder="150000"
-                  value={rentMalete}
-                  onChange={(e) => setRentMalete(e.target.value)}
-                />
-              </div>
-              <div className="mfield">
-                <label>Ila-Orangun (₦)</label>
-                <input
-                  type="number"
-                  placeholder="120000"
-                  value={rentIla}
-                  onChange={(e) => setRentIla(e.target.value)}
-                />
-              </div>
+              {rentValues.map((location, index) => (
+                <div className="mfield" key={location.name}>
+                  <label>{location.name} rent (₦)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={location.rentAmount}
+                    onChange={(e) =>
+                      setRentValues((current) =>
+                        current.map((item, itemIndex) =>
+                          itemIndex === index
+                            ? { ...item, rentAmount: e.target.value }
+                            : item,
+                        ),
+                      )
+                    }
+                  />
+                </div>
+              ))}
             </div>
             <div className="modal-foot">
               <button
@@ -1401,6 +1535,229 @@ export default function AdminDashboard() {
               <button className="mbtn primary" onClick={saveRent}>
                 Save
               </button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {inventoryModal && (
+        <>
+          <div
+            className="backdrop open"
+            onClick={() => setInventoryModal(false)}
+          ></div>
+          <div className="modal open">
+            <div className="modal-head">
+              <h3>Property Inventory</h3>
+              <button onClick={() => setInventoryModal(false)}>✕</button>
+            </div>
+            <div className="modal-body">
+              <form onSubmit={createProperty}>
+                <h4>Add Property</h4>
+                <div className="mfield">
+                  <label>Property name</label>
+                  <input
+                    required
+                    maxLength={100}
+                    value={propertyDraft.name}
+                    onChange={(e) =>
+                      setPropertyDraft((draft) => ({ ...draft, name: e.target.value }))
+                    }
+                  />
+                </div>
+                <div className="mfield">
+                  <label>Property type</label>
+                  <select
+                    value={propertyDraft.propertyType}
+                    onChange={(e) =>
+                      setPropertyDraft((draft) => ({
+                        ...draft,
+                        propertyType: e.target.value,
+                      }))
+                    }
+                  >
+                    <option value="hostel">Hostel</option>
+                    <option value="apartment">Apartment building</option>
+                    <option value="house">House</option>
+                    <option value="commercial">Commercial</option>
+                    <option value="mixed">Mixed use</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div className="mfield">
+                  <label>Address</label>
+                  <input
+                    value={propertyDraft.address}
+                    onChange={(e) =>
+                      setPropertyDraft((draft) => ({ ...draft, address: e.target.value }))
+                    }
+                  />
+                </div>
+                <div className="mfield">
+                  <label>Default rent amount</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={propertyDraft.rentAmount}
+                    onChange={(e) =>
+                      setPropertyDraft((draft) => ({
+                        ...draft,
+                        rentAmount: e.target.value,
+                      }))
+                    }
+                  />
+                </div>
+                <button className="mbtn primary" type="submit">
+                  Add Property
+                </button>
+              </form>
+
+              <form onSubmit={createUnit}>
+                <h4>Add Unit</h4>
+                <div className="mfield">
+                  <label>Property</label>
+                  <select
+                    required
+                    value={unitDraft.propertyId}
+                    onChange={(e) =>
+                      setUnitDraft((draft) => ({
+                        ...draft,
+                        propertyId: e.target.value,
+                      }))
+                    }
+                  >
+                    <option value="">Select property</option>
+                    {propertyInventory
+                      .filter((property) => property.status === "active")
+                      .map((property) => (
+                        <option key={property._id} value={property._id}>
+                          {property.name}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+                <div className="mfield">
+                  <label>Unit code</label>
+                  <input
+                    required
+                    placeholder="A-204"
+                    value={unitDraft.unitCode}
+                    onChange={(e) =>
+                      setUnitDraft((draft) => ({ ...draft, unitCode: e.target.value }))
+                    }
+                  />
+                </div>
+                <div className="mfield">
+                  <label>Display name</label>
+                  <input
+                    required
+                    placeholder="Apartment 204"
+                    value={unitDraft.label}
+                    onChange={(e) =>
+                      setUnitDraft((draft) => ({ ...draft, label: e.target.value }))
+                    }
+                  />
+                </div>
+                <div className="mfield">
+                  <label>Unit type</label>
+                  <select
+                    value={unitDraft.unitType}
+                    onChange={(e) =>
+                      setUnitDraft((draft) => ({ ...draft, unitType: e.target.value }))
+                    }
+                  >
+                    <option value="room">Room</option>
+                    <option value="apartment">Apartment</option>
+                    <option value="house">House</option>
+                    <option value="shop">Shop</option>
+                    <option value="office">Office</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div className="mfield">
+                  <label>Rent override (optional)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={unitDraft.rentAmount}
+                    onChange={(e) =>
+                      setUnitDraft((draft) => ({
+                        ...draft,
+                        rentAmount: e.target.value,
+                      }))
+                    }
+                  />
+                </div>
+                <button className="mbtn primary" type="submit">
+                  Add Unit
+                </button>
+              </form>
+
+              {propertyInventory.map((property) => (
+                <section key={property._id} className="inventory-property">
+                  <header>
+                    <strong>{property.name}</strong>
+                    <span>{property.propertyType}</span>
+                    <button
+                      className="mbtn ghost"
+                      onClick={() =>
+                        updatePropertyStatus(
+                          property._id,
+                          property.status === "active" ? "archived" : "active",
+                        )
+                      }
+                    >
+                      {property.status === "active" ? "Archive property" : "Restore property"}
+                    </button>
+                  </header>
+                  <ul>
+                    {property.units.map((unit) => (
+                      <li key={unit._id}>
+                        <span>
+                          {unit.label} · {unit.unitType} · {unit.status}
+                        </span>
+                        {unit.status !== "inactive" && (
+                          <>
+                            <button
+                              className="mbtn ghost"
+                              onClick={() =>
+                                updateUnit(property._id, unit._id, {
+                                  status:
+                                    unit.status === "available"
+                                      ? "maintenance"
+                                      : "available",
+                                })
+                              }
+                            >
+                              {unit.status === "available"
+                                ? "Mark maintenance"
+                                : "Mark available"}
+                            </button>
+                            <button
+                              className="mbtn ghost"
+                              onClick={() => archiveUnit(property._id, unit._id)}
+                            >
+                              Archive unit
+                            </button>
+                          </>
+                        )}
+                        {unit.status === "inactive" && (
+                          <button
+                            className="mbtn ghost"
+                            onClick={() =>
+                              updateUnit(property._id, unit._id, {
+                                status: "available",
+                              })
+                            }
+                          >
+                            Restore unit
+                          </button>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              ))}
             </div>
           </div>
         </>
@@ -1853,20 +2210,35 @@ export default function AdminDashboard() {
 }
 
 // ── Room card helpers ────────────────────────────────────────────────
-function EmptyRoomCard({ room }) {
+function EmptyRoomCard({ room, status = "available", unitType = "room" }) {
+  const unavailable = status !== "available";
+  const statusLabel =
+    status === "occupied"
+      ? "Occupied"
+      : status === "maintenance"
+        ? "Maintenance"
+        : unavailable
+          ? "Unavailable"
+          : "Available";
   return (
     <article className="card room-empty">
       <div className="card-head">
         <div className="card-identity">
           <div className="card-name">{room}</div>
-          <div className="card-contact">Available for this session</div>
+          <div className="card-contact">
+            {unavailable ? "Unavailable for new applications" : "Available for this session"}
+          </div>
         </div>
-        <div className="room-chip room-available">Available</div>
+        <div className={"room-chip " + (unavailable ? "room-pending" : "room-available")}>
+          {statusLabel}
+        </div>
       </div>
       <div className="card-details">
         <div className="det">
           <div className="det-label">Status</div>
-          <div className="det-val">Empty</div>
+          <div className="det-val">
+            {status === "occupied" ? "In use" : unitType}
+          </div>
         </div>
       </div>
     </article>

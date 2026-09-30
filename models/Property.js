@@ -1,0 +1,23 @@
+const mongoose = require("mongoose");
+
+const propertySchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true, trim: true },
+    propertyType: {
+      type: String,
+      enum: ["hostel", "apartment", "house", "commercial", "mixed", "other"],
+      default: "hostel",
+    },
+    address: { type: String, trim: true, default: "" },
+    status: {
+      type: String,
+      enum: ["active", "archived"],
+      default: "active",
+    },
+  },
+  { timestamps: true },
+);
+
+propertySchema.index({ name: 1 }, { unique: true });
+
+module.exports = mongoose.model("Property", propertySchema);

@@ -21,7 +21,9 @@ if (hasCloudinaryConfig) {
     params: async (req, file) => {
       const isPDF = file.mimetype === "application/pdf";
       return {
-        folder: "receipt-system",
+        folder: req.tenantClient
+          ? `receipt-system/${req.tenantClient.subdomain}`
+          : "receipt-system",
         resource_type: isPDF ? "raw" : "image",
       };
     },
@@ -30,4 +32,21 @@ if (hasCloudinaryConfig) {
   storage = multer.memoryStorage();
 }
 
-module.exports = multer({ storage });
+const allowedMimeTypes = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+  "application/pdf",
+]);
+
+module.exports = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024, files: 4, fields: 30 },
+  fileFilter(req, file, callback) {
+    if (!allowedMimeTypes.has(file.mimetype)) {
+      return callback(new Error("Only JPEG, PNG, WebP, GIF, and PDF files are allowed"));
+    }
+    callback(null, true);
+  },
+});

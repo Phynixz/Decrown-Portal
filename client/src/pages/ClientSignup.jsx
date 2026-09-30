@@ -7,7 +7,8 @@ import { validateEmail } from "../utils/validation.js";
 import "../styles/login.css";
 import "../styles/signup.css";
 
-const PLATFORM_DOMAIN = "yourplatform.com"; // update once your domain is set
+const PLATFORM_DOMAIN =
+  import.meta.env.VITE_PLATFORM_ROOT_DOMAIN || "yourplatform.com";
 
 export default function ClientSignup() {
   const { dark, toggleTheme } = useTheme();
@@ -19,6 +20,7 @@ export default function ClientSignup() {
   const [contactName, setContactName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [locations, setLocations] = useState("");
   const [subdomain, setSubdomain] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -40,9 +42,12 @@ export default function ClientSignup() {
     const contact = contactName.trim();
     const trimmedEmail = email.trim();
     const sub = subdomain.trim();
+    const selectedLocations = [
+      ...new Set(locations.split(",").map((location) => location.trim()).filter(Boolean)),
+    ];
 
-    if (!name || !contact || !trimmedEmail || !sub || !password) {
-      setErr("Please fill in all required fields.");
+    if (!name || !contact || !trimmedEmail || !sub || !password || !selectedLocations.length) {
+      setErr("Please fill in all required fields, including at least one location.");
       return;
     }
     if (!validateEmail(trimmedEmail)) {
@@ -71,11 +76,16 @@ export default function ClientSignup() {
         email: trimmedEmail,
         phone: phone.trim(),
         subdomain: sub,
+        locations: selectedLocations,
         password,
       });
       setClientId(data.clientId);
       setStep("verify");
-      setNotice("We sent a 6-digit code to " + trimmedEmail);
+      setNotice(
+        data.developmentCode
+          ? `Local verification code: ${data.developmentCode}`
+          : "We sent a 6-digit code to " + trimmedEmail,
+      );
     } catch (e) {
       setErr(e.message);
     } finally {
@@ -252,6 +262,18 @@ export default function ClientSignup() {
                         autoComplete="tel"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="field">
+                      <label className="field-label" htmlFor="cs-locations">
+                        Locations
+                      </label>
+                      <input
+                        id="cs-locations"
+                        placeholder="e.g. North Campus, South Campus"
+                        value={locations}
+                        onChange={(e) => setLocations(e.target.value)}
                       />
                     </div>
 
