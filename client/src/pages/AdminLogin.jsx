@@ -4,10 +4,12 @@ import { Moon, Sun, Home, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { useTheme } from "../theme.js";
 import { setAdminAuth } from "../api.js";
 import { validateEmail } from "../utils/validation.js";
+import { useTenant } from "../tenantContext.jsx";
 import "../styles/login.css";
 
 export default function AdminLogin() {
   const { dark, toggleTheme } = useTheme();
+  const { businessName, branding, locations } = useTenant();
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
@@ -62,7 +64,7 @@ export default function AdminLogin() {
           <div className="panel-left">
             <img
               src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80"
-              alt="De-Crown Cottage hostel exterior"
+              alt={`${businessName} exterior`}
               className="panel-left-bg"
             />
             <div className="panel-left-overlay" />
@@ -75,23 +77,30 @@ export default function AdminLogin() {
 
             <div className="logo-area">
               <Link to="/" className="logo-brand">
-                <span className="logo-name">De-Crown</span>
-                <span className="logo-sub">Cottage</span>
+                {branding?.logoUrl ? (
+                  <img
+                    src={branding.logoUrl}
+                    alt={businessName}
+                    className="h-8 max-w-[180px] object-contain"
+                  />
+                ) : (
+                  <span className="logo-name">{businessName}</span>
+                )}
               </Link>
             </div>
 
             <div className="left-content">
               <p className="welcome-label">Welcome Back</p>
-              <h2>Your hostel dashboard awaits.</h2>
+              <h2>Your property dashboard awaits.</h2>
               <p className="welcome-desc">
                 Sign in to manage rooms, track tenants, review payments, and
-                stay on top of your campus accommodation.
+                stay on top of your property operations.
               </p>
 
               <dl className="stats-grid">
                 <div className="stat-box">
-                  <dd className="stat-num">2</dd>
-                  <dt className="stat-desc">Campus locations</dt>
+                  <dd className="stat-num">{locations?.length || 2}</dd>
+                  <dt className="stat-desc">Locations</dt>
                 </div>
                 <div className="stat-box">
                   <dd className="stat-num">24/7</dd>
@@ -101,7 +110,7 @@ export default function AdminLogin() {
             </div>
 
             <div className="left-footer">
-              <p>© 2025 De-Crown Cottage. All rights reserved.</p>
+              <p>© {new Date().getFullYear()} {businessName}. All rights reserved.</p>
               <Link to="/portal" className="switch-link">
                 <Home size={14} /> I'm a Tenant →
               </Link>
@@ -122,8 +131,15 @@ export default function AdminLogin() {
               {/* Mobile logo */}
               <div className="mobile-logo">
                 <Link to="/" className="logo-brand">
-                  <span className="logo-name">De-Crown</span>
-                  <span className="logo-sub">Cottage</span>
+                  {branding?.logoUrl ? (
+                    <img
+                      src={branding.logoUrl}
+                      alt={businessName}
+                      className="h-8 max-w-[160px] object-contain"
+                    />
+                  ) : (
+                    <span className="logo-name">{businessName}</span>
+                  )}
                 </Link>
               </div>
 

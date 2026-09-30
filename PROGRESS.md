@@ -33,7 +33,7 @@ treat it as the source of truth for "what's built vs. stubbed vs. blocked."
 | Tenant properties and units                               | ✅ Implemented    | Basic create/edit/archive flows; unit availability and per-unit rent are supported    |
 | Configurable locations in registration and landlord views | ✅ Implemented    | Stored properties/units replace generated fixed room counts                           |
 | Existing De-Crown data migration                          | 🟡 Ready, not run | `migrate-legacy-tenant.js` dry-runs by default; requires review before `--apply`      |
-| Branding (logo/colors) applied throughout the app         | 🟡 Partial        | Primary color and business name are applied; logos and legacy page labels remain      |
+| Branding (logo/colors) applied throughout the app         | ✅ Implemented    | Dynamic business name, logo, contacts, and primary color applied across all client pages via TenantContext |
 
 ## Phase 3 — Real-estate product workflows
 

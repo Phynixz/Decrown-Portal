@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { useTenant } from "../tenantContext.jsx";
 import "../styles/style.css";
 
 const fmt = (n) =>
@@ -12,6 +13,7 @@ const ADDRESSES = {
 };
 
 export default function Receipt() {
+  const { businessName, branding, locations, phone, email } = useTenant();
   const [params] = useSearchParams();
   const id = params.get("id");
   const [data, setData] = useState(null);
@@ -88,15 +90,23 @@ export default function Receipt() {
           {/* Header */}
           <div className="r-head">
             <img
-              src="/d420ac751563a3d498bd84cdf69386bb.jpg"
-              alt="De-Crown Logo"
+              src={branding?.logoUrl || "/d420ac751563a3d498bd84cdf69386bb.jpg"}
+              alt={businessName || "Logo"}
               className="r-logo"
             />
             <div className="r-company">
-              <h1>De-Crown Cottage</h1>
-              <p id="r-address">{ADDRESSES[data.location] || "Kwara State, Nigeria"}</p>
-              <p id="r-state">Kwara State, Nigeria</p>
-              <p>09036388983 &nbsp;·&nbsp; decrown@gmail.com</p>
+              <h1>{businessName || "De-Crown Cottage"}</h1>
+              <p id="r-address">
+                {locations?.find((l) => l.name === data.location)?.address ||
+                  ADDRESSES[data.location] ||
+                  "Kwara State, Nigeria"}
+              </p>
+              <p id="r-state">Nigeria</p>
+              <p>
+                {[phone || "09036388983", email || "decrown@gmail.com"]
+                  .filter(Boolean)
+                  .join("  ·  ")}
+              </p>
             </div>
           </div>
 
@@ -188,7 +198,7 @@ export default function Receipt() {
 
           {/* Footer */}
           <div className="r-foot">
-            <p>Thank you for choosing De-Crown Cottage</p>
+            <p>Thank you for choosing {businessName || "De-Crown Cottage"}</p>
             <p className="r-foot-sub">
               This receipt is computer-generated and valid without a signature.
             </p>

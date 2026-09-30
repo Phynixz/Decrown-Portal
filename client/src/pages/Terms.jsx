@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTenant } from "../tenantContext.jsx";
 import "../styles/terms.css";
 
 function Section({ num, title, children }) {
@@ -13,6 +14,7 @@ function Section({ num, title, children }) {
 }
 
 export default function Terms() {
+  const { businessName, branding } = useTenant();
   const [tab, setTab] = useState("terms");
   const navigate = useNavigate();
 
@@ -26,10 +28,13 @@ export default function Terms() {
   return (
     <div className="dc-terms">
       <header className="site-header">
-        <a href="/login" className="brand">
-          <img src="/d420ac751563a3d498bd84cdf69386bb.jpg" alt="De-Crown Logo" />
-          <span className="brand-name">De-Crown Cottage</span>
-        </a>
+        <Link to="/login" className="brand">
+          <img
+            src={branding?.logoUrl || "/d420ac751563a3d498bd84cdf69386bb.jpg"}
+            alt="Logo"
+          />
+          <span className="brand-name">{businessName || "De-Crown Cottage"}</span>
+        </Link>
         <button
           onClick={goBack}
           className="back-link bg-transparent cursor-pointer font-sans"
@@ -41,8 +46,8 @@ export default function Terms() {
       <div className="hero">
         <h1>Legal &amp; Policies</h1>
         <p>
-          Please read these terms carefully before using the De-Crown Cottage
-          tenant portal.
+          Please read these terms carefully before using the {businessName || "De-Crown Cottage"}
+          {" "}tenant portal.
         </p>
         <span className="updated">Last updated: January 2025</span>
       </div>

@@ -1,4 +1,4 @@
-﻿const dns = require("dns");
+const dns = require("dns");
 
 dns.setServers(["8.8.8.8", "1.1.1.1"]);
 
@@ -717,6 +717,9 @@ app.get("/tenant-config", async (req, res) => {
     res.json({
       businessName: req.tenantClient?.businessName || "De-Crown Cottage",
       branding: req.tenantClient?.branding || {},
+      bankDetails: req.tenantClient?.bankDetails || {},
+      phone: req.tenantClient?.phone || "09036388983",
+      email: req.tenantClient?.email || "decrown@gmail.com",
       locations,
     });
   } catch (e) {
@@ -794,6 +797,7 @@ app.get("/user/:id", async (req, res) => {
       retainPending: u.retainPending,
       renewedFrom: u.renewedFrom,
       type: u.type,
+      receiptNumber: u.receiptNumber,
       createdAt: u.createdAt,
     });
   } catch (e) {
@@ -802,7 +806,15 @@ app.get("/user/:id", async (req, res) => {
 });
 
 async function generateReceiptNumber(location) {
-  const prefix = location === "Malete" ? "DCM" : "DCI";
+  const prefix =
+    location === "Malete"
+      ? "DCM"
+      : location === "Ila-Orangun"
+        ? "DCI"
+        : String(location || "")
+            .replace(/[^a-zA-Z0-9]/g, "")
+            .slice(0, 3)
+            .toUpperCase() || "RCP";
   const year = new Date().getFullYear();
   const count = await User.countDocuments({ location });
   const num = String(count + 1).padStart(4, "0");
@@ -1452,7 +1464,7 @@ app.get("/export-users", verifyAdmin, async (req, res) => {
     );
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename=decrown-${Date.now()}.xlsx`,
+      `attachment; filename=${req.tenantClient?.subdomain || "decrown"}-${Date.now()}.xlsx`,
     );
     res.send(buf);
   } catch (e) {

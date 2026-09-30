@@ -36,6 +36,7 @@ import {
   isTokenExpired,
 } from "../api.js";
 import { validateEmail, validatePhone } from "../utils/validation.js";
+import { useTenant } from "../tenantContext.jsx";
 import "../styles/login.css";
 import "../styles/tenant-portal.css";
 
@@ -46,6 +47,7 @@ const avatarFor = (name) =>
 
 export default function TenantPortal() {
   const { dark, toggleTheme } = useTheme();
+  const { businessName, branding, locations } = useTenant();
   const navigate = useNavigate();
 
   const [token, setToken] = useState(() => getTenantToken());
@@ -375,7 +377,7 @@ export default function TenantPortal() {
             <div className="panel-left">
               <img
                 src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80"
-                alt="De-Crown Cottage hostel exterior"
+                alt={`${businessName} exterior`}
                 className="panel-left-bg"
               />
               <div className="panel-left-overlay" />
@@ -387,8 +389,15 @@ export default function TenantPortal() {
 
               <div className="logo-area">
                 <Link to="/" className="logo-brand">
-                  <span className="logo-name">De-Crown</span>
-                  <span className="logo-sub">Cottage</span>
+                  {branding?.logoUrl ? (
+                    <img
+                      src={branding.logoUrl}
+                      alt={businessName}
+                      className="h-8 max-w-[180px] object-contain"
+                    />
+                  ) : (
+                    <span className="logo-name">{businessName}</span>
+                  )}
                 </Link>
               </div>
 
@@ -396,14 +405,13 @@ export default function TenantPortal() {
                 <p className="welcome-label">Welcome Back</p>
                 <h2>Your home away from home.</h2>
                 <p className="welcome-desc">
-                  Sign in to view your room, receipts, and manage your campus
-                  accommodation.
+                  Sign in to view your room, receipts, and manage your accommodation.
                 </p>
 
                 <dl className="stats-grid">
                   <div className="stat-box">
-                    <dd className="stat-num">2</dd>
-                    <dt className="stat-desc">Campus locations</dt>
+                    <dd className="stat-num">{locations?.length || 2}</dd>
+                    <dt className="stat-desc">Locations</dt>
                   </div>
                   <div className="stat-box">
                     <dd className="stat-num">24/7</dd>
@@ -413,7 +421,7 @@ export default function TenantPortal() {
               </div>
 
               <div className="left-footer">
-                <p>© 2025 De-Crown Cottage. All rights reserved.</p>
+                <p>© {new Date().getFullYear()} {businessName}. All rights reserved.</p>
                 <Link to="/login" className="switch-link">
                   Admin Login →
                 </Link>
@@ -433,8 +441,15 @@ export default function TenantPortal() {
               <div className="login-inner">
                 <div className="mobile-logo">
                   <Link to="/" className="logo-brand">
-                    <span className="logo-name">De-Crown</span>
-                    <span className="logo-sub">Cottage</span>
+                    {branding?.logoUrl ? (
+                      <img
+                        src={branding.logoUrl}
+                        alt={businessName}
+                        className="h-8 max-w-[160px] object-contain"
+                      />
+                    ) : (
+                      <span className="logo-name">{businessName}</span>
+                    )}
                   </Link>
                 </div>
 
@@ -512,7 +527,7 @@ export default function TenantPortal() {
                       <Link to="/register">New tenant? Register here</Link>
                     </p>
                     <p className="back-link">
-                      <Link to="/">← Back to De-Crown</Link>
+                      <Link to="/">← Back to {businessName || "Home"}</Link>
                     </p>
                   </div>
                 </div>
@@ -577,8 +592,11 @@ export default function TenantPortal() {
       <div id="dashScreen">
         <header className="dash-nav">
           <div className="nav-brand">
-            <img src="/d420ac751563a3d498bd84cdf69386bb.jpg" alt="logo" />
-            <span>De-Crown Cottage</span>
+            <img
+              src={branding?.logoUrl || "/d420ac751563a3d498bd84cdf69386bb.jpg"}
+              alt="logo"
+            />
+            <span>{businessName || "De-Crown Cottage"}</span>
           </div>
           <div className="nav-right">
             {" "}

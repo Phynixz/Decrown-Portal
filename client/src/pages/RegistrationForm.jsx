@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Camera, CreditCard, FileText, File } from "lucide-react";
+import { useTenant } from "../tenantContext.jsx";
 import "../styles/form.css";
 
 const RULES = {
@@ -12,6 +13,7 @@ const RULES = {
 };
 
 export default function RegistrationForm() {
+  const { businessName, branding, locations: tenantLocations } = useTenant();
   // --- Form state ---
   const [location, setLocation] = useState("");
   const [name, setName] = useState("");
@@ -64,11 +66,15 @@ export default function RegistrationForm() {
         /* ignore */
       }
     })();
-    fetch("/tenant-config")
-      .then((res) => res.json())
-      .then((data) => setLocations(data.locations || []))
-      .catch(() => setLocations([]));
-  }, []);
+    if (tenantLocations?.length) {
+      setLocations(tenantLocations);
+    } else {
+      fetch("/tenant-config")
+        .then((res) => res.json())
+        .then((data) => setLocations(data.locations || []))
+        .catch(() => setLocations([]));
+    }
+  }, [tenantLocations]);
 
   const availableUnits =
     locations
@@ -281,19 +287,15 @@ export default function RegistrationForm() {
       <div className="page-wrap">
         <aside className="form-aside">
           <img
-            src="/d420ac751563a3d498bd84cdf69386bb.jpg"
-            alt="De-Crown"
+            src={branding?.logoUrl || "/d420ac751563a3d498bd84cdf69386bb.jpg"}
+            alt={businessName || "De-Crown"}
             className="aside-logo"
           />
           <h2 className="aside-title">
-            De-Crown
-            <br />
-            Cottage
+            {businessName || "De-Crown Cottage"}
           </h2>
           <p className="aside-sub">
             Campus Registration
-            <br />
-            Kwara State
           </p>
 
           <div className="aside-steps">

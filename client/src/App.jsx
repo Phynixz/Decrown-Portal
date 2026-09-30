@@ -16,32 +16,12 @@ import PlatformClients from "./pages/platform/PlatformClients.jsx";
 import PlatformSettings from "./pages/platform/PlatformSettings.jsx";
 import ApprovalQueue from "./pages/ApprovalQueue.jsx";
 
-export default function App() {
-  useEffect(() => {
-    let cancelled = false;
-    fetch("/tenant-config")
-      .then((response) => (response.ok ? response.json() : null))
-      .then((config) => {
-        if (cancelled || !config) return;
-        const primaryColor = config.branding?.primaryColor;
-        if (primaryColor && CSS.supports("color", primaryColor)) {
-          document.documentElement.style.setProperty(
-            "--color-navy",
-            primaryColor,
-          );
-        }
-        if (config.businessName)
-          document.title = `${config.businessName} | Property Portal`;
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-      document.documentElement.style.removeProperty("--color-navy");
-    };
-  }, []);
+import { TenantProvider } from "./tenantContext.jsx";
 
+export default function App() {
   return (
-    <Routes>
+    <TenantProvider>
+      <Routes>
       <Route path="/" element={<Navigate to="/platform/login" replace />} />
       <Route path="/login" element={<AdminLogin />} />
       <Route path="/signup" element={<ClientSignup />} />
@@ -63,5 +43,6 @@ export default function App() {
 
       <Route path="*" element={<Navigate to="/platform/login" replace />} />
     </Routes>
-  );
+  </TenantProvider>
+);
 }

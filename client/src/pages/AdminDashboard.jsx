@@ -41,6 +41,7 @@ import {
   getJSON,
   sendJSON,
 } from "../api.js";
+import { useTenant } from "../tenantContext.jsx";
 import "../styles/admin.css";
 
 const avatarFor = (name) =>
@@ -57,6 +58,7 @@ const proofUrlOf = (u) =>
 
 export default function AdminDashboard() {
   const { dark, toggleTheme } = useTheme();
+  const { businessName, branding } = useTenant();
   const navigate = useNavigate();
 
   const [allUsers, setAllUsers] = useState([]);
@@ -807,7 +809,10 @@ export default function AdminDashboard() {
       const blob = await r.blob();
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
-      a.download = "decrown-" + new Date().toISOString().slice(0, 10) + ".xlsx";
+      const slug = (businessName || "decrown")
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "-");
+      a.download = `${slug}-${new Date().toISOString().slice(0, 10)}.xlsx`;
       a.click();
       URL.revokeObjectURL(a.href);
     } catch (e) {
@@ -837,9 +842,12 @@ export default function AdminDashboard() {
       <aside className={"sidebar" + (sidebarOpen ? " open" : "")} id="sidebar">
         <div className="sidebar-top">
           <div className="brand">
-            <img src="/d420ac751563a3d498bd84cdf69386bb.jpg" alt="logo" />
+            <img
+              src={branding?.logoUrl || "/d420ac751563a3d498bd84cdf69386bb.jpg"}
+              alt="logo"
+            />
             <div>
-              <div className="brand-name">De-Crown</div>
+              <div className="brand-name">{businessName || "De-Crown"}</div>
               <div className="brand-role">
                 {adminRole === "superadmin" ? "Superadmin" : "Admin"}
               </div>
