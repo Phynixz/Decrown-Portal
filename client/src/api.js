@@ -81,9 +81,26 @@ export function clearTenantToken() {
   sessionStorage.removeItem("tenantSessionExpiresAt");
 }
 
+export function getTenantSubdomain() {
+  const queryClient = new URLSearchParams(window.location.search).get("client");
+  if (queryClient) {
+    sessionStorage.setItem("tenantSubdomain", queryClient.toLowerCase());
+    return queryClient.toLowerCase();
+  }
+  return sessionStorage.getItem("tenantSubdomain") || "";
+}
+
+export function withTenantContext(url) {
+  const subdomain = getTenantSubdomain();
+  if (!subdomain || !url.startsWith("/") || url.includes("client="))
+    return url;
+  const separator = url.includes("?") ? "&" : "?";
+  return `${url}${separator}client=${encodeURIComponent(subdomain)}`;
+}
+
 /** GET JSON with optional auth header. */
 export async function getJSON(url, token) {
-  const res = await fetch(url, {
+  const res = await fetch(withTenantContext(url), {
     headers: token ? { Authorization: token } : {},
   });
   const data = await res.json().catch(() => ({}));
@@ -93,7 +110,7 @@ export async function getJSON(url, token) {
 
 /** POST/PUT/DELETE JSON with optional auth header. */
 export async function sendJSON(method, url, body, token) {
-  const res = await fetch(url, {
+  const res = await fetch(withTenantContext(url), {
     method,
     headers: {
       "Content-Type": "application/json",

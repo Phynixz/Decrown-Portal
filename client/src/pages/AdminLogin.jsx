@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Moon, Sun, Home, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { useTheme } from "../theme.js";
-import { setAdminAuth } from "../api.js";
+import { setAdminAuth, withTenantContext } from "../api.js";
 import { validateEmail } from "../utils/validation.js";
 import { useTenant } from "../tenantContext.jsx";
 
@@ -36,7 +36,7 @@ export default function AdminLogin() {
     setErr("");
     setBusy(true);
     try {
-      const res = await fetch("/admin/login", {
+      const res = await fetch(withTenantContext("/admin/login"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: trimmedEmail, password, remember }),

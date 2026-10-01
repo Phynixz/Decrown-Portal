@@ -18,8 +18,21 @@ async function resolveTenant(req, res, next) {
   const hostname = String(localHost || req.hostname || "")
     .split(":")[0]
     .toLowerCase();
+  const isRootHost =
+    rootDomain &&
+    (hostname === rootDomain || hostname === `www.${rootDomain}`);
   let subdomain = "";
-  if (
+  if (isRootHost) {
+    subdomain = String(
+      req.query?.client ||
+        req.headers["x-client-subdomain"] ||
+        req.cookies?.tenantSubdomain ||
+        "",
+    )
+      .trim()
+      .toLowerCase();
+    if (!subdomain) return next();
+  } else if (
     process.env.NODE_ENV !== "production" &&
     (req.query?.client || req.headers["x-client-subdomain"])
   ) {
@@ -29,12 +42,7 @@ async function resolveTenant(req, res, next) {
       .trim()
       .toLowerCase();
   } else {
-    if (
-      !rootDomain ||
-      hostname === rootDomain ||
-      hostname === `www.${rootDomain}`
-    )
-      return next();
+    if (!rootDomain) return next();
 
     const suffix = `.${rootDomain}`;
     if (!hostname.endsWith(suffix)) return next();
@@ -54,6 +62,13 @@ async function resolveTenant(req, res, next) {
     }
 
     req.tenantClient = client;
+    res.cookie("tenantSubdomain", subdomain, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+      path: "/",
+    });
     runWithTenantModels(getTenantModels(client.dbName), next);
   } catch (error) {
     next(error);

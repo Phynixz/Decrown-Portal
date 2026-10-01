@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import { withTenantContext } from "./api.js";
 
 const TenantContext = createContext({
   businessName: "De-Crown Cottage",
@@ -23,7 +24,7 @@ export function TenantProvider({ children }) {
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/tenant-config")
+    fetch(withTenantContext("/tenant-config"))
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (cancelled || !data) return;
