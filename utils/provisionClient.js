@@ -38,7 +38,7 @@ async function provisionClient(client) {
       name: client.contactName,
       email: client.email,
       password: client.passwordHash,
-      role: "superadmin",
+      role: "owner",
     });
     owner.$locals.passwordAlreadyHashed = true;
     await owner.save();

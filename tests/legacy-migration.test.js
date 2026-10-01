@@ -77,7 +77,7 @@ test("dry-runs and migrates a legacy property with owner access", async () => {
   const tenantOwner = await tenantModels.Admin.findOne({
     email: env.LEGACY_TENANT_EMAIL,
   });
-  assert.equal(tenantOwner.role, "superadmin");
+  assert.equal(tenantOwner.role, "owner");
   assert.equal(
     await tenantOwner.comparePassword(env.LEGACY_TENANT_OWNER_PASSWORD),
     true,

@@ -104,7 +104,7 @@ function verifyAdmin(req, res, next) {
   if (!token) return res.status(403).json({ error: "No token" });
   try {
     const d = jwt.verify(token, JWT_SECRET);
-    if (d.role !== "admin" && d.role !== "superadmin")
+    if (!['admin', 'owner', 'superadmin'].includes(d.role))
       return res.status(403).json({ error: "Not authorized" });
     const tokenClientId = String(d.clientId || "");
     const requestClientId = String(req.tenantClient?._id || "");
@@ -192,7 +192,7 @@ function sanitizeType(value) {
 
 function sanitizeRole(value) {
   const role = sanitizeString(value).toLowerCase();
-  return ["admin", "superadmin"].includes(role) ? role : "admin";
+  return ["admin", "owner", "superadmin"].includes(role) ? role : "admin";
 }
 
 function sanitizeSession(value) {
@@ -219,8 +219,8 @@ function isValidObjectId(id) {
 
 function verifySuperAdmin(req, res, next) {
   verifyAdmin(req, res, () => {
-    if (req.admin.role !== "superadmin")
-      return res.status(403).json({ error: "Superadmin only" });
+    if (!['owner', 'superadmin'].includes(req.admin.role))
+      return res.status(403).json({ error: "Tenant owner only" });
     next();
   });
 }

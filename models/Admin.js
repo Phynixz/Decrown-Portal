@@ -11,7 +11,13 @@ const adminSchema = new mongoose.Schema({
     trim: true,
   },
   password: { type: String, required: true },
-  role: { type: String, enum: ["superadmin", "admin"], default: "admin" },
+  // "superadmin" remains accepted for legacy records; new tenant owners use
+  // the tenant-scoped "owner" role and never become platform administrators.
+  role: {
+    type: String,
+    enum: ["owner", "admin", "superadmin"],
+    default: "admin",
+  },
   createdAt: { type: Date, default: Date.now },
 });
 

@@ -209,12 +209,12 @@ async function run() {
         name: CONTACT_NAME,
         email: EMAIL,
         password: OWNER_PASSWORD,
-        role: "superadmin",
+        role: "owner",
       });
     } else {
       tenantOwner.name = CONTACT_NAME;
       tenantOwner.password = OWNER_PASSWORD;
-      tenantOwner.role = "superadmin";
+      tenantOwner.role = "owner";
     }
     await tenantOwner.save();
 

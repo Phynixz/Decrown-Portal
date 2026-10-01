@@ -93,6 +93,7 @@ test("provisions isolated properties, units, admins, and tenant records", async 
   );
 
   const ownerA = await modelsA.Admin.findOne({ email: clientA.email });
+  assert.equal(ownerA.role, "owner");
   assert.equal(await ownerA.comparePassword(passwordA), true);
   assert.equal(await ownerA.comparePassword(passwordB), false);
 
