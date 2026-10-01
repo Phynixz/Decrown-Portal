@@ -1,4 +1,8 @@
 @import "tailwindcss";
+@import "./admin.css";
+@import "./form.css";
+@import "./login.css";
+@import "./tenant-portal.css";
 
 /* Dark mode — toggled by adding .dark to <html> (matches the old app) */
 @custom-variant dark (&:where(.dark, .dark *));

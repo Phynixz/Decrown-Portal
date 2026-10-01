@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTenant } from "../tenantContext.jsx";
-import "../styles/terms.css";
 
 function Section({ num, title, children }) {
   return (
-    <div className="section">
-      <div className="section-num">{num}</div>
+    <div className="mb-5 rounded-[14px] border border-border bg-card px-8 py-7 shadow-sm max-[600px]:px-4.5 max-[600px]:py-5 [&_h2]:mb-3.5 [&_h2]:border-b [&_h2]:border-border [&_h2]:pb-3 [&_h2]:font-display [&_h2]:text-xl [&_h2]:text-navy [&_li]:relative [&_li]:pl-5 [&_li]:text-sm [&_li]:text-text2 [&_li]:before:absolute [&_li]:before:left-0 [&_li]:before:top-0.5 [&_li]:before:text-xs [&_li]:before:text-terra [&_li]:before:content-['→'] [&_p]:mb-3 [&_p]:text-sm [&_p]:text-text2 [&_ul]:flex [&_ul]:list-none [&_ul]:flex-col [&_ul]:gap-2 [&_ul]:p-0">
+      <div className="mb-2 font-display text-[13px] font-bold uppercase tracking-[1px] text-terra">{num}</div>
       <h2>{title}</h2>
       {children}
     </div>
@@ -26,33 +25,34 @@ export default function Terms() {
     cameFromRegister ? navigate("/register") : navigate("/login");
 
   return (
-    <div className="dc-terms">
-      <header className="site-header">
-        <Link to="/login" className="brand">
+    <div className="min-h-screen bg-bg font-sans leading-loose text-text">
+      <header className="flex items-center justify-between bg-navy px-10 py-4.5 max-[600px]:px-5 max-[600px]:py-3.5">
+        <Link to="/login" className="flex items-center gap-3 no-underline">
           <img
             src={branding?.logoUrl || "/d420ac751563a3d498bd84cdf69386bb.jpg"}
             alt="Logo"
+            className="h-11 w-11 rounded-[10px] border-2 border-white/20 object-cover"
           />
-          <span className="brand-name">{businessName || "De-Crown Cottage"}</span>
+          <span className="font-display text-lg font-bold text-white">{businessName || "De-Crown Cottage"}</span>
         </Link>
         <button
           onClick={goBack}
-          className="back-link bg-transparent cursor-pointer font-sans"
+          className="cursor-pointer rounded-lg border border-white/20 bg-transparent px-4 py-1.75 font-sans text-[13px] text-white/70 no-underline transition-all hover:bg-white/10 hover:text-white"
         >
           {backLabel}
         </button>
       </header>
 
-      <div className="hero">
-        <h1>Legal &amp; Policies</h1>
-        <p>
+      <div className="bg-navy2 px-10 py-15 text-center max-[600px]:px-5 max-[600px]:py-10">
+        <h1 className="mb-3 font-display text-[38px] text-white max-[600px]:text-[26px]">Legal &amp; Policies</h1>
+        <p className="mx-auto max-w-[500px] text-sm text-white/55">
           Please read these terms carefully before using the {businessName || "De-Crown Cottage"}
           {" "}tenant portal.
         </p>
-        <span className="updated">Last updated: January 2025</span>
+        <span className="mt-4 inline-block rounded-full border border-terra/30 bg-terra/20 px-3.5 py-1.25 text-xs text-[#f4b896]">Last updated: January 2025</span>
       </div>
 
-      <div className="tab-nav">
+      <div className="sticky top-0 z-50 flex justify-center border-b border-border bg-card shadow-sm">
         {[
           ["terms", "Terms of Service"],
           ["privacy", "Privacy Policy"],
@@ -60,7 +60,7 @@ export default function Terms() {
         ].map(([id, label]) => (
           <button
             key={id}
-            className={"tab-btn" + (tab === id ? " active" : "")}
+            className={"cursor-pointer border-none border-b-[3px] bg-transparent px-9 py-4 font-sans text-sm text-muted transition-colors max-[600px]:px-4.5 max-[600px]:py-3.5 max-[600px]:text-[13px] hover:text-navy " + (tab === id ? "border-navy font-semibold text-navy" : "border-transparent")}
             onClick={() => {
               setTab(id);
               window.scrollTo({ top: 0, behavior: "smooth" });
@@ -71,7 +71,7 @@ export default function Terms() {
         ))}
       </div>
 
-      <div className="content-wrap">
+      <div className="mx-auto max-w-[800px] px-6 py-12.5 pb-20">
         {tab === "terms" && (
           <>
             <Section num="01" title="Acceptance of Terms">
@@ -102,7 +102,7 @@ export default function Terms() {
                 academic session. Submitting a registration form does not
                 guarantee a room until payment is confirmed by management.
               </p>
-              <div className="highlight-box">
+              <div className="my-3.5 rounded-r-lg border-l-[3px] border-l-navy bg-card2 px-4.5 py-3.5 text-[13px] text-text2">
                 A room is only considered yours once your payment receipt has
                 been verified and approved by De-Crown Cottage management.
               </div>
@@ -125,7 +125,7 @@ export default function Terms() {
                 <li>Failure to upload payment proof within the stipulated time may result in your room being released to another tenant</li>
                 <li>Retained rooms are subject to the current session's rent amount which may differ from previous sessions</li>
               </ul>
-              <div className="warning-box">
+              <div className="my-3.5 rounded-r-lg border-l-[3px] border-l-terra bg-terra-faint px-4.5 py-3.5 text-[13px] text-text2">
                 ⚠ Submitting a retention request does not guarantee your room.
                 Confirmation only happens after admin approval.
               </div>
@@ -154,7 +154,7 @@ export default function Terms() {
                 <li>Report any maintenance issues to management promptly</li>
                 <li>Adhere to the hostel's curfew and visitor policy</li>
               </ul>
-              <div className="warning-box">
+              <div className="my-3.5 rounded-r-lg border-l-[3px] border-l-terra bg-terra-faint px-4.5 py-3.5 text-[13px] text-text2">
                 ⚠ Violation of conduct rules may result in eviction without
                 refund and a ban from future registration.
               </div>
@@ -212,7 +212,7 @@ export default function Terms() {
                 <li>Managing room retention for subsequent sessions</li>
                 <li>Maintaining accurate hostel records</li>
               </ul>
-              <div className="highlight-box">
+              <div className="my-3.5 rounded-r-lg border-l-[3px] border-l-navy bg-card2 px-4.5 py-3.5 text-[13px] text-text2">
                 We do not sell, rent, or share your personal information with
                 any third party for marketing or commercial purposes.
               </div>
@@ -292,7 +292,7 @@ export default function Terms() {
                 <li>Refunds will be processed within 14 working days of approval</li>
                 <li>Approved refunds will be made to the original payment account</li>
               </ul>
-              <div className="warning-box">
+              <div className="my-3.5 rounded-r-lg border-l-[3px] border-l-terra bg-terra-faint px-4.5 py-3.5 text-[13px] text-text2">
                 ⚠ Refund requests submitted after 14 days of payment will not
                 be considered under any circumstances.
               </div>
@@ -323,31 +323,31 @@ export default function Terms() {
         )}
 
         {/* Contact card */}
-        <div className="contact-card">
+        <div className="mb-5 rounded-[14px] bg-navy px-8 py-7 text-white [&_h2]:mb-4 [&_h2]:font-display [&_h2]:text-xl [&_h2]:text-white">
           <h2>Contact Us</h2>
-          <div className="contact-item">
-            <span className="contact-icon">📍</span>
+          <div className="mb-2.5 flex items-center gap-3 text-sm text-white/80">
+            <span className="text-lg">📍</span>
             <span>
               Adjacent Victory Lodge, AGT2 Area Westend, Malete, Kwara State,
               Nigeria
             </span>
           </div>
-          <div className="contact-item">
-            <span className="contact-icon">📞</span>
+          <div className="mb-2.5 flex items-center gap-3 text-sm text-white/80">
+            <span className="text-lg">📞</span>
             <span>09036388983</span>
           </div>
-          <div className="contact-item">
-            <span className="contact-icon">✉️</span>
+          <div className="mb-2.5 flex items-center gap-3 text-sm text-white/80">
+            <span className="text-lg">✉️</span>
             <span>decrown@gmail.com</span>
           </div>
-          <div className="contact-item">
-            <span className="contact-icon">🌐</span>
+          <div className="mb-2.5 flex items-center gap-3 text-sm text-white/80">
+            <span className="text-lg">🌐</span>
             <span>decrown-portal-production.up.railway.app</span>
           </div>
         </div>
       </div>
 
-      <footer className="page-footer">
+      <footer className="bg-navy2 px-10 py-6 text-center text-xs text-white/40">
         <p>© 2025 De-Crown Cottage. All rights reserved. Kwara State, Nigeria.</p>
       </footer>
     </div>

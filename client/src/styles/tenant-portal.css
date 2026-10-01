@@ -1,5 +1,3 @@
-@layer theme, base, components, utilities;
-@reference "./index.css";
 @layer components {
   /* ── Revoked screen (access stripped by management) ── */
   .revoked-screen {

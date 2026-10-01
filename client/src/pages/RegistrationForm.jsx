@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Camera, CreditCard, FileText, File } from "lucide-react";
 import { useTenant } from "../tenantContext.jsx";
-import "../styles/form.css";
 
 const RULES = {
   name: (v) => /^[a-zA-Z\s]{3,50}$/.test(v.trim()),

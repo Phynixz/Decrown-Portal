@@ -4,7 +4,6 @@ import { Moon, Sun } from "lucide-react";
 import { useTheme } from "../theme.js";
 import { sendJSON } from "../api.js";
 import { validateEmail } from "../utils/validation.js";
-import "../styles/login.css";
 
 export default function PlatformLogin() {
   const { dark, toggleTheme } = useTheme();

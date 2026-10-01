@@ -4,8 +4,6 @@ import { Moon, Sun, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { useTheme } from "../theme.js";
 import { sendJSON } from "../api.js";
 import { validateEmail } from "../utils/validation.js";
-import "../styles/login.css";
-import "../styles/signup.css";
 
 const PLATFORM_DOMAIN =
   import.meta.env.VITE_PLATFORM_ROOT_DOMAIN || "yourplatform.com";
@@ -295,7 +293,7 @@ export default function ClientSignup() {
                       <label className="field-label" htmlFor="cs-subdomain">
                         Choose Your Subdomain
                       </label>
-                      <div className="subdomain-wrap">
+                      <div className="flex items-stretch">
                         <input
                           id="cs-subdomain"
                           placeholder="yourbusiness"
@@ -304,7 +302,7 @@ export default function ClientSignup() {
                             setSubdomain(sanitizeSubdomain(e.target.value))
                           }
                         />
-                        <span className="subdomain-suffix">
+                        <span className="flex items-center whitespace-nowrap rounded-r-[10px] border-[1.5px] border-l-0 border-border bg-input px-3 text-[13px] text-muted">
                           .{PLATFORM_DOMAIN}
                         </span>
                       </div>
@@ -381,7 +379,7 @@ export default function ClientSignup() {
                         inputMode="numeric"
                         maxLength={6}
                         placeholder="000000"
-                        className="code-input"
+                        className="text-center text-xl font-semibold tracking-[8px]"
                         value={code}
                         onChange={(e) =>
                           setCode(e.target.value.replace(/[^0-9]/g, ""))
@@ -400,7 +398,7 @@ export default function ClientSignup() {
 
                   <button
                     type="button"
-                    className="resend-link"
+                    className="mx-auto mt-3.5 block cursor-pointer border-none bg-transparent text-[13px] text-terra underline disabled:cursor-default disabled:opacity-60"
                     onClick={handleResend}
                     disabled={busy}
                   >
@@ -410,7 +408,7 @@ export default function ClientSignup() {
               )}
 
               {step === "pending" && (
-                <div className="pending-panel">
+                <div className="text-center">
                   <p className="login-label">Step 3 of 3</p>
                   <h1 className="login-title">You're all set — almost</h1>
                   <p className="login-subtitle">
@@ -418,7 +416,7 @@ export default function ClientSignup() {
                     review. We'll email {email} once your platform is approved
                     and ready to use.
                   </p>
-                  <Link to="/login" className="btn-login pending-back-btn">
+                  <Link to="/login" className="btn-login mt-5 inline-block text-center no-underline">
                     Back to Sign In
                   </Link>
                 </div>

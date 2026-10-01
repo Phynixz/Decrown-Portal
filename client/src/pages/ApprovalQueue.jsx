@@ -3,8 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "../theme.js";
 import { getJSON, sendJSON } from "../api.js";
-import "../styles/admin.css";
-import "../styles/delete.css";
 
 function getPlatformToken() {
   return sessionStorage.getItem("platformToken") || "";

@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useTenant } from "../tenantContext.jsx";
-import "../styles/style.css";
 
 const fmt = (n) =>
   "₦" +
@@ -54,12 +53,12 @@ export default function Receipt() {
 
   if (error) {
     return (
-      <div className="dc-receipt p-7.5 text-red-600">{error}</div>
+      <div className="flex min-h-screen flex-col items-center bg-bg px-4 py-10 font-sans leading-relaxed text-red-600">{error}</div>
     );
   }
 
   if (!data) {
-    return <div className="dc-receipt p-7.5">Loading receipt…</div>;
+    return <div className="flex min-h-screen flex-col items-center bg-bg px-4 py-10 font-sans leading-relaxed text-text">Loading receipt…</div>;
   }
 
   const receiptNum =
@@ -84,25 +83,25 @@ export default function Receipt() {
   const amount = Number(data.amount || 0);
 
   return (
-    <div className="dc-receipt">
-      <div className="receipt-wrap">
-        <div className="receipt" id="receiptDoc">
+    <div className="flex min-h-screen flex-col items-center bg-bg px-4 py-10 font-sans leading-relaxed text-text print:bg-card print:p-0 max-[740px]:px-3 max-[740px]:py-5">
+      <div className="flex w-full flex-col items-center gap-6">
+        <div className="w-[700px] max-w-full rounded-[14px] border border-border bg-card p-10 shadow-[0_4px_20px_rgba(44,36,24,0.08)] print:w-full print:p-5 print:shadow-none max-[740px]:px-4 max-[740px]:py-6" id="receiptDoc">
           {/* Header */}
-          <div className="r-head">
+          <div className="mb-7 flex items-start justify-between border-b-2 border-border pb-6 max-[740px]:flex-col max-[740px]:gap-3.5 max-[740px]:pb-4">
             <img
               src={branding?.logoUrl || "/d420ac751563a3d498bd84cdf69386bb.jpg"}
               alt={businessName || "Logo"}
-              className="r-logo"
+              className="h-[90px] w-[90px] shrink-0 rounded-[10px] border-2 border-border object-cover"
             />
-            <div className="r-company">
-              <h1>{businessName || "De-Crown Cottage"}</h1>
-              <p id="r-address">
+            <div className="text-right leading-relaxed max-[740px]:text-left">
+              <h1 className="mb-2 font-display text-[26px] font-bold text-navy">{businessName || "De-Crown Cottage"}</h1>
+              <p className="text-xs text-muted" id="r-address">
                 {locations?.find((l) => l.name === data.location)?.address ||
                   ADDRESSES[data.location] ||
                   "Kwara State, Nigeria"}
               </p>
-              <p id="r-state">Nigeria</p>
-              <p>
+              <p className="text-xs text-muted" id="r-state">Nigeria</p>
+              <p className="text-xs text-muted">
                 {[phone || "09036388983", email || "decrown@gmail.com"]
                   .filter(Boolean)
                   .join("  ·  ")}
@@ -111,28 +110,28 @@ export default function Receipt() {
           </div>
 
           {/* Receipt meta */}
-          <div className="r-meta">
+          <div className="mb-7 grid grid-cols-[auto_1fr_auto] gap-6 max-[740px]:grid-cols-1 max-[740px]:gap-4">
             {data.passport && (
               <img
                 src={data.passport}
                 alt="User Photo"
-                className="user-photo"
+                className="block h-20 w-20 rounded-full border-2 border-border object-cover"
                 style={{ display: "block" }}
               />
             )}
-            <div className="r-recipient">
-              <div className="recipient-info">
-                <p className="r-to-label">Receipt To</p>
-                <p className="r-name" id="r-name">
+            <div className="flex items-start gap-4 leading-relaxed">
+              <div>
+                <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-[1px] text-muted">Receipt To</p>
+                <p className="text-base font-bold uppercase text-navy" id="r-name">
                   {(data.name || "—").toUpperCase()}
                 </p>
-                <p className="r-contact" id="r-contact">
+                <p className="mt-1 text-[13px] text-text2" id="r-contact">
                   {[data.email, data.phone].filter(Boolean).join("  ·  ") || "—"}
                 </p>
               </div>
             </div>
-            <div className="r-ref">
-              <p className="r-number" id="r-number">
+            <div className="text-right text-[13px] leading-loose text-text2 max-[740px]:text-left">
+              <p className="mb-1.5 text-lg font-bold text-terra" id="r-number">
                 Receipt #{receiptNum}
               </p>
               <p id="r-date">Date: {date}</p>
@@ -148,23 +147,23 @@ export default function Receipt() {
           </div>
 
           {/* Table */}
-          <table className="r-table">
+          <table className="mb-2 w-full border-collapse [&_td]:border-b [&_td]:border-border [&_td]:px-3.5 [&_td]:py-3.25 [&_td]:text-[13px] [&_th]:bg-card2 [&_th]:px-3.5 [&_th]:py-3 [&_th]:text-left [&_th]:text-xs [&_th]:font-bold [&_th]:uppercase [&_th]:tracking-[0.5px] [&_th]:text-navy">
             <thead>
               <tr>
-                <th className="col-idx">#</th>
-                <th className="col-desc">Description</th>
-                <th className="col-room">Room No.</th>
-                <th className="col-amount">Amount</th>
+                <th className="w-9 bg-navy text-center text-card">#</th>
+                <th>Description</th>
+                <th className="w-[90px]">Room No.</th>
+                <th className="w-[120px] bg-terra pr-3.5 text-right text-card">Amount</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td className="col-idx">1</td>
-                <td className="col-desc">Hostel Accommodation Fee</td>
-                <td className="col-room" id="r-room">
+                <td className="w-9 bg-navy text-center font-bold text-card">1</td>
+                <td className="bg-card2">Hostel Accommodation Fee</td>
+                <td className="w-[90px] bg-card2" id="r-room">
                   {data.roomNo || "—"}
                 </td>
-                <td className="col-amount" id="r-amount-row">
+                <td className="w-[120px] bg-terra pr-3.5 text-right font-bold text-card" id="r-amount-row">
                   {fmt(data.amount)}
                 </td>
               </tr>
@@ -172,42 +171,42 @@ export default function Receipt() {
           </table>
 
           {/* Totals */}
-          <div className="r-totals">
-            <div className="r-total-row">
+          <div className="float-right flex min-w-[240px] flex-col gap-1 pt-4 max-[740px]:float-none max-[740px]:min-w-0">
+            <div className="flex items-center justify-between py-1.5 font-display text-[13px] font-semibold uppercase tracking-[0.4px] text-text [&_span:last-child]:min-w-[90px] [&_span:last-child]:text-right [&_span:last-child]:font-bold [&_span:last-child]:text-terra">
               <span>Grand Total</span>
               <span id="r-total">{fmt(amount)}</span>
             </div>
-            <div className="r-divider"></div>
-            <div className="r-total-row">
+            <div className="h-px w-full bg-border"></div>
+            <div className="flex items-center justify-between py-1.5 font-display text-[13px] font-semibold uppercase tracking-[0.4px] text-text [&_span:last-child]:min-w-[90px] [&_span:last-child]:text-right [&_span:last-child]:font-bold [&_span:last-child]:text-terra">
               <span>Total Paid</span>
               <span id="r-paid">{fmt(amount)}</span>
             </div>
-            <div className="r-divider"></div>
-            <div className="r-total-row">
+            <div className="h-px w-full bg-border"></div>
+            <div className="flex items-center justify-between py-1.5 font-display text-[13px] font-semibold uppercase tracking-[0.4px] text-text [&_span:last-child]:min-w-[90px] [&_span:last-child]:text-right [&_span:last-child]:font-bold [&_span:last-child]:text-terra">
               <span>Balance</span>
               <span id="r-balance">{fmt(0)}</span>
             </div>
-            <div className="r-divider"></div>
-            <div className="r-total-row">
+            <div className="h-px w-full bg-border"></div>
+            <div className="flex items-center justify-between py-1.5 font-display text-[13px] font-semibold uppercase tracking-[0.4px] text-text [&_span:last-child]:min-w-[90px] [&_span:last-child]:text-right [&_span:last-child]:font-bold [&_span:last-child]:text-terra">
               <span>Outstanding</span>
               <span id="r-outstanding">{fmt(0)}</span>
             </div>
           </div>
 
-          <div className="r-divider-full"></div>
+          <div className="clear-both my-6 h-[1.5px] bg-border"></div>
 
           {/* Footer */}
-          <div className="r-foot">
-            <p>Thank you for choosing {businessName || "De-Crown Cottage"}</p>
-            <p className="r-foot-sub">
+          <div className="text-center leading-relaxed">
+            <p className="text-sm font-semibold text-navy">Thank you for choosing {businessName || "De-Crown Cottage"}</p>
+            <p className="mt-1 text-xs italic text-muted">
               This receipt is computer-generated and valid without a signature.
             </p>
           </div>
         </div>
 
         {/* Print button (hidden on print) */}
-        <div className="no-print">
-          <button onClick={() => window.print()} className="print-btn">
+        <div className="print:block print:hidden">
+          <button onClick={() => window.print()} className="cursor-pointer rounded-lg border-none bg-navy px-7 py-3 font-sans text-sm font-semibold text-card transition-all hover:bg-navy2 hover:shadow-[0_4px_12px_rgba(26,60,94,0.2)]">
             🖨 Print Receipt
           </button>
         </div>

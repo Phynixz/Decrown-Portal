@@ -5,7 +5,6 @@ import { useTheme } from "../theme.js";
 import { setAdminAuth } from "../api.js";
 import { validateEmail } from "../utils/validation.js";
 import { useTenant } from "../tenantContext.jsx";
-import "../styles/login.css";
 
 export default function AdminLogin() {
   const { dark, toggleTheme } = useTheme();

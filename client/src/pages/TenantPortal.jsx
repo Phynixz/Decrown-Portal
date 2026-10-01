@@ -37,8 +37,6 @@ import {
 } from "../api.js";
 import { validateEmail, validatePhone } from "../utils/validation.js";
 import { useTenant } from "../tenantContext.jsx";
-import "../styles/login.css";
-import "../styles/tenant-portal.css";
 
 const avatarFor = (name) =>
   "https://ui-avatars.com/api/?name=" +

@@ -3,8 +3,6 @@ import { useNavigate, Link } from "react-router-dom";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "../theme.js";
 import { getToken } from "../api.js";
-import "../styles/admin.css";
-import "../styles/delete.css";
 
 export default function DeleteRecords() {
   const { dark, toggleTheme } = useTheme();
@@ -147,28 +145,39 @@ export default function DeleteRecords() {
         </div>
       </header>
 
-      <div className="del-page">
-        <div className="del-topbar">
+      <div className="mx-auto max-w-[860px] px-6 pt-7 pb-15">
+        <div className="mb-7 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2>Delete Tenant Records</h2>
-            <p>
+            <h2 className="font-display text-[22px] text-navy">Delete Tenant Records</h2>
+            <p className="mt-0.75 text-[13px] text-muted">
               Filter, select records, confirm with your password. This cannot be
               undone.
             </p>
           </div>
-          <Link to="/admin" className="back-btn">
+          <Link
+            to="/admin"
+            className="inline-flex items-center gap-1.5 rounded-lg border-[1.5px] border-border bg-card px-4 py-2 text-[13px] font-semibold text-navy no-underline transition-all hover:border-navy hover:bg-navy hover:text-white"
+          >
             ← Back to Dashboard
           </Link>
         </div>
 
         {/* Filters */}
-        <div className="filter-row">
-          <select value={fLoc} onChange={(e) => setFLoc(e.target.value)}>
+        <div className="mb-4 flex flex-wrap gap-2.5 rounded-xl border border-border2 bg-card px-4.5 py-4 shadow-sm">
+          <select
+            className="min-w-[140px] flex-1 rounded-lg border-[1.5px] border-border bg-input px-3 py-2 font-sans text-[13px] text-text outline-none transition-colors focus:border-navy"
+            value={fLoc}
+            onChange={(e) => setFLoc(e.target.value)}
+          >
             <option value="">All Locations</option>
             <option value="Malete">Malete</option>
             <option value="Ila-Orangun">Ila-Orangun</option>
           </select>
-          <select value={fSess} onChange={(e) => setFSess(e.target.value)}>
+          <select
+            className="min-w-[140px] flex-1 rounded-lg border-[1.5px] border-border bg-input px-3 py-2 font-sans text-[13px] text-text outline-none transition-colors focus:border-navy"
+            value={fSess}
+            onChange={(e) => setFSess(e.target.value)}
+          >
             <option value="">All Sessions</option>
             {sessions.map((s) => (
               <option key={s} value={s}>
@@ -178,6 +187,7 @@ export default function DeleteRecords() {
           </select>
           <input
             type="text"
+            className="min-w-[140px] flex-1 rounded-lg border-[1.5px] border-border bg-input px-3 py-2 font-sans text-[13px] text-text outline-none transition-colors focus:border-navy"
             placeholder="Search name, email or phone…"
             value={fSearch}
             onChange={(e) => {
@@ -185,14 +195,17 @@ export default function DeleteRecords() {
               applySearch(allRecords);
             }}
           />
-          <button className="btn-load" onClick={loadRecords}>
+          <button
+            className="rounded-lg border-none bg-navy px-5 py-2 font-sans text-[13px] font-semibold text-white transition-opacity hover:opacity-88"
+            onClick={loadRecords}
+          >
             Load Records
           </button>
         </div>
 
         {/* Select all bar */}
-        <div className="sel-bar">
-          <label className="sel-label">
+        <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2">
+          <label className="flex cursor-pointer items-center gap-2 text-[13px] text-text2">
             <input
               type="checkbox"
               checked={filtered.length > 0 && filtered.every((r) => selected.has(r._id))}
@@ -200,18 +213,18 @@ export default function DeleteRecords() {
             />
             Select all visible
           </label>
-          <span className="sel-count">{selected.size} selected</span>
+          <span className="text-[13px] text-muted">{selected.size} selected</span>
         </div>
 
         {/* List */}
-        <div className="user-list">
+        <div className="mb-5 flex flex-col gap-2">
           {loading ? (
-            <div className="list-empty">
+            <div className="px-5 py-10 text-center text-sm text-muted">
               <div className="spinner mx-auto mb-2.5"></div>
               Loading…
             </div>
           ) : filtered.length === 0 ? (
-            <div className="list-empty">{loadMsg}</div>
+            <div className="px-5 py-10 text-center text-sm text-muted">{loadMsg}</div>
           ) : (
             filtered.map((r) => {
               const sel = selected.has(r._id);
@@ -222,7 +235,10 @@ export default function DeleteRecords() {
                   "&background=1a3c5e&color=fff&size=80";
               return (
                 <div
-                  className={"urow" + (sel ? " selected" : "")}
+                  className={
+                    "flex cursor-pointer items-center gap-3.5 rounded-[10px] border-[1.5px] px-4 py-2.75 transition-all hover:border-border " +
+                    (sel ? "border-danger bg-danger-faint" : "border-border2 bg-card")
+                  }
                   key={r._id}
                   onClick={() => toggle(r._id)}
                 >
@@ -232,10 +248,10 @@ export default function DeleteRecords() {
                     onClick={(e) => e.stopPropagation()}
                     onChange={() => toggle(r._id)}
                   />
-                  <img src={img} className="urow-img" alt="" />
+                  <img src={img} className="h-10.5 w-10.5 shrink-0 rounded-full border-2 border-border2 object-cover" alt="" />
                   <div>
-                    <div className="urow-name">{r.name || "—"}</div>
-                    <div className="urow-meta">
+                    <div className="text-[13px] font-semibold text-text">{r.name || "—"}</div>
+                    <div className="mt-0.5 text-[11px] text-muted">
                       {r.email || ""} · {r.session || ""} · Room {r.roomNo || "—"}
                     </div>
                   </div>
@@ -246,9 +262,14 @@ export default function DeleteRecords() {
         </div>
 
         {/* Danger zone */}
-        <div className={"danger-box" + (selected.size ? " show" : "")}>
-          <h4>⚠ Confirm Deletion</h4>
-          <p>
+        <div
+          className={
+            (selected.size ? "block " : "hidden ") +
+            "rounded-xl border-[1.5px] border-[rgba(192,57,43,0.25)] bg-danger-faint px-5.5 py-5"
+          }
+        >
+          <h4 className="mb-2 text-sm font-bold text-danger">⚠ Confirm Deletion</h4>
+          <p className="mb-4 text-[13px] leading-relaxed text-text2">
             You are about to permanently delete{" "}
             <strong>{selected.size}</strong> record(s). All uploaded passport
             photos and payment receipts will also be removed. Enter your admin
@@ -274,12 +295,13 @@ export default function DeleteRecords() {
               })
             )}
           </div>
-          <div className="pass-row">
+          <div className="flex flex-wrap gap-2.5">
             <input
               type="password"
               placeholder="Your admin password"
               value={adminPass}
               onChange={(e) => setAdminPass(e.target.value)}
+              className="min-w-[200px] flex-1 rounded-lg border-[1.5px] border-[rgba(192,57,43,0.3)] bg-input px-3.5 py-2.5 font-sans text-[13px] text-text outline-none focus:border-danger"
             />
             <input
               placeholder="Type DELETE to confirm"
@@ -288,7 +310,7 @@ export default function DeleteRecords() {
               onChange={(e) => setConfirmText(e.target.value)}
             />
             <button
-              className="btn-delete"
+              className="rounded-lg border-none bg-danger px-5.5 py-2.5 font-sans text-[13px] font-bold text-white transition-opacity hover:opacity-86 disabled:cursor-not-allowed disabled:opacity-40"
               onClick={confirmDelete}
               disabled={busy}
             >

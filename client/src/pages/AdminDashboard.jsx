@@ -42,7 +42,6 @@ import {
   sendJSON,
 } from "../api.js";
 import { useTenant } from "../tenantContext.jsx";
-import "../styles/admin.css";
 
 const avatarFor = (name) =>
   "https://ui-avatars.com/api/?name=" +
