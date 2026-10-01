@@ -8,6 +8,7 @@ const PlatformAdmin = require("../models/PlatformAdmin");
 const PlatformStaff = require("../models/PlatformStaff");
 const PlatformAudit = require("../models/PlatformAudit");
 const { hasPlatformPermission } = require("../utils/platformPermissions");
+const { getTenantModels } = require("../utils/tenantModels");
 const { sendVerificationEmail } = require("../utils/email");
 const provisionClient = require("../utils/provisionClient");
 
@@ -146,11 +147,9 @@ router.post("/client/signup", async (req, res) => {
       !password ||
       !locations.length
     )
-      return res
-        .status(400)
-        .json({
-          error: "All required fields, including a location, are required",
-        });
+      return res.status(400).json({
+        error: "All required fields, including a location, are required",
+      });
     if (!isValidEmail(email))
       return res
         .status(400)
@@ -549,6 +548,195 @@ router.get(
       .sort({ createdAt: -1 })
       .limit(limit);
     res.json(events);
+  },
+);
+
+// ─── Platform-owner cross-tenant data access ─────────────────────────────────
+// All routes below require type=platform AND role=owner.
+// They resolve the target tenant's DB using Client.dbName, then query directly
+// using getTenantModels — no admin JWT for that tenant is needed.
+
+// Helper: resolve client + tenant models, gate to owner only
+async function resolveTenantCtx(req, res) {
+  if (req.platformAdmin?.role !== "owner")
+    return res.status(403).json({ error: "Overall admin access required" });
+  const client = await Client.findById(req.params.clientId).lean();
+  if (!client) return res.status(404).json({ error: "Client not found" });
+  if (!client.dbName)
+    return res
+      .status(409)
+      .json({ error: "Tenant DB not provisioned yet for this client" });
+  const models = getTenantModels(client.dbName);
+  return { client, models };
+}
+
+// GET /platform/tenants/:clientId/stats
+router.get(
+  "/platform/tenants/:clientId/stats",
+  verifyPlatformAdmin,
+  requirePlatformOwner,
+  async (req, res) => {
+    try {
+      const ctx = await resolveTenantCtx(req, res);
+      if (!ctx) return;
+      const { models, client } = ctx;
+      const [totalUsers, activeUsers, properties, units] = await Promise.all([
+        models.User.countDocuments({}),
+        models.User.countDocuments({ status: "active" }),
+        models.Property.find({}, "name status").lean(),
+        models.Unit.countDocuments({}),
+      ]);
+      res.json({
+        clientId: client._id,
+        businessName: client.businessName,
+        subdomain: client.subdomain,
+        status: client.status,
+        totalUsers,
+        activeUsers,
+        revokedUsers: totalUsers - activeUsers,
+        properties: properties.length,
+        units,
+        locations: client.locations,
+      });
+    } catch (e) {
+      res.status(500).json({ error: e.message });
+    }
+  },
+);
+
+// GET /platform/tenants/:clientId/users?page=1&limit=50&search=&status=
+router.get(
+  "/platform/tenants/:clientId/users",
+  verifyPlatformAdmin,
+  requirePlatformOwner,
+  async (req, res) => {
+    try {
+      const ctx = await resolveTenantCtx(req, res);
+      if (!ctx) return;
+      const { models } = ctx;
+      const page = Math.max(1, Number(req.query.page) || 1);
+      const limit = Math.max(1, Math.min(Number(req.query.limit) || 50, 200));
+      const search = String(req.query.search || "").trim();
+      const statusFilter = String(req.query.status || "").trim();
+
+      const filter = {};
+      if (search) {
+        const re = new RegExp(
+          search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+          "i",
+        );
+        filter.$or = [{ name: re }, { email: re }, { roomNo: re }];
+      }
+      if (statusFilter && ["active", "revoked"].includes(statusFilter))
+        filter.status = statusFilter;
+
+      const [users, total] = await Promise.all([
+        models.User.find(filter, "-__v")
+          .sort({ createdAt: -1 })
+          .skip((page - 1) * limit)
+          .limit(limit)
+          .lean(),
+        models.User.countDocuments(filter),
+      ]);
+      res.json({ users, total, page, limit });
+    } catch (e) {
+      res.status(500).json({ error: e.message });
+    }
+  },
+);
+
+// GET /platform/tenants/:clientId/users/:userId
+router.get(
+  "/platform/tenants/:clientId/users/:userId",
+  verifyPlatformAdmin,
+  requirePlatformOwner,
+  async (req, res) => {
+    try {
+      const ctx = await resolveTenantCtx(req, res);
+      if (!ctx) return;
+      const user = await ctx.models.User.findById(
+        req.params.userId,
+        "-__v",
+      ).lean();
+      if (!user) return res.status(404).json({ error: "User not found" });
+      res.json(user);
+    } catch (e) {
+      res.status(500).json({ error: e.message });
+    }
+  },
+);
+
+// PUT /platform/tenants/:clientId/users/:userId
+// Allowed field updates: status ("active"|"revoked"), location, roomNo, session, retainPending
+router.put(
+  "/platform/tenants/:clientId/users/:userId",
+  verifyPlatformAdmin,
+  requirePlatformOwner,
+  async (req, res) => {
+    try {
+      const ctx = await resolveTenantCtx(req, res);
+      if (!ctx) return;
+      const ALLOWED = [
+        "status",
+        "location",
+        "roomNo",
+        "session",
+        "retainPending",
+      ];
+      const updates = {};
+      for (const key of ALLOWED) {
+        if (req.body[key] !== undefined) updates[key] = req.body[key];
+      }
+      if (updates.status && !["active", "revoked"].includes(updates.status))
+        return res
+          .status(400)
+          .json({ error: "status must be active or revoked" });
+      if (Object.keys(updates).length === 0)
+        return res.status(400).json({ error: "No valid fields to update" });
+
+      const user = await ctx.models.User.findByIdAndUpdate(
+        req.params.userId,
+        updates,
+        { returnDocument: "after", runValidators: true },
+      ).lean();
+      if (!user) return res.status(404).json({ error: "User not found" });
+      await recordAudit(req, {
+        actorId: req.platformAdmin.id,
+        actorName: req.platformAdmin.name,
+        actorEmail: req.platformAdmin.email,
+        actorRole: req.platformAdmin.role,
+        action: "platform:edit-tenant-user",
+        resource: `tenant:${req.params.clientId}/user`,
+        resourceId: req.params.userId,
+      });
+      res.json(user);
+    } catch (e) {
+      res.status(500).json({ error: e.message });
+    }
+  },
+);
+
+// GET /platform/tenants/:clientId/properties  (rooms/units included)
+router.get(
+  "/platform/tenants/:clientId/properties",
+  verifyPlatformAdmin,
+  requirePlatformOwner,
+  async (req, res) => {
+    try {
+      const ctx = await resolveTenantCtx(req, res);
+      if (!ctx) return;
+      const [props, units] = await Promise.all([
+        ctx.models.Property.find({}).lean(),
+        ctx.models.Unit.find({}).lean(),
+      ]);
+      const propMap = props.map((p) => ({
+        ...p,
+        units: units.filter((u) => String(u.propertyId) === String(p._id)),
+      }));
+      res.json(propMap);
+    } catch (e) {
+      res.status(500).json({ error: e.message });
+    }
   },
 );
 

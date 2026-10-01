@@ -67,6 +67,7 @@ export default defineConfig({
       }),
       "/platform/staff": tenantAwareProxy(),
       "/platform/audit": tenantAwareProxy(),
+      "/platform/tenants": tenantAwareProxy(),
     },
   },
 });

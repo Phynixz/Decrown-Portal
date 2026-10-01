@@ -18,17 +18,30 @@ async function resolveTenant(req, res, next) {
   const hostname = String(localHost || req.hostname || "")
     .split(":")[0]
     .toLowerCase();
+  let subdomain = "";
   if (
-    !rootDomain ||
-    hostname === rootDomain ||
-    hostname === `www.${rootDomain}`
-  )
-    return next();
+    process.env.NODE_ENV !== "production" &&
+    (req.query?.client || req.headers["x-client-subdomain"])
+  ) {
+    subdomain = String(
+      req.query?.client || req.headers["x-client-subdomain"] || "",
+    )
+      .trim()
+      .toLowerCase();
+  } else {
+    if (
+      !rootDomain ||
+      hostname === rootDomain ||
+      hostname === `www.${rootDomain}`
+    )
+      return next();
 
-  const suffix = `.${rootDomain}`;
-  if (!hostname.endsWith(suffix)) return next();
+    const suffix = `.${rootDomain}`;
+    if (!hostname.endsWith(suffix)) return next();
 
-  const subdomain = hostname.slice(0, -suffix.length);
+    subdomain = hostname.slice(0, -suffix.length);
+  }
+
   if (!subdomain || subdomain.includes(".")) {
     return res.status(404).json({ error: "Tenant not found" });
   }
