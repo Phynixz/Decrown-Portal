@@ -1,10 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Building2,
   CheckCircle2,
   ChevronRight,
   ClipboardList,
+  ExternalLink,
+  FileText,
   Home,
   LogOut,
   Moon,
@@ -13,7 +15,7 @@ import {
   Sun,
   Users,
 } from "lucide-react";
-import { clearAdminAuth, getJSON, getToken } from "../api.js";
+import { clearAdminAuth, getJSON, getToken, sendJSON } from "../api.js";
 import { useTenant } from "../tenantContext.jsx";
 import { useTheme } from "../theme.js";
 
@@ -72,6 +74,8 @@ export default function OperationsWorkspace({ readOnly = false, clientId = "", c
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedTenant, setSelectedTenant] = useState(null);
+  const [actionBusy, setActionBusy] = useState(false);
 
   const token = readOnly ? sessionStorage.getItem("platformToken") || "" : getToken();
   const base = readOnly ? `/platform/tenants/${clientId}` : "";
@@ -103,6 +107,27 @@ export default function OperationsWorkspace({ readOnly = false, clientId = "", c
   function logout() {
     clearAdminAuth();
     navigate("/login", { replace: true });
+  }
+
+  async function runTenantAction(action, body = {}) {
+    if (!selectedTenant || readOnly) return;
+    setActionBusy(true);
+    try {
+      await sendJSON("PUT", `/${action}/${selectedTenant._id}`, body, token);
+      const updates = action === "approve-retain"
+        ? { retainPending: false }
+        : action === "disapprove"
+          ? { retainPending: false, disapproved: true, disapprovalReason: body.reason }
+          : action === "revoke"
+            ? { status: "revoked", revokeReason: body.reason }
+            : { status: "active", revokeReason: null };
+      setTenants((current) => current.map((tenantRecord) => tenantRecord._id === selectedTenant._id ? { ...tenantRecord, ...updates } : tenantRecord));
+      setSelectedTenant((current) => ({ ...current, ...updates }));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setActionBusy(false);
+    }
   }
 
   const units = properties.flatMap((property) => (property.units || []).map((unit) => ({ ...unit, propertyName: property.name })));
@@ -155,9 +180,21 @@ export default function OperationsWorkspace({ readOnly = false, clientId = "", c
         ) : tab === "units" ? (
           <Panel title="Units" eyebrow="Grouped by property">{units.length === 0 ? <EmptyState icon={ClipboardList} title="No units yet" text="Units will appear here once they are added to a property." /> : <div className="grid gap-5 md:grid-cols-2">{properties.map((property) => <div key={property._id}><h3 className="mb-2 font-display text-lg">{property.name}</h3><div className="space-y-2">{(property.units || []).map((unit) => <div key={unit._id} className="flex items-center justify-between rounded-lg border border-border px-3 py-3"><div><p className="text-sm font-semibold">{unit.label}</p><p className="mt-1 text-[11px] text-muted">{unit.unitType} · {unit.rentAmount == null ? "Rent not set" : `₦${Number(unit.rentAmount).toLocaleString()}`}</p></div><span className={`text-[11px] font-semibold ${unit.status === "available" ? "text-success" : "text-muted"}`}>{unit.status}</span></div>)}</div></div>)}</div>}</Panel>
         ) : tab === "tenants" ? (
-          <Panel title="Tenants" eyebrow="People in your properties"><div className="mb-4 flex items-center gap-2 rounded-lg border border-border px-3 py-2"><Search className="h-4 w-4 text-muted" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search name, email, room, or property" className="w-full bg-transparent text-sm outline-none placeholder:text-muted" /></div>{filteredTenants.length === 0 ? <EmptyState icon={Users} title={tenants.length === 0 ? "No tenants yet" : "No tenants match your search"} text={tenants.length === 0 ? "Tenant records will appear here after registration." : "Try a different search term."} /> : <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="border-b border-border text-xs uppercase tracking-wide text-muted"><tr><th className="px-3 py-3">Tenant</th><th className="px-3 py-3">Property</th><th className="px-3 py-3">Unit</th><th className="px-3 py-3">Status</th></tr></thead><tbody className="divide-y divide-border">{filteredTenants.map((tenantRecord) => <tr key={tenantRecord._id}><td className="px-3 py-3"><p className="font-semibold">{tenantRecord.name || "Unnamed tenant"}</p><p className="mt-1 text-xs text-muted">{tenantRecord.email || "No email"}</p></td><td className="px-3 py-3 text-muted">{tenantRecord.location || "—"}</td><td className="px-3 py-3 text-muted">{tenantRecord.roomNo || "—"}</td><td className="px-3 py-3"><span className="rounded-full bg-surface px-2 py-1 text-[11px] font-semibold">{tenantRecord.status || "active"}</span></td></tr>)}</tbody></table></div>}</Panel>
+          <Panel title="Tenants" eyebrow="People in your properties"><div className="mb-4 flex items-center gap-2 rounded-lg border border-border px-3 py-2"><Search className="h-4 w-4 text-muted" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search name, email, room, or property" className="w-full bg-transparent text-sm outline-none placeholder:text-muted" /></div>{filteredTenants.length === 0 ? <EmptyState icon={Users} title={tenants.length === 0 ? "No tenants yet" : "No tenants match your search"} text={tenants.length === 0 ? "Tenant records will appear here after registration." : "Try a different search term."} /> : <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="border-b border-border text-xs uppercase tracking-wide text-muted"><tr><th className="px-3 py-3">Tenant</th><th className="px-3 py-3">Property</th><th className="px-3 py-3">Unit</th><th className="px-3 py-3">Status</th><th className="px-3 py-3">Review</th></tr></thead><tbody className="divide-y divide-border">{filteredTenants.map((tenantRecord) => <tr key={tenantRecord._id} className="cursor-pointer hover:bg-surface" onClick={() => setSelectedTenant(tenantRecord)}><td className="px-3 py-3"><p className="font-semibold">{tenantRecord.name || "Unnamed tenant"}</p><p className="mt-1 text-xs text-muted">{tenantRecord.email || "No email"}</p></td><td className="px-3 py-3 text-muted">{tenantRecord.location || "—"}</td><td className="px-3 py-3 text-muted">{tenantRecord.roomNo || "—"}</td><td className="px-3 py-3"><span className="rounded-full bg-surface px-2 py-1 text-[11px] font-semibold">{tenantRecord.status || "active"}</span></td><td className="px-3 py-3 text-xs font-semibold text-navy">View record</td></tr>)}</tbody></table></div>}</Panel>
         ) : (
           <Panel title="Settings" eyebrow="Workspace configuration"><div className="rounded-xl border border-dashed border-border px-5 py-8 text-sm text-muted">Property-specific registration and rent controls remain available in the operations tools. This workspace will surface them here as those settings become property-scoped.</div></Panel>
+        )}
+
+        {selectedTenant && (
+          <div className="fixed inset-0 z-50 flex justify-end bg-black/40 p-0 backdrop-blur-sm" onClick={(event) => event.target === event.currentTarget && setSelectedTenant(null)}>
+            <aside className="h-full w-full max-w-xl overflow-y-auto bg-card p-6 shadow-2xl sm:p-8">
+              <div className="flex items-start justify-between gap-4"><div><p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-terra">Tenant record</p><h2 className="mt-2 font-display text-2xl">{selectedTenant.name || "Unnamed tenant"}</h2><p className="mt-1 text-sm text-muted">{selectedTenant.email || "No email"} · {selectedTenant.phone || "No phone"}</p></div><button onClick={() => setSelectedTenant(null)} className="text-2xl text-muted" aria-label="Close tenant record">×</button></div>
+              <div className="mt-6 grid grid-cols-2 gap-3 text-sm"><div className="rounded-lg bg-surface p-3"><p className="text-xs text-muted">Property</p><p className="mt-1 font-semibold">{selectedTenant.location || "—"}</p></div><div className="rounded-lg bg-surface p-3"><p className="text-xs text-muted">Unit</p><p className="mt-1 font-semibold">{selectedTenant.roomNo || "—"}</p></div><div className="rounded-lg bg-surface p-3"><p className="text-xs text-muted">Session</p><p className="mt-1 font-semibold">{selectedTenant.session || "—"}</p></div><div className="rounded-lg bg-surface p-3"><p className="text-xs text-muted">Status</p><p className="mt-1 font-semibold">{selectedTenant.status || "active"}</p></div></div>
+              <div className="mt-8"><h3 className="font-display text-lg">Documents</h3><div className="mt-3 space-y-2">{[["passport", "Passport photo"], ["idCard", "ID card"], ["paymentProof", "Payment proof"], ["agreementCopy", "Agreement"]].map(([field, label]) => selectedTenant[field] ? <a key={field} href={selectedTenant[field]} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between rounded-lg border border-border px-3 py-3 text-sm font-semibold text-navy hover:bg-surface"><span className="flex items-center gap-2"><FileText className="h-4 w-4" />{label}</span><ExternalLink className="h-3.5 w-3.5" /></a> : <div key={field} className="flex items-center justify-between rounded-lg border border-dashed border-border px-3 py-3 text-sm text-muted"><span>{label}</span><span>Not uploaded</span></div>)}</div></div>
+              {!readOnly && <div className="mt-8 border-t border-border pt-6"><h3 className="font-display text-lg">Actions</h3><div className="mt-3 flex flex-wrap gap-2">{selectedTenant.retainPending && <button disabled={actionBusy} onClick={() => runTenantAction("approve-retain")} className="rounded-lg bg-success px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">Approve tenant</button>}{selectedTenant.retainPending && <button disabled={actionBusy} onClick={() => runTenantAction("disapprove", { reason: "Documents require review" })} className="rounded-lg bg-danger px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">Reject</button>}{selectedTenant.status === "revoked" ? <button disabled={actionBusy} onClick={() => runTenantAction("reinstate")} className="rounded-lg border border-border px-3 py-2 text-xs font-semibold disabled:opacity-50">Reinstate access</button> : <button disabled={actionBusy} onClick={() => runTenantAction("revoke", { reason: "Revoked from operations workspace" })} className="rounded-lg border border-danger px-3 py-2 text-xs font-semibold text-danger disabled:opacity-50">Revoke access</button>}</div></div>}
+              {readOnly && <p className="mt-8 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-900">Read-only inspection: document and approval actions are disabled.</p>}
+            </aside>
+          </div>
         )}
       </main>
     </div>
