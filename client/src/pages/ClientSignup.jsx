@@ -412,11 +412,11 @@ export default function ClientSignup() {
                   <p className="login-label">Step 3 of 3</p>
                   <h1 className="login-title">You're all set — almost</h1>
                   <p className="login-subtitle">
-                    Your email is verified and your account is now pending
+                    Your email is verified and your workspace is now pending
                     review. We'll email {email} once your platform is approved
                     and ready to use.
                   </p>
-                  <Link to="/login" className="btn-login mt-5 inline-block text-center no-underline">
+                  <Link to={`/login?client=${encodeURIComponent(subdomain)}`} className="btn-login mt-5 inline-block text-center no-underline">
                     Back to Sign In
                   </Link>
                 </div>
