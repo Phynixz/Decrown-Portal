@@ -7,6 +7,7 @@ const { MongoMemoryServer } = require("mongodb-memory-server");
 const Client = require("../models/Client");
 const Admin = require("../models/Admin");
 const Settings = require("../models/Settings");
+const Registration = require("../models/Registration");
 const User = require("../models/User");
 const { getTenantModels } = require("../utils/tenantModels");
 
@@ -30,6 +31,7 @@ test("dry-runs and migrates a legacy property with owner access", async () => {
     rentAmount: 42000,
     roomCount: 2,
   });
+  await Registration.create({ session: "2026/2027", open: true });
   await User.create({
     location: "Legacy House",
     name: "Legacy Tenant",
@@ -37,6 +39,9 @@ test("dry-runs and migrates a legacy property with owner access", async () => {
     phone: "08000000001",
     session: "2026/2027",
     roomNo: "Room 1",
+    passport: "https://res.cloudinary.com/example/passport.jpg",
+    idCard: "https://res.cloudinary.com/example/id-card.jpg",
+    paymentProof: "https://res.cloudinary.com/example/payment-proof.pdf",
   });
 
   const env = {
@@ -72,8 +77,15 @@ test("dry-runs and migrates a legacy property with owner access", async () => {
   const migratedUser = await tenantModels.User.findOne({
     email: "legacy-tenant@example.test",
   });
+  const migratedRegistration = await tenantModels.Registration.findOne({
+    session: "2026/2027",
+  });
   assert.ok(migratedUser.propertyId);
   assert.ok(migratedUser.unitId);
+  assert.equal(migratedUser.passport, "https://res.cloudinary.com/example/passport.jpg");
+  assert.equal(migratedUser.idCard, "https://res.cloudinary.com/example/id-card.jpg");
+  assert.equal(migratedUser.paymentProof, "https://res.cloudinary.com/example/payment-proof.pdf");
+  assert.equal(migratedRegistration.open, true);
   const tenantOwner = await tenantModels.Admin.findOne({
     email: env.LEGACY_TENANT_EMAIL,
   });

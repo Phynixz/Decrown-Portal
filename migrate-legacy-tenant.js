@@ -64,6 +64,30 @@ async function countDocuments(models) {
   return counts;
 }
 
+async function summarizePreservedData(models) {
+  const assetFields = [
+    "passport",
+    "idCard",
+    "paymentProof",
+    "agreementCopy",
+  ];
+  const assets = {};
+  for (const field of assetFields) {
+    assets[field] = await models.User.countDocuments({
+      [field]: { $exists: true, $nin: [null, ""] },
+    });
+  }
+  return {
+    registrations: await models.Registration.countDocuments(),
+    usersWithAssets: await models.User.countDocuments({
+      $or: assetFields.map((field) => ({
+        [field]: { $exists: true, $nin: [null, ""] },
+      })),
+    }),
+    assets,
+  };
+}
+
 async function copyCollection(source, target) {
   let copied = 0;
   let batch = [];
@@ -157,6 +181,7 @@ async function run() {
       );
     const sourceModels = compileModels(sourceConnection);
     const sourceCounts = await countDocuments(sourceModels);
+    const preservedData = await summarizePreservedData(sourceModels);
     const existingClient = await Client.findOne({
       $or: [{ email: EMAIL }, { subdomain: SUBDOMAIN }],
     });
@@ -178,6 +203,7 @@ async function run() {
           subdomain: SUBDOMAIN,
           targetDatabase: DB_NAME,
           sourceCounts,
+          preservedData,
           targetCounts,
           existingClient: !!existingClient,
           writes: apply,
