@@ -20,6 +20,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import { getJSON, sendJSON } from "../../api.js";
+import OperationsWorkspace from "../OperationsWorkspace.jsx";
 
 function getPlatformToken() {
   return sessionStorage.getItem("platformToken") || "";
@@ -45,7 +46,7 @@ const STATUS_STYLES = {
 };
 
 // ─── Tenant Drawer ────────────────────────────────────────────────────────────
-function TenantDrawer({ client, onClose }) {
+function LegacyTenantDrawer({ client, onClose }) {
   const [tab, setTab] = useState("users"); // "users" | "properties"
   const [stats, setStats] = useState(null);
   const [users, setUsers] = useState([]);
@@ -346,6 +347,23 @@ function TenantDrawer({ client, onClose }) {
             )
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+function TenantDrawer({ client, onClose }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-sm"
+      onClick={(event) => event.target === event.currentTarget && onClose()}
+    >
+      <div className="h-full w-full max-w-5xl overflow-y-auto bg-bg shadow-2xl">
+        <OperationsWorkspace
+          readOnly
+          clientId={client._id}
+          clientName={client.businessName}
+        />
       </div>
     </div>
   );

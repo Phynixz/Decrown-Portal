@@ -5,6 +5,7 @@ import RegistrationForm from "./pages/RegistrationForm.jsx";
 import AdminDashboard from "./pages/AdminDashboard.jsx";
 import LandlordDashboard from "./pages/LandlordDashboard.jsx";
 import PropertyForm from "./pages/PropertyForm.jsx";
+import OperationsWorkspace from "./pages/OperationsWorkspace.jsx";
 import DeleteRecords from "./pages/DeleteRecords.jsx";
 import TenantPortal from "./pages/TenantPortal.jsx";
 import Receipt from "./pages/Receipt.jsx";
@@ -29,7 +30,8 @@ export default function App() {
       <Route path="/signup" element={<ClientSignup />} />
       <Route path="/register" element={<RegistrationForm />} />
       <Route path="/admin" element={<LandlordDashboard />} />
-      <Route path="/admin/operations" element={<AdminDashboard />} />
+      <Route path="/admin/operations" element={<OperationsWorkspace />} />
+      <Route path="/admin/legacy-operations" element={<AdminDashboard />} />
       <Route path="/admin/properties/new" element={<PropertyForm />} />
       <Route path="/delete" element={<DeleteRecords />} />
       <Route path="/portal" element={<TenantPortal />} />
