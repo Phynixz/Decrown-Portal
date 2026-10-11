@@ -8,6 +8,7 @@ const TenantContext = createContext({
   phone: "",
   email: "",
   locations: [],
+  isTenant: false,
   loading: true,
 });
 
@@ -19,6 +20,7 @@ export function TenantProvider({ children }) {
     phone: "",
     email: "",
     locations: [],
+    isTenant: false,
     loading: true,
   });
 
@@ -27,7 +29,11 @@ export function TenantProvider({ children }) {
     fetch(withTenantContext("/tenant-config"))
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (cancelled || !data) return;
+        if (cancelled) return;
+        if (!data) {
+          setConfig((current) => ({ ...current, isTenant: false, loading: false }));
+          return;
+        }
         const primaryColor = data.branding?.primaryColor;
         if (primaryColor && CSS.supports("color", primaryColor)) {
           document.documentElement.style.setProperty(
@@ -45,6 +51,7 @@ export function TenantProvider({ children }) {
           phone: data.phone || "",
           email: data.email || "",
           locations: data.locations || [],
+          isTenant: Boolean(data.isTenant),
           loading: false,
         });
       })

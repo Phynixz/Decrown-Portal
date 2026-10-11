@@ -16,6 +16,7 @@ export default function PropertyForm() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
+  const [partialSave, setPartialSave] = useState(false);
 
   function updateProperty(event) {
     setProperty((current) => ({ ...current, [event.target.name]: event.target.value }));
@@ -29,14 +30,32 @@ export default function PropertyForm() {
     event.preventDefault();
     setError("");
     if (!getToken()) return navigate("/login", { replace: true });
+    const incompleteUnit = units.findIndex(
+      (unit) => !unit.unitCode.trim() || !unit.label.trim(),
+    );
+    if (incompleteUnit !== -1) {
+      setError(`Complete the code and label for unit ${incompleteUnit + 1}.`);
+      return;
+    }
+    const hasDuplicateCodes =
+      new Set(units.map((unit) => unit.unitCode.trim().toLowerCase())).size !==
+      units.length;
+    const hasDuplicateLabels =
+      new Set(units.map((unit) => unit.label.trim().toLowerCase())).size !==
+      units.length;
+    if (hasDuplicateCodes || hasDuplicateLabels) {
+      setError("Unit codes and labels must each be unique within this property.");
+      return;
+    }
     setBusy(true);
+    let propertyCreated = false;
     try {
       const created = await sendJSON("POST", "/admin/properties", {
         ...property,
         rentAmount: property.rentAmount === "" ? 0 : Number(property.rentAmount),
       }, getToken());
+      propertyCreated = true;
       for (const unit of units) {
-        if (!unit.unitCode.trim() || !unit.label.trim()) throw new Error("Every unit needs a code and label.");
         await sendJSON("POST", `/admin/properties/${created._id}/units`, {
           ...unit,
           rentAmount: unit.rentAmount === "" ? null : Number(unit.rentAmount),
@@ -44,7 +63,12 @@ export default function PropertyForm() {
       }
       setSaved(true);
     } catch (err) {
-      setError(err.message);
+      if (propertyCreated) {
+        setPartialSave(true);
+        setError(`Property created, but a unit could not be saved: ${err.message}`);
+      } else {
+        setError(err.message);
+      }
     } finally {
       setBusy(false);
     }
@@ -72,6 +96,7 @@ export default function PropertyForm() {
         <h1 className="mt-2 font-display text-3xl text-text sm:text-4xl">Tell us about your property.</h1>
         <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted">Create the property first, then add the units your tenants can select. Nothing is pre-filled from another client.</p>
         {error && <div className="mt-6 rounded-lg border-l-4 border-danger bg-danger-faint px-4 py-3 text-sm text-danger">{error}</div>}
+        {partialSave && <Link to="/admin/operations" className="mt-3 inline-flex text-sm font-semibold text-navy underline underline-offset-4">Open Operations to finish setup</Link>}
         <form onSubmit={submit} className="mt-8 space-y-8">
           <section className="space-y-5 border-b border-border pb-8">
             <div><label className="block text-sm font-semibold" htmlFor="property-name">Property name</label><input id="property-name" name="name" required value={property.name} onChange={updateProperty} placeholder="e.g. North Campus" className={inputClass} /></div>
@@ -81,7 +106,7 @@ export default function PropertyForm() {
           <section><div className="flex items-end justify-between gap-4"><div><h2 className="font-display text-xl">Units</h2><p className="mt-1 text-sm text-muted">Add units now or create them later from Operations.</p></div><button type="button" onClick={() => setUnits((current) => [...current, emptyUnit()])} className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-semibold text-text"><Plus className="h-3.5 w-3.5" /> Add unit</button></div>
             {units.length === 0 ? <div className="mt-4 rounded-xl border border-dashed border-border px-5 py-8 text-center text-sm text-muted">No units added yet. You can add them now or continue with an empty property.</div> : <div className="mt-4 space-y-3">{units.map((unit, index) => <div key={index} className="grid gap-3 rounded-xl border border-border bg-card p-4 sm:grid-cols-[1fr_1fr_1fr_1fr_auto]"><input name="unitCode" value={unit.unitCode} onChange={(event) => updateUnit(index, event)} placeholder="Code" className={inputClass} /><input name="label" value={unit.label} onChange={(event) => updateUnit(index, event)} placeholder="Display label" className={inputClass} /><select name="unitType" value={unit.unitType} onChange={(event) => updateUnit(index, event)} className={inputClass}>{UNIT_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}</select><input name="rentAmount" type="number" min="0" value={unit.rentAmount} onChange={(event) => updateUnit(index, event)} placeholder="Rent" className={inputClass} /><button type="button" onClick={() => setUnits((current) => current.filter((_, unitIndex) => unitIndex !== index))} className="mt-1 flex h-10 w-10 items-center justify-center rounded-lg text-danger hover:bg-danger-faint" title="Remove unit"><Trash2 className="h-4 w-4" /></button></div>)}</div>}
           </section>
-          <button disabled={busy} className="w-full rounded-lg bg-navy px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-navy2 disabled:cursor-not-allowed disabled:opacity-50">{busy ? "Saving property..." : "Save property"}</button>
+          <button disabled={busy || partialSave} className="w-full rounded-lg bg-navy px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-navy2 disabled:cursor-not-allowed disabled:opacity-50">{busy ? "Saving property..." : partialSave ? "Property already created" : "Save property"}</button>
         </form>
       </main>
     </div>

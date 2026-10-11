@@ -715,6 +715,7 @@ app.get("/tenant-config", async (req, res) => {
       }),
     );
     res.json({
+      isTenant: Boolean(req.tenantClient),
       businessName: req.tenantClient?.businessName || "De-Crown Cottage",
       branding: req.tenantClient?.branding || {},
       bankDetails: req.tenantClient?.bankDetails || {},
@@ -1691,7 +1692,7 @@ async function connectDatabase() {
 
 connectDatabase()
   .then(async (uri) => {
-    console.log(` MongoDB connected: ${uri}`);
+    console.log("MongoDB connected");
     await seed();
     app.listen(PORT, () => console.log(` Server on port ${PORT}`));
   })

@@ -19,13 +19,28 @@ import PlatformClients from "./pages/platform/PlatformClients.jsx";
 import PlatformSettings from "./pages/platform/PlatformSettings.jsx";
 import ApprovalQueue from "./pages/ApprovalQueue.jsx";
 
-import { TenantProvider } from "./tenantContext.jsx";
+import { TenantProvider, useTenant } from "./tenantContext.jsx";
+
+function HomeRedirect() {
+  const { isTenant, loading } = useTenant();
+  if (loading) {
+    return (
+      <main
+        className="grid min-h-screen place-items-center bg-bg text-sm text-muted"
+        role="status"
+      >
+        Loading workspace…
+      </main>
+    );
+  }
+  return <Navigate to={isTenant ? "/login" : "/platform/login"} replace />;
+}
 
 export default function App() {
   return (
     <TenantProvider>
       <Routes>
-      <Route path="/" element={<Navigate to="/platform/login" replace />} />
+      <Route path="/" element={<HomeRedirect />} />
       <Route path="/login" element={<AdminLogin />} />
       <Route path="/signup" element={<ClientSignup />} />
       <Route path="/register" element={<RegistrationForm />} />

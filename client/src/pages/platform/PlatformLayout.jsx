@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
   LayoutGrid,
@@ -8,6 +8,8 @@ import {
   ShieldCheck,
   Moon,
   Sun,
+  Menu,
+  X,
 } from "lucide-react";
 import { useTheme } from "../../theme.js";
 
@@ -24,6 +26,7 @@ const NAV_ITEMS = [
 export default function PlatformLayout() {
   const { dark, toggleTheme } = useTheme();
   const navigate = useNavigate();
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const name = sessionStorage.getItem("platformName") || "Operator";
   const role = sessionStorage.getItem("platformRole") || "viewer";
   const visibleNavItems =
@@ -101,7 +104,47 @@ export default function PlatformLayout() {
           >
             {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
+          <button
+            onClick={() => setMobileNavOpen((open) => !open)}
+            className="md:hidden w-9 h-9 rounded-lg border border-border dark:border-border-dark flex items-center justify-center text-muted dark:text-muted-dark hover:text-ink dark:hover:text-ink-dark transition-colors"
+            title={mobileNavOpen ? "Close navigation" : "Open navigation"}
+            aria-label={mobileNavOpen ? "Close navigation" : "Open navigation"}
+            aria-expanded={mobileNavOpen}
+          >
+            {mobileNavOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+          </button>
         </header>
+
+        {mobileNavOpen && (
+          <nav className="md:hidden border-b border-border dark:border-border-dark bg-card dark:bg-card-dark px-4 py-3">
+            <div className="space-y-1">
+              {visibleNavItems.map(({ to, label, icon: Icon, end }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  end={end}
+                  onClick={() => setMobileNavOpen(false)}
+                  className={({ isActive }) =>
+                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors " +
+                    (isActive
+                      ? "bg-accent/15 text-accent"
+                      : "text-muted dark:text-muted-dark hover:bg-surface dark:hover:bg-white/5 hover:text-ink dark:hover:text-ink-dark")
+                  }
+                >
+                  <Icon className="w-4 h-4" />
+                  {label}
+                </NavLink>
+              ))}
+              <button
+                onClick={logout}
+                className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted dark:text-muted-dark hover:bg-surface dark:hover:bg-white/5 hover:text-ink dark:hover:text-ink-dark"
+              >
+                <LogOut className="w-4 h-4" />
+                Log Out
+              </button>
+            </div>
+          </nav>
+        )}
 
         <main className="flex-1 p-6 sm:p-8 overflow-y-auto">
           <Outlet />

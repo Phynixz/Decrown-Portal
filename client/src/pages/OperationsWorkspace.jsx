@@ -71,6 +71,12 @@ export default function OperationsWorkspace({ readOnly = false, clientId = "", c
   const [properties, setProperties] = useState([]);
   const [tenants, setTenants] = useState([]);
   const [stats, setStats] = useState(null);
+  const [settings, setSettings] = useState([]);
+  const [settingsLoading, setSettingsLoading] = useState(false);
+  const [settingsSaving, setSettingsSaving] = useState(false);
+  const [registrationOpen, setRegistrationOpen] = useState(false);
+  const [currentSession, setCurrentSession] = useState("");
+  const [settingsMessage, setSettingsMessage] = useState("");
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -104,6 +110,34 @@ export default function OperationsWorkspace({ readOnly = false, clientId = "", c
       .finally(() => setLoading(false));
   }, [clientId, navigate, readOnly]);
 
+  useEffect(() => {
+    if (readOnly || tab !== "settings") return;
+    let cancelled = false;
+    setSettingsLoading(true);
+    setSettingsMessage("");
+    Promise.all([getJSON("/admin/get-amounts", token), getJSON("/current-session")])
+      .then(([data, sessionData]) => {
+        if (cancelled) return;
+        setSettings(
+          (data.locations || []).map((item) => ({
+            name: item.name,
+            rentAmount: String(item.rentAmount ?? 0),
+          })),
+        );
+        setRegistrationOpen(data.registrationOpen !== false);
+        setCurrentSession(sessionData.session || "");
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err.message);
+      })
+      .finally(() => {
+        if (!cancelled) setSettingsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [readOnly, tab, token]);
+
   function logout() {
     clearAdminAuth();
     navigate("/login", { replace: true });
@@ -130,6 +164,56 @@ export default function OperationsWorkspace({ readOnly = false, clientId = "", c
     }
   }
 
+  async function saveSettings(event) {
+    event.preventDefault();
+    setSettingsSaving(true);
+    setSettingsMessage("");
+    setError("");
+    try {
+      await sendJSON(
+        "PUT",
+        "/admin/set-amount",
+        {
+          locations: settings.map((item) => ({
+            name: item.name,
+            rentAmount: Number(item.rentAmount),
+          })),
+        },
+        token,
+      );
+      setSettingsMessage("Rent settings saved.");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSettingsSaving(false);
+    }
+  }
+
+  async function toggleRegistration() {
+    setSettingsSaving(true);
+    setSettingsMessage("");
+    setError("");
+    try {
+      const result = await sendJSON(
+        "PUT",
+        "/admin/set-registration",
+        { open: !registrationOpen },
+        token,
+      );
+      setRegistrationOpen(result.registrationOpen);
+      setCurrentSession(result.session || currentSession);
+      setSettingsMessage(
+        result.registrationOpen
+          ? "Registration is open."
+          : "Registration is closed.",
+      );
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSettingsSaving(false);
+    }
+  }
+
   const units = properties.flatMap((property) => (property.units || []).map((unit) => ({ ...unit, propertyName: property.name })));
   const occupiedUnitIds = new Set(tenants.map((tenantRecord) => String(tenantRecord.unitId)).filter(Boolean));
   const filteredTenants = tenants.filter((tenantRecord) => {
@@ -137,6 +221,7 @@ export default function OperationsWorkspace({ readOnly = false, clientId = "", c
     return haystack.includes(query.toLowerCase());
   });
   const displayName = readOnly ? clientName : tenant.businessName;
+  const visibleTabs = readOnly ? tabs.filter((item) => item.id !== "settings") : tabs;
 
   return (
     <div className="min-h-screen bg-bg font-sans text-text">
@@ -163,7 +248,7 @@ export default function OperationsWorkspace({ readOnly = false, clientId = "", c
 
         {error && <div className="mb-6 rounded-lg border-l-4 border-danger bg-danger-faint px-4 py-3 text-sm text-danger">{error}</div>}
 
-        <div className="mb-7 flex gap-1 overflow-x-auto border-b border-border">{tabs.map(({ id, label, icon: Icon }) => <button key={id} onClick={() => setTab(id)} className={`flex shrink-0 items-center gap-2 border-b-2 px-3 py-3 text-sm font-semibold transition-colors ${tab === id ? "border-navy text-navy" : "border-transparent text-muted hover:text-text"}`}><Icon className="h-4 w-4" />{label}</button>)}</div>
+        <div className="mb-7 flex gap-1 overflow-x-auto border-b border-border">{visibleTabs.map(({ id, label, icon: Icon }) => <button key={id} onClick={() => setTab(id)} className={`flex shrink-0 items-center gap-2 border-b-2 px-3 py-3 text-sm font-semibold transition-colors ${tab === id ? "border-navy text-navy" : "border-transparent text-muted hover:text-text"}`}><Icon className="h-4 w-4" />{label}</button>)}</div>
 
         {loading ? <div className="grid gap-4 md:grid-cols-3"><div className="h-32 animate-pulse rounded-2xl bg-card2" /><div className="h-32 animate-pulse rounded-2xl bg-card2" /><div className="h-32 animate-pulse rounded-2xl bg-card2" /></div> : tab === "overview" ? (
           <div className="space-y-6">
@@ -182,7 +267,90 @@ export default function OperationsWorkspace({ readOnly = false, clientId = "", c
         ) : tab === "tenants" ? (
           <Panel title="Tenants" eyebrow="People in your properties"><div className="mb-4 flex items-center gap-2 rounded-lg border border-border px-3 py-2"><Search className="h-4 w-4 text-muted" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search name, email, room, or property" className="w-full bg-transparent text-sm outline-none placeholder:text-muted" /></div>{filteredTenants.length === 0 ? <EmptyState icon={Users} title={tenants.length === 0 ? "No tenants yet" : "No tenants match your search"} text={tenants.length === 0 ? "Tenant records will appear here after registration." : "Try a different search term."} /> : <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="border-b border-border text-xs uppercase tracking-wide text-muted"><tr><th className="px-3 py-3">Tenant</th><th className="px-3 py-3">Property</th><th className="px-3 py-3">Unit</th><th className="px-3 py-3">Status</th><th className="px-3 py-3">Review</th></tr></thead><tbody className="divide-y divide-border">{filteredTenants.map((tenantRecord) => <tr key={tenantRecord._id} className="cursor-pointer hover:bg-surface" onClick={() => setSelectedTenant(tenantRecord)}><td className="px-3 py-3"><p className="font-semibold">{tenantRecord.name || "Unnamed tenant"}</p><p className="mt-1 text-xs text-muted">{tenantRecord.email || "No email"}</p></td><td className="px-3 py-3 text-muted">{tenantRecord.location || "—"}</td><td className="px-3 py-3 text-muted">{tenantRecord.roomNo || "—"}</td><td className="px-3 py-3"><span className="rounded-full bg-surface px-2 py-1 text-[11px] font-semibold">{tenantRecord.status || "active"}</span></td><td className="px-3 py-3 text-xs font-semibold text-navy">View record</td></tr>)}</tbody></table></div>}</Panel>
         ) : (
-          <Panel title="Settings" eyebrow="Workspace configuration"><div className="rounded-xl border border-dashed border-border px-5 py-8 text-sm text-muted">Property-specific registration and rent controls remain available in the operations tools. This workspace will surface them here as those settings become property-scoped.</div></Panel>
+          <div className="space-y-6">
+            <Panel
+              title="Registration window"
+              eyebrow="Tenant applications"
+              action={
+                <button
+                  disabled={settingsSaving}
+                  onClick={toggleRegistration}
+                  className={`rounded-lg px-3 py-2 text-xs font-semibold disabled:opacity-50 ${registrationOpen ? "border border-danger text-danger" : "bg-success text-white"}`}
+                >
+                  {settingsSaving
+                    ? "Saving…"
+                    : registrationOpen
+                      ? "Close registration"
+                      : "Open registration"}
+                </button>
+              }
+            >
+              {settingsLoading ? (
+                <p className="text-sm text-muted">Loading registration settings…</p>
+              ) : (
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-text">
+                      {registrationOpen ? "Applications are open" : "Applications are closed"}
+                    </p>
+                    <p className="mt-1 text-xs text-muted">
+                      {currentSession ? `Current session: ${currentSession}` : "Applies to the current registration session."}
+                    </p>
+                  </div>
+                  <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${registrationOpen ? "bg-success-faint text-success" : "bg-surface text-muted"}`}>
+                    {registrationOpen ? "Open" : "Closed"}
+                  </span>
+                </div>
+              )}
+            </Panel>
+
+            <Panel title="Default rent" eyebrow="By property">
+              {settingsLoading ? (
+                <p className="text-sm text-muted">Loading property settings…</p>
+              ) : settings.length === 0 ? (
+                <p className="text-sm text-muted">Add a property before setting its default rent.</p>
+              ) : (
+                <form onSubmit={saveSettings}>
+                  <div className="divide-y divide-border">
+                    {settings.map((item, index) => (
+                      <label key={item.name} className="flex flex-wrap items-center justify-between gap-3 py-4 first:pt-0 last:pb-0">
+                        <span className="text-sm font-semibold text-text">{item.name}</span>
+                        <span className="flex items-center gap-2 text-sm text-muted">
+                          <span>₦</span>
+                          <input
+                            type="number"
+                            min="0"
+                            step="1"
+                            required
+                            value={item.rentAmount}
+                            onChange={(event) =>
+                              setSettings((current) =>
+                                current.map((setting, settingIndex) =>
+                                  settingIndex === index
+                                    ? { ...setting, rentAmount: event.target.value }
+                                    : setting,
+                                ),
+                              )
+                            }
+                            aria-label={`Default rent for ${item.name}`}
+                            className="w-40 rounded-lg border border-border bg-input px-3 py-2 text-right text-sm text-text outline-none focus:border-navy focus:ring-2 focus:ring-navy/10"
+                          />
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={settingsSaving}
+                    className="mt-5 rounded-lg bg-navy px-4 py-2.5 text-sm font-semibold text-white hover:bg-navy2 disabled:opacity-50"
+                  >
+                    {settingsSaving ? "Saving…" : "Save rent settings"}
+                  </button>
+                </form>
+              )}
+            </Panel>
+            {settingsMessage && <p role="status" className="text-sm font-medium text-success">{settingsMessage}</p>}
+          </div>
         )}
 
         {selectedTenant && (
