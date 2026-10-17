@@ -17,7 +17,6 @@ import PlatformLayout from "./pages/platform/PlatformLayout.jsx";
 import PlatformOverview from "./pages/platform/PlatformOverview.jsx";
 import PlatformClients from "./pages/platform/PlatformClients.jsx";
 import PlatformSettings from "./pages/platform/PlatformSettings.jsx";
-import ApprovalQueue from "./pages/ApprovalQueue.jsx";
 import { getJSON } from "./api.js";
 
 import { TenantProvider, useTenant } from "./tenantContext.jsx";
@@ -99,6 +98,11 @@ export default function App() {
       <Route path="/profile" element={<TenantProfile />} />
 
       <Route path="/platform/login" element={<PlatformLogin />} />
+      {/* Friendly operator URLs; /platform remains the canonical route. */}
+      <Route path="/operator" element={<Navigate to={sessionStorage.getItem("platformToken") ? "/platform" : "/platform/login"} replace />} />
+      <Route path="/operator/login" element={<Navigate to="/platform/login" replace />} />
+      <Route path="/operator/clients" element={<Navigate to="/platform/clients" replace />} />
+      <Route path="/operator/settings" element={<Navigate to="/platform/settings" replace />} />
       <Route
         path="/platform/clients/:clientId/workspace"
         element={<DirectorWorkspaceRoute />}
@@ -108,7 +112,9 @@ export default function App() {
         <Route path="clients" element={<PlatformClients />} />
         <Route path="settings" element={<PlatformSettings />} />
       </Route>
-      <Route path="/platform/queue" element={<ApprovalQueue />} />
+      {/* Old approval-queue links now enter the unified operator dashboard. */}
+      <Route path="/platform/queue" element={<Navigate to="/platform/clients" replace />} />
+      <Route path="/operator/*" element={<Navigate to="/platform" replace />} />
 
       <Route path="*" element={<Navigate to="/platform/login" replace />} />
     </Routes>
