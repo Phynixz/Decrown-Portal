@@ -10,6 +10,14 @@ function normalizeRootDomain(value) {
 }
 
 async function resolveTenant(req, res, next) {
+  // A browser document navigation must be able to load the React SPA even if
+  // the browser still has a tenantSubdomain cookie from a different database
+  // or an inactive tenant. Resolve tenant context on API requests instead;
+  // otherwise a stale cookie can turn every client-side URL (/, /rooms,
+  // /signup, /operator, etc.) into a server-side 404 before the SPA fallback.
+  const accept = String(req.headers.accept || "").toLowerCase();
+  if (req.method === "GET" && accept.includes("text/html")) return next();
+
   const rootDomain = normalizeRootDomain(process.env.PLATFORM_ROOT_DOMAIN);
   const localHost =
     process.env.NODE_ENV !== "production"
