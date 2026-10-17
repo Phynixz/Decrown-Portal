@@ -134,7 +134,7 @@ export default function PlatformOverview() {
           <MetricCard icon={Building2} label="Total client businesses" value={clients.total} detail={`${clients.active || 0} currently active`} accent="bg-ink/5 text-ink dark:bg-white/10 dark:text-ink-dark" />
           <MetricCard icon={Clock3} label="Awaiting review" value={(clients.pendingVerification || 0) + (clients.pendingApproval || 0)} detail={`${clients.pendingVerification || 0} need email verification · ${clients.pendingApproval || 0} need approval`} accent="bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400" />
           {isOwner && <MetricCard icon={UserCheck} label="Registered tenants" value={operations.tenants} detail={`${operations.activeTenants || 0} marked active`} accent="bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400" />}
-          {isOwner && <MetricCard icon={Users} label="Active platform staff" value={overview?.staff?.active} detail="Active staff accounts" accent="bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400" />}
+          {isOwner && <MetricCard icon={Users} label="Active platform staff" value={overview?.staff?.active} detail="Active reviewer and viewer accounts; CEO excluded" accent="bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400" />}
         </div>
       </section>
 
