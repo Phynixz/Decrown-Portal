@@ -17,6 +17,7 @@ import PlatformLayout from "./pages/platform/PlatformLayout.jsx";
 import PlatformOverview from "./pages/platform/PlatformOverview.jsx";
 import PlatformClients from "./pages/platform/PlatformClients.jsx";
 import PlatformSettings from "./pages/platform/PlatformSettings.jsx";
+import LandingPage from "./pages/LandingPage.jsx";
 import { getJSON } from "./api.js";
 
 import { TenantProvider, useTenant } from "./tenantContext.jsx";
@@ -33,7 +34,7 @@ function HomeRedirect() {
       </main>
     );
   }
-  return <Navigate to={isTenant ? "/login" : "/platform/login"} replace />;
+  return isTenant ? <Navigate to="/login" replace /> : <LandingPage />;
 }
 
 function DirectorWorkspaceRoute() {

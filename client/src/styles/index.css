@@ -11,6 +11,9 @@
 @theme {
   --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Playfair Display", Georgia, serif;
+  --font-landing-sans: "Archivo", ui-sans-serif, system-ui, sans-serif;
+  --font-landing-display: "Fraunces", ui-serif, Georgia, serif;
+  --font-landing-mono: "JetBrains Mono", ui-monospace, monospace;
 
   --color-bg: #faf7f2;
   --color-card: #ffffff;
@@ -33,6 +36,11 @@
   --color-brass: #b8860b;
   --color-brass-dark: #8f642f;
   --color-brass-faint: #fdf8e8;
+  --color-paper: #fafaf9;
+  --color-moss: #2f4438;
+  --color-moss-dark: #22332a;
+  --color-stone: #e5e5e5;
+  --color-sage: #737373;
   --color-danger: #c0392b;
   --color-danger-faint: #fef2f2;
   --color-error: #c0392b;
