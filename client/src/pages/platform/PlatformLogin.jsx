@@ -135,6 +135,8 @@ export default function PlatformLogin() {
                 <input
                   id="pl-email"
                   type="email"
+                  required
+                  autoCapitalize="none"
                   autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -156,6 +158,7 @@ export default function PlatformLogin() {
                 <input
                   id="pl-password"
                   type={showPwd ? "text" : "password"}
+                  required
                   autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}

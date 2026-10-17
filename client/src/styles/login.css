@@ -180,8 +180,11 @@
   }
   .dc-login .field input[type="text"],
   .dc-login .field input[type="email"],
-  .dc-login .field input[type="password"] {
+  .dc-login .field input[type="password"],
+  .dc-login .field input[type="tel"] {
     @apply block w-full rounded border bg-white px-4 py-3 text-[15px] outline-none transition-colors;
+    box-sizing: border-box;
+    min-width: 0;
     border-color: var(--color-border);
     color: var(--color-text);
   }

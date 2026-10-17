@@ -428,7 +428,7 @@ export default function OperationsWorkspace({ readOnly = false, directorAccess =
         directorAccess
           ? `${base}/properties/${property._id}/units/${unit._id}`
           : `/admin/properties/${property._id}/units/${unit._id}`,
-        { status: unit.status, rentAmount: unit.rentAmount },
+        directorAccess ? { status: unit.status, rentAmount: unit.rentAmount } : { status: unit.status },
         token,
       );
       setProperties((current) =>
@@ -611,14 +611,18 @@ export default function OperationsWorkspace({ readOnly = false, directorAccess =
                     {(property.units || []).length === 0 ? <p className="text-sm text-muted">No units configured.</p> : (
                       <div className="space-y-2">
                         {(property.units || []).map((unit) => (
-                          <div key={unit._id} className="grid items-center gap-3 rounded-lg border border-border px-3 py-3 sm:grid-cols-[1fr_9rem_9rem_auto]">
+                          <div key={unit._id} className={`grid items-center gap-3 rounded-lg border border-border px-3 py-3 ${directorAccess ? "sm:grid-cols-[1fr_9rem_9rem_auto]" : "sm:grid-cols-[1fr_9rem_auto]"}`}>
                             <div><p className="text-sm font-semibold">{unit.label}</p><p className="mt-1 text-[11px] text-muted">Room · {unit.unitCode}</p></div>
                             {!readOnly ? (
                               <>
                                 <select aria-label={`Status for ${unit.label}`} value={unit.status} onChange={(event) => updateDirectorUnit(property._id, unit._id, "status", event.target.value)} className="rounded-lg border border-border bg-input px-2 py-2 text-xs text-text">
                                   {["available", "maintenance", "inactive"].map((status) => <option key={status} value={status}>{status}</option>)}
                                 </select>
-                                <input aria-label={`Rent for ${unit.label}`} type="number" min="0" step="1" value={unit.rentAmount ?? ""} onChange={(event) => updateDirectorUnit(property._id, unit._id, "rentAmount", event.target.value === "" ? null : Number(event.target.value))} placeholder="Default rent" className="rounded-lg border border-border bg-input px-2 py-2 text-xs text-text" />
+                                {directorAccess ? (
+                                  <input aria-label={`Rent for ${unit.label}`} type="number" min="0" step="1" value={unit.rentAmount ?? ""} onChange={(event) => updateDirectorUnit(property._id, unit._id, "rentAmount", event.target.value === "" ? null : Number(event.target.value))} placeholder="Default rent" className="rounded-lg border border-border bg-input px-2 py-2 text-xs text-text" />
+                                ) : (
+                                  <span className="rounded-lg bg-surface px-2 py-2 text-xs text-muted" title="Per-room rent editing is temporarily disabled">Rent set centrally</span>
+                                )}
                                 <button disabled={unitUpdateId === String(unit._id)} onClick={() => saveDirectorUnit(property, unit)} className="rounded-lg bg-navy px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">{unitUpdateId === String(unit._id) ? "Saving…" : "Save"}</button>
                               </>
                             ) : (

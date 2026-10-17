@@ -17,6 +17,10 @@ export function validatePhone(value) {
   return /^\+?[0-9]{11,15}$/.test(v);
 }
 
+export function validatePassword(value) {
+  return typeof value === "string" && value.length >= 8 && value.length <= 128;
+}
+
 export function isTokenExpired(token) {
   if (!token) return true;
   const clean = token.replace(/^Bearer\s+/i, "");

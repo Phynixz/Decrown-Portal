@@ -20,7 +20,7 @@ export default function LandingPage() {
       </a>
       <header id="top" className="sticky top-0 z-50 border-b border-stone bg-paper/95 backdrop-blur">
         <div className="mx-auto flex min-h-[76px] max-w-7xl items-center justify-between gap-4 px-5 sm:px-8">
-          <a href="#top" className="flex items-baseline gap-2" aria-label="De-Crown Cottage home">
+          <a href="/" className="flex items-baseline gap-2" aria-label="De-Crown Cottage home">
             <span className="font-landing-display text-2xl font-semibold tracking-tight sm:text-[26px]">De-Crown</span>
             <span className="hidden font-landing-mono text-[11px] uppercase tracking-[0.22em] text-sage sm:inline">Cottage</span>
           </a>
@@ -133,7 +133,7 @@ export default function LandingPage() {
 
       <footer className="bg-ink text-paper">
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-5 py-12 sm:px-8 md:grid-cols-2 md:items-end">
-          <div><a href="#top" className="font-landing-display text-2xl font-semibold">De-Crown Cottage</a><p className="mt-3 max-w-lg text-sm leading-relaxed text-paper/70">Hostel accommodation and property coordination, managed through one central agency.</p></div>
+          <div><a href="/" className="font-landing-display text-2xl font-semibold">De-Crown Cottage</a><p className="mt-3 max-w-lg text-sm leading-relaxed text-paper/70">Hostel accommodation and property coordination, managed through one central agency.</p></div>
           <nav aria-label="Footer navigation" className="flex flex-wrap gap-x-6 gap-y-3 text-sm text-paper/80 md:justify-end"><a className="hover:text-paper" href="#about">About</a><a className="hover:text-paper" href="#how-it-works">How It Works</a><a className="hover:text-paper" href="/rooms">Browse Rooms</a><a className="hover:text-paper" href="/register">Tenant Application</a><a className="hover:text-paper" href="/portal">Tenant Sign In</a><a className="hover:text-paper" href="/signup">Property Owner Registration</a><a className="hover:text-paper" href="/login">Property Management</a><a className="hover:text-paper" href="/platform/login">Platform Owner</a></nav>
         </div>
         <div className="border-t border-paper/10"><div className="mx-auto max-w-7xl px-5 py-5 sm:px-8"><p className="text-xs text-paper/55">© {new Date().getFullYear()} De-Crown Cottage. All rights reserved.</p></div></div>

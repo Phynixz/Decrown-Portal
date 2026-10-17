@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Moon, Sun, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { useTheme } from "../theme.js";
 import { sendJSON } from "../api.js";
-import { validateEmail } from "../utils/validation.js";
+import { validateEmail, validateName, validatePhone, validatePassword } from "../utils/validation.js";
 
 export default function ClientSignup() {
   const { dark, toggleTheme } = useTheme();
@@ -34,12 +34,20 @@ export default function ClientSignup() {
       setErr("Please fill in your full name, email, and password.");
       return;
     }
+    if (!validateName(contact)) {
+      setErr("Enter a valid name using at least 3 letters.");
+      return;
+    }
     if (!validateEmail(trimmedEmail)) {
       setErr("Please enter a valid email address.");
       return;
     }
-    if (password.length < 6) {
-      setErr("Password must be at least 6 characters long.");
+    if (phone.trim() && !validatePhone(phone)) {
+      setErr("Enter a valid phone number (11–15 digits, optional leading +).");
+      return;
+    }
+    if (!validatePassword(password)) {
+      setErr("Password must be between 8 and 128 characters.");
       return;
     }
     if (password !== confirmPassword) {
@@ -198,6 +206,9 @@ export default function ClientSignup() {
                       </label>
                       <input
                         id="cs-contact"
+                        required
+                        minLength={3}
+                        maxLength={50}
                         autoComplete="name"
                         placeholder="Your first and last name"
                         value={contactName}
@@ -212,6 +223,8 @@ export default function ClientSignup() {
                       <input
                         type="email"
                         id="cs-email"
+                        required
+                        autoCapitalize="none"
                         placeholder="you@example.com"
                         autoComplete="email"
                         value={email}
@@ -225,6 +238,9 @@ export default function ClientSignup() {
                       </label>
                       <input
                         id="cs-phone"
+                        type="tel"
+                        inputMode="tel"
+                        maxLength={16}
                         placeholder="Your phone number"
                         autoComplete="tel"
                         value={phone}
@@ -240,7 +256,10 @@ export default function ClientSignup() {
                         <input
                           type={showPwd ? "text" : "password"}
                           id="cs-password"
-                          placeholder="At least 6 characters"
+                          placeholder="At least 8 characters"
+                          required
+                          minLength={8}
+                          maxLength={128}
                           autoComplete="new-password"
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
@@ -265,6 +284,9 @@ export default function ClientSignup() {
                       <input
                         type={showPwd ? "text" : "password"}
                         id="cs-confirm"
+                        required
+                        minLength={8}
+                        maxLength={128}
                         placeholder="Re-enter your password"
                         autoComplete="new-password"
                         value={confirmPassword}

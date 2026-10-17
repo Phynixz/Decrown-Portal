@@ -31,10 +31,6 @@ export default function AdminLogin() {
       setErr("Please enter a valid email address.");
       return;
     }
-    if (password.length < 6) {
-      setErr("Password must be at least 6 characters long.");
-      return;
-    }
     setErr("");
     setBusy(true);
     try {
@@ -168,6 +164,8 @@ export default function AdminLogin() {
                     <input
                       type="email"
                       id="dc-email"
+                      required
+                      autoCapitalize="none"
                       placeholder="you@decrown.com"
                       autoComplete="email"
                       value={email}
@@ -186,6 +184,7 @@ export default function AdminLogin() {
                       <input
                         type={showPwd ? "text" : "password"}
                         id="dc-password"
+                        required
                         placeholder="Enter your password"
                         autoComplete="current-password"
                         value={password}

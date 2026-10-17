@@ -3,13 +3,14 @@ import { Link, useNavigate } from "react-router-dom";
 import { Camera, CreditCard, FileText, File } from "lucide-react";
 import { useTenant } from "../tenantContext.jsx";
 import { getLocalGovernments, NIGERIAN_STATES } from "../utils/nigeriaLocationData.js";
+import { validateName, validateEmail, validatePhone } from "../utils/validation.js";
 
 const RULES = {
-  name: (v) => /^[a-zA-Z\s]{3,50}$/.test(v.trim()),
-  guardianName: (v) => /^[a-zA-Z\s]{3,50}$/.test(v.trim()),
-  email: (v) => /^[\w.-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(v.trim()),
-  phone: (v) => /^\d{11}$/.test(v.trim()),
-  guardianPhone: (v) => /^\d{11}$/.test(v.trim()),
+  name: validateName,
+  guardianName: validateName,
+  email: validateEmail,
+  phone: validatePhone,
+  guardianPhone: validatePhone,
 };
 
 export default function RegistrationForm() {

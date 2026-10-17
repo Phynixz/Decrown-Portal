@@ -135,6 +135,9 @@
   .field input:not([type="file"]):not([type="checkbox"]):not([type="radio"]),
   .field select {
     @apply px-3.25 py-2.75 border-[1.5px] rounded-lg text-sm font-sans text-text bg-card outline-none transition-all;
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
     border-color: var(--color-border);
     appearance: none;
   }
