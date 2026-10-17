@@ -18,6 +18,8 @@ import PlatformOverview from "./pages/platform/PlatformOverview.jsx";
 import PlatformClients from "./pages/platform/PlatformClients.jsx";
 import PlatformSettings from "./pages/platform/PlatformSettings.jsx";
 import LandingPage from "./pages/LandingPage.jsx";
+import RoomSearchPage from "./pages/RoomSearchPage.jsx";
+import RoomDetailsPage from "./pages/RoomDetailsPage.jsx";
 import { getJSON } from "./api.js";
 
 import { TenantProvider } from "./tenantContext.jsx";
@@ -70,6 +72,8 @@ export default function App() {
     <TenantProvider>
       <Routes>
       <Route path="/" element={<LandingPage />} />
+      <Route path="/rooms" element={<RoomSearchPage />} />
+      <Route path="/rooms/:propertyId" element={<RoomDetailsPage />} />
       <Route path="/login" element={<AdminLogin />} />
       <Route path="/signup" element={<ClientSignup />} />
       <Route path="/register" element={<RegistrationForm />} />

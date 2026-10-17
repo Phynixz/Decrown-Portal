@@ -31,7 +31,7 @@ export default function LandingPage() {
           </nav>
           <div className="flex items-center gap-2 sm:gap-3">
             <a href="/portal" className="hidden rounded border border-ink/15 px-4 py-2.5 text-sm font-medium transition-colors hover:bg-ink/5 sm:inline-flex">Tenant Sign In</a>
-            <a href="/register" className="inline-flex items-center justify-center rounded bg-moss px-4 py-2.5 text-sm font-medium text-paper transition-colors hover:bg-ink sm:px-5">Find a Room</a>
+            <a href="/rooms" className="inline-flex items-center justify-center rounded bg-moss px-4 py-2.5 text-sm font-medium text-paper transition-colors hover:bg-ink sm:px-5">Find a Room</a>
           </div>
         </div>
       </header>
@@ -48,7 +48,7 @@ export default function LandingPage() {
               <h1 id="hero-heading" className="mt-4 max-w-3xl font-landing-display text-4xl font-semibold leading-[1.08] tracking-tight text-paper sm:text-5xl md:text-6xl">Find a room that fits your next chapter.</h1>
               <p className="mt-5 max-w-2xl text-base leading-relaxed text-paper/85 sm:text-lg">De-Crown Cottage makes it easier to find hostel accommodation. Choose your location, review available hostels, and apply for an available room through one central agency.</p>
               <div className="mt-8 flex flex-wrap gap-3 sm:gap-4">
-                <a href="/register" className="inline-flex items-center justify-center rounded bg-paper px-6 py-3.5 text-sm font-semibold text-ink transition-colors hover:bg-white">Find a Room <span aria-hidden="true" className="ml-2">→</span></a>
+                <a href="/rooms" className="inline-flex items-center justify-center rounded bg-paper px-6 py-3.5 text-sm font-semibold text-ink transition-colors hover:bg-white">Find a Room <span aria-hidden="true" className="ml-2">→</span></a>
                 <a href="#how-it-works" className="inline-flex items-center justify-center rounded border border-paper/40 px-6 py-3.5 text-sm font-medium text-paper transition-colors hover:bg-paper/10">How It Works</a>
               </div>
               <div className="mt-10 grid max-w-2xl grid-cols-3 gap-4 border-t border-paper/20 pt-6 sm:mt-12 sm:gap-6 sm:pt-8">
@@ -66,7 +66,7 @@ export default function LandingPage() {
               <p className="font-landing-mono text-xs uppercase tracking-[0.22em] text-brass">About De-Crown Cottage</p>
               <h2 id="about-heading" className="mt-4 max-w-2xl font-landing-display text-3xl font-semibold tracking-tight sm:text-4xl md:text-5xl">A simpler way to manage the hostel search.</h2>
               <p className="mt-6 max-w-2xl text-lg leading-relaxed text-sage">We bring hostel options and tenant applications together in one place. Rather than leaving every step to separate property owners, our central agency coordinates the process and helps applicants move from location selection to room application.</p>
-              <a href="/register" className="mt-7 inline-flex items-center font-semibold text-moss underline decoration-moss/30 underline-offset-4 hover:decoration-moss">Start your application <span aria-hidden="true" className="ml-2">→</span></a>
+              <a href="/rooms" className="mt-7 inline-flex items-center font-semibold text-moss underline decoration-moss/30 underline-offset-4 hover:decoration-moss">Explore available rooms <span aria-hidden="true" className="ml-2">→</span></a>
             </div>
             <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1400&q=80" alt="A well-kept residential building" className="h-72 w-full rounded border border-stone object-cover sm:h-96 lg:h-[440px]" loading="lazy" />
           </div>
@@ -87,8 +87,8 @@ export default function LandingPage() {
         <section id="find-a-room" aria-labelledby="room-heading" className="bg-paper py-20 md:py-28">
           <div className="mx-auto max-w-7xl px-5 sm:px-8">
             <div className="grid grid-cols-1 gap-8 rounded border border-stone bg-white p-7 shadow-sm sm:p-10 md:grid-cols-[1fr_auto] md:items-center md:gap-12">
-              <div><p className="font-landing-mono text-xs uppercase tracking-[0.22em] text-brass">Ready to begin?</p><h2 id="room-heading" className="mt-3 font-landing-display text-3xl font-semibold tracking-tight sm:text-4xl">Find your next room with De-Crown Cottage.</h2><p className="mt-4 max-w-2xl leading-relaxed text-sage">Start a registration to select your location, view available hostel options, and apply for a room.</p></div>
-              <a href="/register" className="inline-flex items-center justify-center rounded bg-moss px-7 py-3.5 text-sm font-semibold text-paper transition-colors hover:bg-ink">Start Registration <span aria-hidden="true" className="ml-2">→</span></a>
+              <div><p className="font-landing-mono text-xs uppercase tracking-[0.22em] text-brass">Ready to begin?</p><h2 id="room-heading" className="mt-3 font-landing-display text-3xl font-semibold tracking-tight sm:text-4xl">Find your next room with De-Crown Cottage.</h2><p className="mt-4 max-w-2xl leading-relaxed text-sage">Explore hostels, compare room prices and availability, then apply when you find the right room. No registration is needed to browse.</p></div>
+              <a href="/rooms" className="inline-flex items-center justify-center rounded bg-moss px-7 py-3.5 text-sm font-semibold text-paper transition-colors hover:bg-ink">Browse Available Rooms <span aria-hidden="true" className="ml-2">→</span></a>
             </div>
             <div className="mt-8 flex flex-col gap-3 text-sm text-sage sm:flex-row sm:items-center sm:justify-between"><p>Already have a tenant account?</p><a href="/portal" className="font-semibold text-moss underline underline-offset-4">Sign in to the tenant portal</a></div>
           </div>
@@ -101,8 +101,8 @@ export default function LandingPage() {
             <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <article className="flex flex-col rounded border border-stone bg-white p-6">
                 <h3 className="font-landing-display text-xl font-semibold">Tenants</h3>
-                <p className="mt-2 flex-1 text-sm leading-relaxed text-sage">Apply for an available hostel room or access your tenant account.</p>
-                <a href="/register" className="mt-5 inline-flex items-center font-semibold text-moss underline underline-offset-4">Register for a room <span aria-hidden="true" className="ml-2">→</span></a>
+                <p className="mt-2 flex-1 text-sm leading-relaxed text-sage">Browse hostels and room prices without an account, then apply when ready.</p>
+                <a href="/rooms" className="mt-5 inline-flex items-center font-semibold text-moss underline underline-offset-4">Browse available rooms <span aria-hidden="true" className="ml-2">→</span></a>
                 <a href="/portal" className="mt-3 text-sm font-medium text-sage underline underline-offset-4">Tenant sign in</a>
               </article>
               <article className="flex flex-col rounded border border-stone bg-white p-6">
@@ -128,7 +128,7 @@ export default function LandingPage() {
       <footer className="bg-ink text-paper">
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-5 py-12 sm:px-8 md:grid-cols-2 md:items-end">
           <div><a href="#top" className="font-landing-display text-2xl font-semibold">De-Crown Cottage</a><p className="mt-3 max-w-lg text-sm leading-relaxed text-paper/70">Hostel accommodation and property coordination, managed through one central agency.</p></div>
-          <nav aria-label="Footer navigation" className="flex flex-wrap gap-x-6 gap-y-3 text-sm text-paper/80 md:justify-end"><a className="hover:text-paper" href="#about">About</a><a className="hover:text-paper" href="#how-it-works">How It Works</a><a className="hover:text-paper" href="/register">Tenant Registration</a><a className="hover:text-paper" href="/portal">Tenant Sign In</a><a className="hover:text-paper" href="/signup">Property Owner Registration</a><a className="hover:text-paper" href="/login">Property Management</a><a className="hover:text-paper" href="/platform/login">Platform Owner</a></nav>
+          <nav aria-label="Footer navigation" className="flex flex-wrap gap-x-6 gap-y-3 text-sm text-paper/80 md:justify-end"><a className="hover:text-paper" href="#about">About</a><a className="hover:text-paper" href="#how-it-works">How It Works</a><a className="hover:text-paper" href="/rooms">Browse Rooms</a><a className="hover:text-paper" href="/register">Tenant Application</a><a className="hover:text-paper" href="/portal">Tenant Sign In</a><a className="hover:text-paper" href="/signup">Property Owner Registration</a><a className="hover:text-paper" href="/login">Property Management</a><a className="hover:text-paper" href="/platform/login">Platform Owner</a></nav>
         </div>
         <div className="border-t border-paper/10"><div className="mx-auto max-w-7xl px-5 py-5 sm:px-8"><p className="text-xs text-paper/55">© {new Date().getFullYear()} De-Crown Cottage. All rights reserved.</p></div></div>
       </footer>

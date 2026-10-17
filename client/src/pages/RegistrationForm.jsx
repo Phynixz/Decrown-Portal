@@ -15,16 +15,16 @@ const RULES = {
 export default function RegistrationForm() {
   const { businessName, branding, locations: tenantLocations } = useTenant();
   // --- Form state ---
-  const [state, setState] = useState("");
-  const [lga, setLga] = useState("");
-  const [location, setLocation] = useState("");
+  const [state, setState] = useState(() => new URLSearchParams(window.location.search).get("state") || "");
+  const [lga, setLga] = useState(() => new URLSearchParams(window.location.search).get("lga") || "");
+  const [location, setLocation] = useState(() => new URLSearchParams(window.location.search).get("location") || "");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [guardianName, setGuardianName] = useState("");
   const [guardianPhone, setGuardianPhone] = useState("");
   const [level, setLevel] = useState("");
-  const [roomNo, setRoomNo] = useState("");
+  const [roomNo, setRoomNo] = useState(() => new URLSearchParams(window.location.search).get("room") || "");
   const [amount, setAmount] = useState("");
   const [paymentDate, setPaymentDate] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
