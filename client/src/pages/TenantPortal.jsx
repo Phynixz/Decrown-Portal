@@ -60,6 +60,14 @@ export default function TenantPortal() {
   const [phone, setPhone] = useState("");
   const [loginErr, setLoginErr] = useState("");
   const [loginBusy, setLoginBusy] = useState(false);
+  const registrationParams = new URLSearchParams(window.location.search);
+  const registrationSubmitted = registrationParams.get("registered") === "1";
+
+  useEffect(() => {
+    if (!registrationSubmitted) return;
+    setEmail(registrationParams.get("email") || "");
+    setPhone(registrationParams.get("phone") || "");
+  }, []);
 
   // History selector
   const [selId, setSelId] = useState("");
@@ -469,6 +477,12 @@ export default function TenantPortal() {
                   Enter your registered email and phone number to access your
                   room, receipts, and accommodation details.
                 </p>
+
+                {registrationSubmitted && (
+                  <div className="mb-5 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-950" role="status">
+                    <strong>Application submitted successfully.</strong> Your application is awaiting management review. Sign in with the email and phone number you used on the application to track its status.
+                  </div>
+                )}
 
                 <div>
                   <form

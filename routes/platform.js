@@ -168,8 +168,15 @@ function requirePlatformOwner(req, res, next) {
 // ─── Client signup ───────────────────────────────────────────────────────
 router.post("/client/signup", signupLimiter, async (req, res) => {
   try {
-    const businessName = sanitizeString(req.body.businessName);
-    const contactName = sanitizeString(req.body.contactName);
+    const contactName = sanitizeString(
+      req.body.contactName || req.body.fullName,
+    );
+    // A landlord account is not a hostel branch. Keep an internal portfolio
+    // label for the existing account/workspace model; the actual hostel name
+    // and location are collected later when the landlord adds a branch.
+    const businessName =
+      sanitizeString(req.body.businessName) ||
+      (contactName ? `${contactName}'s Portfolio` : "");
     const email = sanitizeEmail(req.body.email);
     const phone = sanitizeString(req.body.phone);
     const requestedSubdomain = sanitizeSubdomain(req.body.subdomain);
@@ -179,9 +186,9 @@ router.post("/client/signup", signupLimiter, async (req, res) => {
       ? [...new Set(req.body.locations.map(sanitizeString).filter(Boolean))]
       : [];
 
-    if (!businessName || !contactName || !email || !password)
+    if (!contactName || !email || !password)
       return res.status(400).json({
-        error: "Business name, contact name, email, and password are required",
+        error: "Full name, email, and password are required",
       });
     if (!isValidEmail(email))
       return res

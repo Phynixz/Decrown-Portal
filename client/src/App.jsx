@@ -78,11 +78,13 @@ export default function App() {
       <Route path="/signup" element={<ClientSignup />} />
       <Route path="/register" element={<RegistrationForm />} />
       <Route path="/admin" element={<LandlordDashboard />} />
+      <Route path="/landlord/dashboard" element={<LandlordDashboard />} />
       <Route path="/admin/operations" element={<OperationsWorkspace />} />
       <Route path="/admin/legacy-operations" element={<AdminDashboard />} />
       <Route path="/admin/properties/new" element={<PropertyForm />} />
       <Route path="/delete" element={<DeleteRecords />} />
       <Route path="/portal" element={<TenantPortal />} />
+      <Route path="/tenant/dashboard" element={<TenantPortal />} />
       <Route path="/receipt" element={<Receipt />} />
       <Route path="/terms" element={<Terms />} />
       <Route path="/profile" element={<TenantProfile />} />

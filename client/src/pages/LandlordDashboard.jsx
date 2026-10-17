@@ -11,7 +11,7 @@ import {
   Sun,
   Users,
 } from "lucide-react";
-import { clearAdminAuth, getJSON, getToken } from "../api.js";
+import { clearAdminAuth, getAdminName, getJSON, getToken } from "../api.js";
 import { useTenant } from "../tenantContext.jsx";
 import { useTheme } from "../theme.js";
 
@@ -32,6 +32,7 @@ export default function LandlordDashboard() {
   const navigate = useNavigate();
   const { dark, toggleTheme } = useTheme();
   const { businessName, branding } = useTenant();
+  const landlordName = getAdminName();
   const [properties, setProperties] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -112,7 +113,7 @@ export default function LandlordDashboard() {
         <section className="mb-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-terra">Landlord dashboard</p>
-            <h1 className="mt-2 font-display text-3xl font-medium leading-tight text-text sm:text-4xl">Welcome back{businessName ? ` to ${businessName}` : ""}.</h1>
+            <h1 className="mt-2 font-display text-3xl font-medium leading-tight text-text sm:text-4xl">Welcome back{landlordName ? `, ${landlordName}` : ""}.</h1>
             <p className="mt-2 max-w-xl text-sm text-muted">A clear view of your hostels, individual rooms, and tenant activity.</p>
           </div>
           <Link to="/admin/properties/new" className="inline-flex items-center justify-center gap-2 rounded-lg bg-navy px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-navy2">

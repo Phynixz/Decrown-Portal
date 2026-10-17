@@ -12,7 +12,6 @@ export default function ClientSignup() {
   const [clientId, setClientId] = useState("");
   const [clientSubdomain, setClientSubdomain] = useState("");
 
-  const [businessName, setBusinessName] = useState("");
   const [contactName, setContactName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -28,17 +27,11 @@ export default function ClientSignup() {
 
   async function handleSignup(e) {
     e.preventDefault();
-    const name = businessName.trim();
     const contact = contactName.trim();
     const trimmedEmail = email.trim();
 
-    if (
-      !name ||
-      !contact ||
-      !trimmedEmail ||
-      !password
-    ) {
-      setErr("Please fill in your business name, contact name, email, and password.");
+    if (!contact || !trimmedEmail || !password) {
+      setErr("Please fill in your full name, email, and password.");
       return;
     }
     if (!validateEmail(trimmedEmail)) {
@@ -58,7 +51,6 @@ export default function ClientSignup() {
     setBusy(true);
     try {
       const data = await sendJSON("POST", "/client/signup", {
-        businessName: name,
         contactName: contact,
         email: trimmedEmail,
         phone: phone.trim(),
@@ -141,11 +133,10 @@ export default function ClientSignup() {
 
             <div className="left-content">
               <p className="welcome-label">Get Started</p>
-              <h2>Your own management platform, live in minutes.</h2>
+              <h2>Manage all your hostel branches from one account.</h2>
               <p className="welcome-desc">
-                Register your business, verify your email, and once approved
-                you'll have your own admin dashboard and tenant portal — fully
-                branded to you.
+                Create your landlord account first. Once your account is
+                approved, you can add each hostel branch and its rooms.
               </p>
 
               <dl className="stats-grid">
@@ -189,10 +180,11 @@ export default function ClientSignup() {
               {step === "form" && (
                 <>
                   <p className="login-label">Step 1 of 3</p>
-                  <h1 className="login-title">Register your business</h1>
+                  <h1 className="login-title">Create your landlord account</h1>
                   <p className="login-subtitle">
-                    Tell us about your business. We'll review your account
-                    before it goes live.
+                    Start with your personal account details. You can provide
+                    hostel names, locations, room counts, and rent when you add
+                    each branch from your dashboard.
                   </p>
 
                   <form
@@ -201,24 +193,13 @@ export default function ClientSignup() {
                     noValidate
                   >
                     <div className="field">
-                      <label className="field-label" htmlFor="cs-business">
-                        Business Name
-                      </label>
-                      <input
-                        id="cs-business"
-                        placeholder="e.g. Sunrise Hostels"
-                        value={businessName}
-                        onChange={(e) => setBusinessName(e.target.value)}
-                      />
-                    </div>
-
-                    <div className="field">
                       <label className="field-label" htmlFor="cs-contact">
-                        Contact Name
+                        Full Name
                       </label>
                       <input
                         id="cs-contact"
-                        placeholder="Your full name"
+                        autoComplete="name"
+                        placeholder="Your first and last name"
                         value={contactName}
                         onChange={(e) => setContactName(e.target.value)}
                       />
@@ -231,7 +212,7 @@ export default function ClientSignup() {
                       <input
                         type="email"
                         id="cs-email"
-                        placeholder="you@business.com"
+                        placeholder="you@example.com"
                         autoComplete="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
@@ -244,7 +225,7 @@ export default function ClientSignup() {
                       </label>
                       <input
                         id="cs-phone"
-                        placeholder="Optional"
+                        placeholder="Your phone number"
                         autoComplete="tel"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
@@ -355,11 +336,12 @@ export default function ClientSignup() {
                   <p className="login-label">Step 3 of 3</p>
                   <h1 className="login-title">You're all set — almost</h1>
                   <p className="login-subtitle">
-                    Your email is verified and your workspace is now pending
-                    review. We'll email {email} once your platform is approved
-                    and ready to use.
+                    Your email is verified and your landlord account is pending
+                    review by the De-Crown team. We'll email {email} when your
+                    account is approved. You can then add one or more hostel
+                    branches from your dashboard.
                   </p>
-                  <Link to={`/login?client=${encodeURIComponent(clientSubdomain)}`} className="btn-login mt-5 inline-block text-center no-underline">
+                  <Link to={`/login?client=${encodeURIComponent(clientSubdomain)}&email=${encodeURIComponent(email.trim())}`} className="btn-login mt-5 inline-block text-center no-underline">
                     Sign in after approval
                   </Link>
                 </div>

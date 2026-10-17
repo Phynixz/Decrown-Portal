@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Camera, CreditCard, FileText, File } from "lucide-react";
 import { useTenant } from "../tenantContext.jsx";
 import { getLocalGovernments, NIGERIAN_STATES } from "../utils/nigeriaLocationData.js";
@@ -13,6 +13,7 @@ const RULES = {
 };
 
 export default function RegistrationForm() {
+  const navigate = useNavigate();
   const { businessName, branding, locations: tenantLocations } = useTenant();
   // --- Form state ---
   const [state, setState] = useState(() => new URLSearchParams(window.location.search).get("state") || "");
@@ -256,34 +257,12 @@ export default function RegistrationForm() {
         return;
       }
 
-      alert(
-        "✔️ Application submitted successfully. Please wait for admin review.",
-      );
-      // Reset form
-      setName("");
-      setState("");
-      setLga("");
-      setLocation("");
-      setEmail("");
-      setPhone("");
-      setGuardianName("");
-      setGuardianPhone("");
-      setLevel("");
-      setRoomNo("");
-      setPaymentDate("");
-      setFiles({
-        passport: null,
-        idCard: null,
-        paymentProof: null,
-        agreementCopy: null,
+      const params = new URLSearchParams({
+        registered: "1",
+        email: email.trim(),
+        phone: phone.trim(),
       });
-      setPreviews({});
-      setTermsAccepted(false);
-      setShowErrors(false);
-      if (passportInput.current) passportInput.current.value = "";
-      if (idCardInput.current) idCardInput.current.value = "";
-      if (proofInput.current) proofInput.current.value = "";
-      if (agreementInput.current) agreementInput.current.value = "";
+      navigate(`/tenant/dashboard?${params.toString()}`);
     } catch {
       alert("❌ Network error. Please check your connection and try again.");
     } finally {

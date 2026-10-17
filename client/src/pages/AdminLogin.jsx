@@ -11,7 +11,9 @@ export default function AdminLogin() {
   const { businessName, branding, locations } = useTenant();
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(
+    () => new URLSearchParams(window.location.search).get("email") || "",
+  );
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
@@ -45,7 +47,7 @@ export default function AdminLogin() {
       if (!res.ok) throw new Error(data.error || "Login failed");
 
       setAdminAuth(data.token, data.name, data.role, remember);
-      navigate("/admin");
+      navigate("/landlord/dashboard");
     } catch (e) {
       setErr(e.message);
       setShaking(true);

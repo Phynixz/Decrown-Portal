@@ -358,7 +358,6 @@ test("owner/staff permissions and platform audit are enforced", async () => {
   const signup = await request("/client/signup", {
     method: "POST",
     body: {
-      businessName: "Audit Test Property",
       contactName: "Audit Tester",
       email: "audit-test-property@example.test",
       password: "client-test-password",
@@ -366,6 +365,14 @@ test("owner/staff permissions and platform audit are enforced", async () => {
   });
   assert.equal(signup.status, 200);
   assert.match(signup.body.subdomain, /^[a-z0-9-]{3,30}$/);
+  const pendingLandlord = await Client.findById(signup.body.clientId);
+  assert.equal(pendingLandlord.contactName, "Audit Tester");
+  assert.equal(pendingLandlord.businessName, "Audit Tester's Portfolio");
+  assert.deepEqual(
+    pendingLandlord.locations,
+    [],
+    "signup must not require or create a hostel branch",
+  );
   const verification = await request("/client/verify-email", {
     method: "POST",
     body: {
