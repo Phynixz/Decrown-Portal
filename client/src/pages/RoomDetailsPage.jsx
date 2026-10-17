@@ -49,7 +49,7 @@ export default function RoomDetailsPage() {
               <span className="inline-flex rounded-full bg-moss/10 px-3 py-1 text-[11px] font-semibold text-moss">{units.length} {units.length === 1 ? "room" : "rooms"} currently available</span>
               <h1 className="mt-4 break-words font-landing-display text-3xl font-semibold tracking-tight sm:text-5xl">{property.name}</h1>
               <p className="mt-4 flex items-start gap-2 leading-relaxed text-sage"><MapPin size={18} className="mt-0.5 shrink-0" />{[property.address, property.lga, property.state].filter(Boolean).join(", ") || "Please contact the agency for location details."}</p>
-              <p className="mt-5 max-w-3xl text-sm leading-relaxed text-sage">Review the rooms below and their listed rent. You do not need to register to browse. When you are ready, choose a room to continue to the application form.</p>
+              <p className="mt-5 max-w-3xl text-sm leading-relaxed text-sage">Review the rooms below and their listed rent. You do not need to register to browse. When you are ready, create or sign in to your tenant account to apply.</p>
             </section>
             <section className="mt-10">
               <h2 className="font-landing-display text-2xl font-semibold">Available rooms</h2>
@@ -57,7 +57,6 @@ export default function RoomDetailsPage() {
               <div className="mt-5 grid gap-4 sm:grid-cols-2">
                 {units.map((unit) => {
                   const rent = unit.rentAmount ?? property.rentAmount ?? 0;
-                  const query = new URLSearchParams({ location: property.name, room: unit.label || "", state: property.state || "", lga: property.lga || "" });
                   return (
                     <article key={unit.id || unit.label} className="rounded border border-stone bg-white p-5 sm:p-6">
                       <div className="flex items-start justify-between gap-4">
@@ -70,7 +69,7 @@ export default function RoomDetailsPage() {
                       {unit.unitType && <p className="mt-3 text-sm text-sage">{unit.unitType}</p>}
                       <p className="mt-5 font-landing-mono text-xl font-semibold">{naira(rent)}</p>
                       <p className="mt-1 text-xs text-sage">{Number(rent) > 0 ? "Rent amount set by the agency" : "Confirm rent with the agency before applying"}</p>
-                      <Link to={`/register?${query.toString()}`} className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded bg-moss px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-ink">Apply for this room <ArrowRight size={16} /></Link>
+                      <Link to={`/tenant/account?${new URLSearchParams({ room: unit.label || "", location: property.name, state: property.state || "", lga: property.lga || "" }).toString()}`} className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded bg-moss px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-ink">Apply for this room <ArrowRight size={16} /></Link>
                     </article>
                   );
                 })}

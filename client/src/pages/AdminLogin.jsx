@@ -108,7 +108,7 @@ export default function AdminLogin() {
 
             <div className="left-footer">
               <p>© {new Date().getFullYear()} {businessName}. All rights reserved.</p>
-              <Link to="/portal" className="switch-link">
+              <Link to="/tenant/account" className="switch-link">
                 <Home size={14} /> I'm a Tenant →
               </Link>
             </div>
@@ -240,7 +240,7 @@ export default function AdminLogin() {
                         marginRight: 6,
                       }}
                     />
-                    <Link to="/portal">Go to Tenant Portal</Link>
+                    <Link to="/tenant/account">Go to Tenant Portal</Link>
                   </p>
                   <p className="portal-link">
                     <Link to="/signup">Set up a platform</Link>

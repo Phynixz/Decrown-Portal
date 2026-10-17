@@ -87,6 +87,7 @@ export default function LandlordDashboard() {
             <Link to="/admin" className="font-medium text-text">Dashboard</Link>
             <Link to="/admin/properties/new" className="font-medium text-muted transition-colors hover:text-text">Properties</Link>
             <Link to="/admin/operations" className="font-medium text-muted transition-colors hover:text-text">Operations</Link>
+            <Link to="/admin/applications" className="font-medium text-muted transition-colors hover:text-text">Applications</Link>
           </nav>
 
           <div className="flex items-center gap-2">
@@ -106,6 +107,7 @@ export default function LandlordDashboard() {
             <Link to="/admin" onClick={() => setMobileNav(false)} className="block py-2 text-sm">Dashboard</Link>
             <Link to="/admin/properties/new" onClick={() => setMobileNav(false)} className="block py-2 text-sm">Properties</Link>
             <Link to="/admin/operations" onClick={() => setMobileNav(false)} className="block py-2 text-sm">Operations</Link>
+            <Link to="/admin/applications" onClick={() => setMobileNav(false)} className="block py-2 text-sm">Tenant applications</Link>
             <button onClick={logout} className="block py-2 text-sm text-danger">Sign out</button>
           </nav>
         )}

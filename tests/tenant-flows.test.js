@@ -30,6 +30,7 @@ let User;
 let Property;
 let Settings;
 let Unit;
+let Admin;
 
 before(async () => {
   mongo = await MongoMemoryServer.create();
@@ -42,6 +43,7 @@ before(async () => {
   Property = require("../models/Property");
   Settings = require("../models/Settings");
   Unit = require("../models/Unit");
+  Admin = require("../models/Admin");
 });
 
 after(async () => {
@@ -235,4 +237,82 @@ test("new hostels expose available rooms and accept tenant applications", async 
     (item) => item.name === property.name,
   );
   assert.equal(updatedListing.units[0].status, "occupied");
+});
+
+function documentUpload(fields, fileFields) {
+  const form = new FormData();
+  Object.entries(fields).forEach(([key, value]) => form.append(key, value));
+  for (const field of fileFields) {
+    form.append(field, new Blob([Buffer.from("fake-image-bytes")], { type: "image/png" }), `${field}.png`);
+  }
+  return form;
+}
+
+test("tenant account application gates agreement, payment, and allocation", async () => {
+  const suffix = Date.now().toString();
+  const email = `account-${suffix}@example.test`;
+  const signup = await fetch(`${baseUrl}/tenant/account/signup`, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name: "Account Test Tenant", email, password: "secure-test-password-123" }),
+  });
+  const signupBody = await signup.json();
+  assert.equal(signup.status, 201, JSON.stringify(signupBody));
+  assert.ok(signupBody.token);
+
+  const duplicateSignup = await fetch(`${baseUrl}/tenant/account/signup`, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name: "Account Test Tenant", email, password: "secure-test-password-123" }),
+  });
+  assert.equal(duplicateSignup.status, 409);
+
+  const wrongPassword = await fetch(`${baseUrl}/tenant/account/login`, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password: "wrong-password" }),
+  });
+  assert.equal(wrongPassword.status, 401);
+
+  const property = await Property.create({ name: `Account Flow Hostel ${suffix}`, state: "Kwara", lga: "Ilorin West", propertyType: "hostel" });
+  await Settings.create({ location: property.name, rentAmount: 240000, roomCount: 1 });
+  const unit = await Unit.create({ propertyId: property._id, location: property.name, unitCode: `account-${suffix}`, label: "Room A1", rentAmount: 240000, status: "available" });
+  const token = `Bearer ${signupBody.token}`;
+  const applicationResponse = await fetch(`${baseUrl}/tenant/account/applications`, {
+    method: "POST", headers: { Authorization: token },
+    body: documentUpload({ phone: "08012345678", guardianName: "Test Guardian", guardianPhone: "08098765432", matricNumber: "KWASU/CSC/1234", level: "300", state: "Kwara", lga: "Ilorin West", propertyId: String(property._id), unitId: String(unit._id), termsAccepted: "true" }, ["passport", "idCard"]),
+  });
+  const applicationBody = await applicationResponse.json();
+  assert.equal(applicationResponse.status, 201, JSON.stringify(applicationBody));
+  assert.equal(applicationBody.application.status, "under_review");
+  assert.equal((await Unit.findById(unit._id)).applicationHoldId, null, "application submission must not reserve or allocate the room");
+
+  const account = await require("../models/TenantAccount").findOne({ email });
+  const application = await require("../models/TenantApplication").findOne({ tenantAccountId: account._id });
+  const admin = await new Admin({ name: "Application Review Admin", email: `review-${suffix}@example.test`, password: "admin-password-123", role: "admin" }).save();
+  const adminToken = `Bearer ${jwt.sign({ id: admin._id, email: admin.email, role: admin.role, type: "admin" }, process.env.JWT_SECRET, { expiresIn: "1h" })}`;
+
+  const lockedPayment = await fetch(`${baseUrl}/tenant/account/applications/${application._id}/payment`, { method: "POST", headers: { Authorization: token }, body: documentUpload({}, ["file"]) });
+  assert.equal(lockedPayment.status, 403, "payment must remain locked before agreement review");
+
+  const requestAgreement = await fetch(`${baseUrl}/admin/tenant-applications/${application._id}/status`, { method: "PUT", headers: { Authorization: adminToken, "Content-Type": "application/json" }, body: JSON.stringify({ status: "agreement_requested" }) });
+  assert.equal(requestAgreement.status, 200);
+  const agreement = await fetch(`${baseUrl}/tenant/account/applications/${application._id}/agreement`, { method: "POST", headers: { Authorization: token }, body: documentUpload({}, ["file"]) });
+  assert.equal(agreement.status, 200);
+  const unlockPayment = await fetch(`${baseUrl}/admin/tenant-applications/${application._id}/status`, { method: "PUT", headers: { Authorization: adminToken, "Content-Type": "application/json" }, body: JSON.stringify({ status: "payment_unlocked" }) });
+  assert.equal(unlockPayment.status, 200);
+  assert.ok((await Unit.findById(unit._id)).applicationHoldId, "accepted agreement should hold the room during payment verification");
+  const heldListing = await (await fetch(`${baseUrl}/tenant-config`)).json();
+  assert.equal(heldListing.locations.find((item) => item.name === property.name).units[0].status, "occupied", "a payment-held room must disappear from public availability");
+  const legacyAttempt = await fetch(`${baseUrl}/submit`, { method: "POST", body: registrationForm({ email: `legacy-${suffix}@example.test`, phone: "08055554444", roomNo: "Room A1", location: property.name, state: "Kwara", lga: "Ilorin West" }) });
+  assert.equal(legacyAttempt.status, 400, "legacy registration must not bypass an application room hold");
+
+  const payment = await fetch(`${baseUrl}/tenant/account/applications/${application._id}/payment`, { method: "POST", headers: { Authorization: token }, body: documentUpload({ paymentDate: "2026-10-17" }, ["file"]) });
+  assert.equal(payment.status, 200);
+  assert.equal((await require("../models/TenantApplication").findById(application._id)).status, "payment_submitted");
+  assert.equal(await User.countDocuments({ email }), 0, "payment proof upload alone must not create an allocated tenant record");
+
+  const verifyPayment = await fetch(`${baseUrl}/admin/tenant-applications/${application._id}/verify-payment`, { method: "PUT", headers: { Authorization: adminToken } });
+  const verifyBody = await verifyPayment.json();
+  assert.equal(verifyPayment.status, 200, JSON.stringify(verifyBody));
+  assert.equal((await require("../models/TenantApplication").findById(application._id)).status, "allocated");
+  assert.equal((await User.findOne({ email })).roomNo, "Room A1");
+  assert.equal((await Unit.findById(unit._id)).status, "inactive");
 });

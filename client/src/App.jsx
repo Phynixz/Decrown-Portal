@@ -1,7 +1,6 @@
 import { Routes, Route, Navigate, useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import AdminLogin from "./pages/AdminLogin.jsx";
-import RegistrationForm from "./pages/RegistrationForm.jsx";
 import AdminDashboard from "./pages/AdminDashboard.jsx";
 import LandlordDashboard from "./pages/LandlordDashboard.jsx";
 import PropertyForm from "./pages/PropertyForm.jsx";
@@ -20,6 +19,8 @@ import PlatformSettings from "./pages/platform/PlatformSettings.jsx";
 import LandingPage from "./pages/LandingPage.jsx";
 import RoomSearchPage from "./pages/RoomSearchPage.jsx";
 import RoomDetailsPage from "./pages/RoomDetailsPage.jsx";
+import TenantAccountPortal from "./pages/TenantAccountPortal.jsx";
+import TenantApplicationsReview from "./pages/TenantApplicationsReview.jsx";
 import { getJSON } from "./api.js";
 
 import { TenantProvider } from "./tenantContext.jsx";
@@ -76,15 +77,18 @@ export default function App() {
       <Route path="/rooms/:propertyId" element={<RoomDetailsPage />} />
       <Route path="/login" element={<AdminLogin />} />
       <Route path="/signup" element={<ClientSignup />} />
-      <Route path="/register" element={<RegistrationForm />} />
+      <Route path="/register" element={<TenantAccountPortal />} />
       <Route path="/admin" element={<LandlordDashboard />} />
       <Route path="/landlord/dashboard" element={<LandlordDashboard />} />
       <Route path="/admin/operations" element={<OperationsWorkspace />} />
+      <Route path="/admin/applications" element={<TenantApplicationsReview />} />
       <Route path="/admin/legacy-operations" element={<AdminDashboard />} />
       <Route path="/admin/properties/new" element={<PropertyForm />} />
       <Route path="/delete" element={<DeleteRecords />} />
       <Route path="/portal" element={<TenantPortal />} />
       <Route path="/tenant/dashboard" element={<TenantPortal />} />
+      <Route path="/tenant/signup" element={<TenantAccountPortal />} />
+      <Route path="/tenant/account" element={<TenantAccountPortal />} />
       <Route path="/receipt" element={<Receipt />} />
       <Route path="/terms" element={<Terms />} />
       <Route path="/profile" element={<TenantProfile />} />

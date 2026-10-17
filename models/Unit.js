@@ -21,6 +21,7 @@ const unitSchema = new mongoose.Schema(
       default: "available",
     },
     rentAmount: { type: Number, min: 0, default: null },
+    applicationHoldId: { type: mongoose.Schema.Types.ObjectId, ref: "TenantApplication", default: null },
   },
   { timestamps: true },
 );

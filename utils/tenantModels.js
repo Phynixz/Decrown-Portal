@@ -9,6 +9,8 @@ const modelNames = [
   "Registration",
   "Property",
   "Unit",
+  "TenantAccount",
+  "TenantApplication",
 ];
 const baseModels = Object.fromEntries(
   modelNames.map((name) => [name, require(`../models/${name}`)]),

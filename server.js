@@ -9,6 +9,7 @@ const { MongoMemoryServer } = require("mongodb-memory-server");
 const cors = require("cors");
 const path = require("path");
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 const fs = require("fs");
 const ExcelJS = require("exceljs");
 const cookieParser = require("cookie-parser");
@@ -59,7 +60,7 @@ const PORT = Number.isInteger(parsedPort) && parsedPort >= 0 ? parsedPort : 3000
 
 const { createTenantModelProxies } = require("./utils/tenantModels");
 const tenantModels = createTenantModelProxies();
-const { User, Admin, Settings, Registration, Property, Unit } = tenantModels;
+const { User, Admin, Settings, Registration, Property, Unit, TenantAccount, TenantApplication } = tenantModels;
 const Client = require("./models/Client");
 const ensurePlatformOwner = require("./utils/ensurePlatformOwner");
 const platformRoutes = require("./routes/platform");
@@ -261,6 +262,10 @@ function serverError(error) {
     : error?.message || "Server error";
 }
 
+function uploadedFileUrl(file, testName) {
+  return file?.secure_url || file?.path || (NODE_ENV === "test" ? `test-upload://${testName}` : null);
+}
+
 function verifySuperAdmin(req, res, next) {
   verifyAdmin(req, res, () => {
     if (!['owner', 'superadmin'].includes(req.admin.role))
@@ -286,6 +291,22 @@ function verifyTenant(req, res, next) {
     next();
   } catch {
     return res.status(403).json({ error: "Invalid or expired token" });
+  }
+}
+
+function verifyTenantAccount(req, res, next) {
+  const token = (req.headers.authorization || "").replace(/^Bearer\s+/i, "").trim();
+  if (!token) return res.status(401).json({ error: "Sign in to continue" });
+  try {
+    const d = jwt.verify(token, JWT_SECRET);
+    if (d.type !== "tenant-account") return res.status(403).json({ error: "Not a tenant account session" });
+    if (String(d.clientId || "") !== String(req.tenantClient?._id || "")) {
+      return res.status(403).json({ error: "Not authorized for this platform" });
+    }
+    req.tenantAccount = d;
+    next();
+  } catch {
+    return res.status(401).json({ error: "Invalid or expired session" });
   }
 }
 
@@ -368,6 +389,188 @@ app.delete("/admin/:id", verifySuperAdmin, async (req, res) => {
 });
 
 // â”€â”€â”€ Tenant Auth â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+app.post("/tenant/account/signup", tenantLoginLimiter, async (req, res) => {
+  try {
+    const name = sanitizeString(req.body.name);
+    const email = sanitizeEmail(req.body.email);
+    const password = typeof req.body.password === "string" ? req.body.password : "";
+    if (!isValidName(name)) return res.status(400).json({ error: "Enter a valid full name." });
+    if (!isValidEmail(email)) return res.status(400).json({ error: "Enter a valid email address." });
+    if (password.length < 8 || password.length > 128) return res.status(400).json({ error: "Password must be between 8 and 128 characters." });
+    const existing = await TenantAccount.findOne({ email });
+    if (existing) return res.status(409).json({ error: "An account with this email already exists. Please sign in." });
+    const account = await new TenantAccount({ name, email, passwordHash: await bcrypt.hash(password, 12) }).save();
+    const token = jwt.sign({ id: String(account._id), email, name, type: "tenant-account", ...(req.tenantClient && { clientId: String(req.tenantClient._id) }) }, JWT_SECRET, { expiresIn: "24h" });
+    res.status(201).json({ token, account: { id: String(account._id), name: account.name, email: account.email } });
+  } catch (e) {
+    if (e.code === 11000) return res.status(409).json({ error: "An account with this email already exists. Please sign in." });
+    res.status(500).json({ error: serverError(e) });
+  }
+});
+
+app.post("/tenant/account/login", tenantLoginLimiter, async (req, res) => {
+  try {
+    const email = sanitizeEmail(req.body.email);
+    const password = typeof req.body.password === "string" ? req.body.password : "";
+    if (!isValidEmail(email) || !password) return res.status(400).json({ error: "Enter a valid email and password." });
+    const account = await TenantAccount.findOne({ email });
+    if (!account || !(await bcrypt.compare(password, account.passwordHash))) return res.status(401).json({ error: "Invalid email or password." });
+    const token = jwt.sign({ id: String(account._id), email, name: account.name, type: "tenant-account", ...(req.tenantClient && { clientId: String(req.tenantClient._id) }) }, JWT_SECRET, { expiresIn: "24h" });
+    res.json({ token, account: { id: String(account._id), name: account.name, email: account.email } });
+  } catch (e) {
+    res.status(500).json({ error: serverError(e) });
+  }
+});
+
+app.get("/tenant/account/me", verifyTenantAccount, async (req, res) => {
+  try {
+    const account = await TenantAccount.findById(req.tenantAccount.id).select("name email createdAt");
+    if (!account) return res.status(404).json({ error: "Tenant account not found" });
+    res.json({ account, applications: await TenantApplication.find({ tenantAccountId: account._id }).sort({ createdAt: -1 }).select("name email phone location roomNo session status managementNote agreementCopy paymentProof paymentVerifiedAt allocatedAt createdAt") });
+  } catch (e) {
+    res.status(500).json({ error: serverError(e) });
+  }
+});
+
+app.post("/tenant/account/applications", verifyTenantAccount, upload.fields([{ name: "passport", maxCount: 1 }, { name: "idCard", maxCount: 1 }]), async (req, res) => {
+  try {
+    if (!(await isRegistrationOpen())) return res.status(403).json({ error: "New room applications are currently closed." });
+    const account = await TenantAccount.findById(req.tenantAccount.id);
+    if (!account) return res.status(401).json({ error: "Sign in to continue" });
+    const { phone, guardianName, guardianPhone, matricNumber, level, state, lga, propertyId, unitId, termsAccepted } = req.body;
+    if (!isValidPhone(phone) || !isValidName(guardianName) || !isValidPhone(guardianPhone)) return res.status(400).json({ error: "Enter valid phone and guardian details." });
+    if (!sanitizeString(matricNumber) || !sanitizeString(level) || !sanitizeString(state) || !sanitizeString(lga)) return res.status(400).json({ error: "Complete your matric number, level, state and local government." });
+    if (!(termsAccepted === "true" || termsAccepted === "on" || termsAccepted === "1")) return res.status(400).json({ error: "Please accept the application terms." });
+    if (!req.files?.passport?.[0] || !req.files?.idCard?.[0]) return res.status(400).json({ error: "Passport photograph and ID card are required." });
+    if (!isValidObjectId(propertyId) || !isValidObjectId(unitId)) return res.status(400).json({ error: "Choose a valid available room." });
+    const property = await Property.findOne({ _id: propertyId, status: "active", propertyType: "hostel" });
+    const unit = property ? await Unit.findOne({ _id: unitId, propertyId: property._id, status: "available", applicationHoldId: null }) : null;
+    if (!property || !unit) return res.status(409).json({ error: "This room is no longer available. Please choose another room." });
+    const geography = getPropertyGeography(property);
+    if (geography.state !== sanitizeString(state) || geography.lga !== sanitizeString(lga)) return res.status(400).json({ error: "The selected room does not match the chosen location." });
+    const passportUrl = uploadedFileUrl(req.files?.passport?.[0], "passport");
+    const idCardUrl = uploadedFileUrl(req.files?.idCard?.[0], "id-card");
+    if (!passportUrl || !idCardUrl) return res.status(503).json({ error: "Document storage is not configured. Please contact De-Crown management." });
+    const application = await new TenantApplication({
+      tenantAccountId: account._id, name: account.name, email: account.email,
+      phone: sanitizePhone(phone), guardianName: sanitizeString(guardianName), guardianPhone: sanitizePhone(guardianPhone),
+      matricNumber: sanitizeString(matricNumber), level: sanitizeString(level), state: geography.state, lga: geography.lga,
+      location: property.name, propertyId: property._id, unitId: unit._id, roomNo: unit.label, session: getSession(),
+      rentAmount: unit.rentAmount ?? 0,
+      passport: passportUrl,
+      idCard: idCardUrl,
+    }).save();
+    res.status(201).json({ message: "Room application submitted. De-Crown will review it and contact you about the physical agreement.", application: { id: application._id, status: application.status } });
+  } catch (e) {
+    res.status(500).json({ error: serverError(e) });
+  }
+});
+
+app.post("/tenant/account/applications/:id/agreement", verifyTenantAccount, upload.single("file"), async (req, res) => {
+  try {
+    const application = await TenantApplication.findOne({ _id: req.params.id, tenantAccountId: req.tenantAccount.id });
+    if (!application) return res.status(404).json({ error: "Application not found" });
+    if (application.status !== "agreement_requested") return res.status(403).json({ error: "Management has not requested the signed agreement yet." });
+    if (!req.file) return res.status(400).json({ error: "Upload the signed agreement file." });
+    application.agreementCopy = uploadedFileUrl(req.file, "agreement");
+    if (!application.agreementCopy) return res.status(503).json({ error: "Document storage is not configured. Please contact De-Crown management." });
+    application.status = "agreement_submitted";
+    await application.save();
+    res.json({ message: "Signed agreement uploaded. De-Crown will review it before authorizing payment." });
+  } catch (e) { res.status(500).json({ error: serverError(e) }); }
+});
+
+app.post("/tenant/account/applications/:id/payment", verifyTenantAccount, upload.single("file"), async (req, res) => {
+  try {
+    const application = await TenantApplication.findOne({ _id: req.params.id, tenantAccountId: req.tenantAccount.id });
+    if (!application) return res.status(404).json({ error: "Application not found" });
+    if (application.status !== "payment_unlocked") return res.status(403).json({ error: "Payment is not available until management accepts your signed agreement." });
+    if (!req.file) return res.status(400).json({ error: "Upload your payment receipt." });
+    application.paymentProof = uploadedFileUrl(req.file, "payment-proof");
+    if (!application.paymentProof) return res.status(503).json({ error: "Document storage is not configured. Please contact De-Crown management." });
+    application.paymentDate = sanitizeString(req.body.paymentDate) || new Date().toISOString().slice(0, 10);
+    application.status = "payment_submitted";
+    await application.save();
+    res.json({ message: "Payment proof submitted. Your room will not be allocated until De-Crown verifies payment." });
+  } catch (e) { res.status(500).json({ error: serverError(e) }); }
+});
+
+app.get("/admin/tenant-applications", verifyAdmin, async (_req, res) => {
+  try {
+    const applications = await TenantApplication.find().sort({ createdAt: -1 }).limit(250).lean();
+    res.json(applications);
+  } catch (e) { res.status(500).json({ error: serverError(e) }); }
+});
+
+app.put("/admin/tenant-applications/:id/status", verifyAdmin, async (req, res) => {
+  try {
+    const nextStatus = sanitizeString(req.body.status);
+    const note = sanitizeString(req.body.managementNote).slice(0, 1000);
+    const allowed = {
+      under_review: ["agreement_requested", "rejected"],
+      agreement_submitted: ["payment_unlocked", "rejected"],
+      rejected: ["under_review"],
+      payment_unlocked: ["rejected"],
+    };
+    const application = await TenantApplication.findById(req.params.id);
+    if (!application) return res.status(404).json({ error: "Application not found" });
+    if (!(allowed[application.status] || []).includes(nextStatus)) return res.status(409).json({ error: `Cannot move application from ${application.status} to ${nextStatus}.` });
+    if (nextStatus === "agreement_requested") {
+      const unitAvailable = await Unit.findOne({ _id: application.unitId, propertyId: application.propertyId, status: "available", applicationHoldId: null });
+      const roomTaken = await User.findOne({ location: application.location, roomNo: application.roomNo, session: application.session });
+      if (!unitAvailable || roomTaken) return res.status(409).json({ error: "The requested room is no longer available. Contact the applicant to choose another room." });
+    }
+    if (nextStatus === "payment_unlocked") {
+      const unit = await Unit.findOneAndUpdate(
+        { _id: application.unitId, propertyId: application.propertyId, status: "available", $or: [{ applicationHoldId: null }, { applicationHoldId: { $exists: false } }] },
+        { $set: { applicationHoldId: application._id } },
+        { returnDocument: "after" },
+      );
+      if (!unit) return res.status(409).json({ error: "This room is no longer available to hold. Contact the applicant before accepting payment." });
+    }
+    if (nextStatus === "rejected" && application.status === "payment_unlocked") {
+      await Unit.updateOne({ _id: application.unitId, applicationHoldId: application._id }, { $set: { applicationHoldId: null } });
+    }
+    application.status = nextStatus;
+    application.managementNote = note;
+    await application.save();
+    res.json({ message: `Application updated to ${nextStatus}.`, application });
+  } catch (e) { res.status(500).json({ error: serverError(e) }); }
+});
+
+app.put("/admin/tenant-applications/:id/verify-payment", verifyAdmin, async (req, res) => {
+  try {
+    const application = await TenantApplication.findById(req.params.id);
+    if (!application) return res.status(404).json({ error: "Application not found" });
+    if (application.status !== "payment_submitted" || !application.paymentProof || !application.agreementCopy) return res.status(409).json({ error: "A signed agreement and submitted payment proof are required." });
+    const unit = await Unit.findOne({ _id: application.unitId, propertyId: application.propertyId, status: "available", applicationHoldId: application._id });
+    if (!unit) return res.status(409).json({ error: "The held room could not be verified. Resolve room availability before allocating." });
+    const duplicate = await User.findOne({ location: application.location, roomNo: application.roomNo, session: application.session });
+    if (duplicate) return res.status(409).json({ error: "This room is already allocated for the selected session." });
+    const setting = await Settings.findOne({ location: application.location });
+    const occupant = await new User({
+      location: application.location, propertyId: application.propertyId, unitId: application.unitId,
+      name: application.name, email: application.email, phone: application.phone,
+      guardianName: application.guardianName, guardianPhone: application.guardianPhone,
+      session: application.session, level: application.level, roomNo: application.roomNo,
+      amount: application.rentAmount || setting?.rentAmount || 0, paymentDate: application.paymentDate,
+      passport: application.passport, idCard: application.idCard, agreementCopy: application.agreementCopy,
+      paymentProof: application.paymentProof, retainPending: false, receiptNumber: await generateReceiptNumber(application.location),
+    }).save();
+    application.status = "allocated";
+    application.paymentVerifiedAt = new Date();
+    application.allocatedAt = new Date();
+    await application.save();
+    unit.status = "inactive";
+    unit.applicationHoldId = null;
+    await unit.save();
+    res.json({ message: "Payment verified and room allocated.", tenantId: occupant._id, application });
+  } catch (e) {
+    if (e.code === 11000) return res.status(409).json({ error: "This room was allocated by another request. Review availability before continuing." });
+    res.status(500).json({ error: serverError(e) });
+  }
+});
+
 app.post("/tenant/login", tenantLoginLimiter, async (req, res) => {
   const email = sanitizeEmail(req.body.email);
   const phone = sanitizePhone(req.body.phone);
@@ -746,7 +949,7 @@ app.get("/tenant-config", async (req, res) => {
             unitType: unit.unitType,
             status:
               unit.status === "available" &&
-              (occupiedIds.has(String(unit._id)) ||
+              (unit.applicationHoldId || occupiedIds.has(String(unit._id)) ||
                 occupiedLabels.has(unit.label))
                 ? "occupied"
                 : unit.status,
@@ -994,6 +1197,7 @@ app.post(
             propertyId: property._id,
             label: safeRoomNo,
             status: "available",
+            applicationHoldId: null,
           })
         : null;
       if (!unit)
