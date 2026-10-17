@@ -772,24 +772,27 @@ app.get("/tenant-config", async (req, res) => {
 app.get("/current-amount", async (req, res) => {
   try {
     const { location, unit: unitLabel } = req.query;
-    if (!location) return res.status(400).json({ error: "location required" });
-    const safeLocation = sanitizeLocation(location, req.tenantClient);
-    if (!safeLocation)
-      return res.status(400).json({ error: "Invalid location" });
-    const s = await Settings.findOne({ location: safeLocation });
-    if (!s) return res.status(404).json({ error: "Settings not found" });
+    const requestedLocation = sanitizeString(location);
+    if (!requestedLocation)
+      return res.status(400).json({ error: "location required" });
+    // Property names are managed by the agency. Do not limit public room/rent
+    // lookups to the legacy campus list; new hostels must work immediately.
     const property = await Property.findOne({
-      name: safeLocation,
+      name: requestedLocation,
       status: "active",
     });
-    const unit =
-      property && unitLabel
-        ? await Unit.findOne({
-            propertyId: property._id,
-            label: sanitizeString(unitLabel),
-            status: "available",
-          })
-        : null;
+    if (!property)
+      return res.status(404).json({ error: "Property not found" });
+    const safeLocation = property.name;
+    const s = await Settings.findOne({ location: safeLocation });
+    if (!s) return res.status(404).json({ error: "Settings not found" });
+    const unit = unitLabel
+      ? await Unit.findOne({
+          propertyId: property._id,
+          label: sanitizeString(unitLabel),
+          status: "available",
+        })
+      : null;
     res.json({ amount: unit?.rentAmount ?? s.rentAmount });
   } catch (e) {
     res.status(500).json({ error: serverError(e) });
@@ -949,7 +952,7 @@ app.post(
           .json({ error: "You must accept the terms and conditions." });
       }
 
-      const safeLocation = sanitizeLocation(location, req.tenantClient);
+      const requestedLocation = sanitizeString(location);
       const safeState = sanitizeString(state);
       const safeLga = sanitizeString(lga);
       const safeName = sanitizeString(name);
@@ -962,19 +965,22 @@ app.post(
       const safeType = sanitizeType(type);
       const safePaymentDate = sanitizeString(paymentDate);
 
-      if (!safeLocation)
+      if (!requestedLocation)
         return res.status(400).json({ error: "Invalid location" });
       if (!safeState || !safeLga)
         return res.status(400).json({ error: "Select a state and local government area" });
 
       const session = getSession();
+      const property = await Property.findOne({
+        name: requestedLocation,
+        status: "active",
+      });
+      if (!property)
+        return res.status(400).json({ error: "Select an active hostel" });
+      const safeLocation = property.name;
       const setting = await Settings.findOne({ location: safeLocation });
       if (!setting)
         return res.status(400).json({ error: "Location is not configured" });
-      const property = await Property.findOne({
-        name: safeLocation,
-        status: "active",
-      });
       const geography = getPropertyGeography(property);
       // Match the submitted location against the saved property, while still
       // accepting the known legacy campuses whose geography is inferred above.

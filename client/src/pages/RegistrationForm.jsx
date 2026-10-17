@@ -85,8 +85,10 @@ export default function RegistrationForm() {
   const availableProperties = locations.filter(
     (property) =>
       property.status === "active" &&
+      property.propertyType === "hostel" &&
       property.state === state &&
-      property.lga === lga,
+      property.lga === lga &&
+      property.units?.some((unit) => unit.status === "available"),
   );
 
   // Load the property's default rent, or the selected unit's override.
@@ -415,15 +417,15 @@ export default function RegistrationForm() {
                       setRoomNo("");
                     }}
                   >
-                    <option value="">{lga ? "Select a property" : "Select an LGA first"}</option>
+                    <option value="">{lga ? "Select a hostel" : "Select an LGA first"}</option>
                     {availableProperties.map((item) => (
                       <option key={item.id || item.name} value={item.name}>
-                        {item.name} · {item.units.filter((unit) => unit.status === "available").length} available
+                        {item.name} · {item.units.filter((unit) => unit.status === "available").length} rooms available
                       </option>
                     ))}
                   </select>
-                  <small className="err-msg">Please select a property</small>
-                  {lga && availableProperties.length === 0 && <small className="hint">No properties with available rooms in this area yet.</small>}
+                  <small className="err-msg">Please select a hostel</small>
+                  {lga && availableProperties.length === 0 && <small className="hint">No hostels with available rooms in this area yet.</small>}
                 </div>
               </div>
             </div>
@@ -549,11 +551,12 @@ export default function RegistrationForm() {
                   <label htmlFor="roomNo">Room Number</label>
                   <select
                     id="roomNo"
+                    disabled={!location || availableUnits.length === 0}
                     className={err(roomNo, selectValid.roomNo)}
                     value={roomNo}
                     onChange={(e) => setRoomNo(e.target.value)}
                   >
-                    <option value="">Select Room</option>
+                    <option value="">{!location ? "Select a hostel first" : availableUnits.length ? "Select a room" : "No rooms available"}</option>
                     {availableUnits.map((unit) => (
                       <option key={unit.id} value={unit.label}>
                         {unit.label}
@@ -561,6 +564,7 @@ export default function RegistrationForm() {
                     ))}
                   </select>
                   <small className="err-msg">Please select a room</small>
+                  {location && availableUnits.length === 0 && <small className="hint">This hostel currently has no available rooms. Please choose another hostel.</small>}
                 </div>
                 <div className="field">
                   <label>Amount Due</label>

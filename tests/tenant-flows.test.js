@@ -27,6 +27,9 @@ let mongo;
 let httpServer;
 let baseUrl;
 let User;
+let Property;
+let Settings;
+let Unit;
 
 before(async () => {
   mongo = await MongoMemoryServer.create();
@@ -36,6 +39,9 @@ before(async () => {
   httpServer = await app.startup;
   baseUrl = `http://127.0.0.1:${httpServer.address().port}`;
   User = require("../models/User");
+  Property = require("../models/Property");
+  Settings = require("../models/Settings");
+  Unit = require("../models/Unit");
 });
 
 after(async () => {
@@ -98,11 +104,18 @@ test("tenant document re-upload succeeds and logs the change", async () => {
   assert.equal(denied.status, 403);
 });
 
-function registrationForm({ email, phone, roomNo }) {
+function registrationForm({
+  email,
+  phone,
+  roomNo,
+  location = "Malete",
+  state = "Kwara",
+  lga = "Moro",
+}) {
   const form = new FormData();
-  form.append("location", "Malete");
-  form.append("state", "Kwara");
-  form.append("lga", "Moro");
+  form.append("location", location);
+  form.append("state", state);
+  form.append("lga", lga);
   form.append("name", "Receipt Test Tenant");
   form.append("email", email);
   form.append("phone", phone);
@@ -160,4 +173,66 @@ test("registration issues monotonic receipt numbers", async () => {
   const two = await User.findOne({ email: "receipt-two@example.test" }).lean();
   assert.equal(one.receiptNumber, `DCM-${year}-0001`);
   assert.equal(two.receiptNumber, `DCM-${year}-0002`);
+});
+
+test("new hostels expose available rooms and accept tenant applications", async () => {
+  const property = await Property.create({
+    name: "New Flow Test Hostel",
+    state: "Kwara",
+    lga: "Ilorin West",
+    propertyType: "hostel",
+    address: "Test Street",
+  });
+  await Settings.create({
+    location: property.name,
+    rentAmount: 220000,
+    roomCount: 1,
+  });
+  const unit = await Unit.create({
+    propertyId: property._id,
+    location: property.name,
+    unitCode: "room-1",
+    label: "Room 1",
+    unitType: "room",
+  });
+
+  const configResponse = await fetch(`${baseUrl}/tenant-config`);
+  const config = await configResponse.json();
+  const listing = config.locations.find(
+    (item) => item.name === property.name,
+  );
+  assert.equal(listing.state, "Kwara");
+  assert.equal(listing.lga, "Ilorin West");
+  assert.equal(listing.units.find((item) => String(item.id) === String(unit._id)).status, "available");
+
+  const amountResponse = await fetch(
+    `${baseUrl}/current-amount?location=${encodeURIComponent(property.name)}&unit=Room%201`,
+  );
+  assert.equal(amountResponse.status, 200);
+  assert.equal((await amountResponse.json()).amount, 220000);
+
+  const submitResponse = await fetch(`${baseUrl}/submit`, {
+    method: "POST",
+    body: registrationForm({
+      email: "new-hostel-tenant@example.test",
+      phone: "08055556666",
+      roomNo: "Room 1",
+      location: property.name,
+      state: "Kwara",
+      lga: "Ilorin West",
+    }),
+  });
+  const submitBody = await submitResponse.json();
+  assert.equal(submitResponse.status, 200, JSON.stringify(submitBody));
+
+  const saved = await User.findOne({ email: "new-hostel-tenant@example.test" });
+  assert.equal(String(saved.propertyId), String(property._id));
+  assert.equal(String(saved.unitId), String(unit._id));
+  assert.equal(saved.amount, 220000);
+
+  const updatedConfig = await (await fetch(`${baseUrl}/tenant-config`)).json();
+  const updatedListing = updatedConfig.locations.find(
+    (item) => item.name === property.name,
+  );
+  assert.equal(updatedListing.units[0].status, "occupied");
 });
