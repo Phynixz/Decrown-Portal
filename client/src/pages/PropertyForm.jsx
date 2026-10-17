@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 import { getToken, sendJSON } from "../api.js";
 import { useTenant } from "../tenantContext.jsx";
+import { getLocalGovernments, NIGERIAN_STATES } from "../utils/nigeriaLocationData.js";
 
 const PROPERTY_TYPES = ["hostel", "apartment", "house", "commercial", "mixed", "other"];
 const UNIT_TYPES = ["room", "apartment", "house", "shop", "office", "other"];
@@ -11,7 +12,7 @@ const emptyUnit = () => ({ unitCode: "", label: "", unitType: "room", rentAmount
 export default function PropertyForm() {
   const navigate = useNavigate();
   const { businessName } = useTenant();
-  const [property, setProperty] = useState({ name: "", propertyType: "", address: "", rentAmount: "" });
+  const [property, setProperty] = useState({ name: "", propertyType: "", address: "", state: "", lga: "", rentAmount: "" });
   const [units, setUnits] = useState([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -19,7 +20,12 @@ export default function PropertyForm() {
   const [partialSave, setPartialSave] = useState(false);
 
   function updateProperty(event) {
-    setProperty((current) => ({ ...current, [event.target.name]: event.target.value }));
+    const { name, value } = event.target;
+    setProperty((current) => ({
+      ...current,
+      [name]: value,
+      ...(name === "state" ? { lga: "" } : {}),
+    }));
   }
 
   function updateUnit(index, event) {
@@ -100,6 +106,10 @@ export default function PropertyForm() {
         <form onSubmit={submit} className="mt-8 space-y-8">
           <section className="space-y-5 border-b border-border pb-8">
             <div><label className="block text-sm font-semibold" htmlFor="property-name">Property name</label><input id="property-name" name="name" required value={property.name} onChange={updateProperty} placeholder="e.g. North Campus" className={inputClass} /></div>
+            <div className="grid gap-5 sm:grid-cols-2">
+              <div><label className="block text-sm font-semibold" htmlFor="property-state">State</label><select id="property-state" name="state" required value={property.state} onChange={updateProperty} className={inputClass}><option value="">Select a state</option>{NIGERIAN_STATES.map((state) => <option key={state} value={state}>{state}</option>)}</select></div>
+              <div><label className="block text-sm font-semibold" htmlFor="property-lga">Local government area</label><select id="property-lga" name="lga" required disabled={!property.state} value={property.lga} onChange={updateProperty} className={inputClass}><option value="">{property.state ? "Select an LGA" : "Select a state first"}</option>{getLocalGovernments(property.state).map((lga) => <option key={lga} value={lga}>{lga}</option>)}</select></div>
+            </div>
             <div className="grid gap-5 sm:grid-cols-2"><div><label className="block text-sm font-semibold" htmlFor="property-type">Property type</label><select id="property-type" name="propertyType" required value={property.propertyType} onChange={updateProperty} className={inputClass}><option value="">Select a type</option>{PROPERTY_TYPES.map((type) => <option key={type} value={type}>{type[0].toUpperCase() + type.slice(1)}</option>)}</select></div><div><label className="block text-sm font-semibold" htmlFor="property-rent">Default rent amount</label><input id="property-rent" name="rentAmount" type="number" min="0" value={property.rentAmount} onChange={updateProperty} placeholder="Optional" className={inputClass} /></div></div>
             <div><label className="block text-sm font-semibold" htmlFor="property-address">Address</label><input id="property-address" name="address" value={property.address} onChange={updateProperty} placeholder="Property address" className={inputClass} /></div>
           </section>

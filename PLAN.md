@@ -6,6 +6,15 @@ tracks task-by-task status; this file explains the _why_ behind each
 decision so anyone picking this up later understands the reasoning, not
 just the checklist.
 
+> **Product workflow update (October 2026):** The platform owner/agency is
+> the central operator. Tenants do not choose or manage a subdomain; they
+> choose a Nigerian state, LGA, property, and available unit in the same
+> hosted application. The agency manages inventory, rent settings, tenant
+> review, assignment, and access from the director workspace. Client workspaces
+> remain database-isolated in the current implementation; moving to one shared
+> operational database would be a separate architecture/data migration and is
+> not silently performed by this feature work.
+
 ---
 
 ## 1. The business problem
@@ -32,7 +41,7 @@ than a special case.
 | Client onboarding             | **Self-serve signup, but gated behind manual approval** before the platform goes live | Balances low-friction growth with keeping control over who gets a platform, especially early on.                                                                                                                                                                                                                                        |
 | Pricing/billing               | **Not decided yet** — building the technical platform first                           | No Paystack/Stripe integration yet. The `Client.status` field is deliberately built to double as a future billing-status field (`trial`, `past_due`, etc.) without restructuring.                                                                                                                                                       |
 | Target scale                  | **A handful of clients (3–10) over the next 6–12 months**                             | Confirms the shared-cluster/separate-DB approach is right-sized — not over- or under-engineered.                                                                                                                                                                                                                                        |
-| Routing/branding              | **Subdomains** (`clientname.yourplatform.com`)                                        | Cleaner than path-based routing, feels like the client's own product. Custom domains are a later, premium-tier addition, not needed on day one.                                                                                                                                                                                         |
+| Routing/branding              | **One hosted application; internal client routing remains**                           | Signup no longer asks the client to choose a subdomain. The platform assigns an internal client slug for the current tenant resolver; tenants select state/LGA, property, and available unit in the registration form. Custom domains remain a later decision. |
 | Signup auth                   | **Custom/manual** (bcrypt + JWT + email verification code), not Firebase/Supabase     | The app already has a full identity system in MongoDB. Adding a second auth provider for just the signup flow would create two sources of truth for "who is this," and introduces a whole extra stack (Postgres, for Supabase) for one small feature. At this volume, Firebase/Supabase's scaling benefits don't apply.                 |
 | Verification email            | **Resend** (transactional email API)                                                  | Generous free tier, far less setup than raw SMTP. Swappable later — the email-sending logic is isolated in one file.                                                                                                                                                                                                                    |
 
@@ -125,6 +134,13 @@ deliberately, once Phase 1 is proven and once the full existing codebase
 - Tenant branding and business name propagation (`/tenant-config` in `App.jsx`)
 - Safe De-Crown legacy data migration script with dry-run support (`migrate-legacy-tenant.js`)
 - Comprehensive integration test suites passing in-memory (`tests/`)
+- Central director workspace for managing properties, units, tenant records,
+  application decisions, access, rent, and registration settings
+- Property selection by Nigerian state and LGA, followed by available property
+  and unit; legacy Malete and Ila-Orangun records remain usable without an
+  automatic production-data rewrite
+- Login/signup rate limits, production-safe error messages, and receipt access
+  checks for unapproved applications
 
 **Still required before live production:**
 

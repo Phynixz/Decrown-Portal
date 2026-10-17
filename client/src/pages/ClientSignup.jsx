@@ -5,21 +5,17 @@ import { useTheme } from "../theme.js";
 import { sendJSON } from "../api.js";
 import { validateEmail } from "../utils/validation.js";
 
-const PLATFORM_DOMAIN =
-  import.meta.env.VITE_PLATFORM_ROOT_DOMAIN || "yourplatform.com";
-
 export default function ClientSignup() {
   const { dark, toggleTheme } = useTheme();
 
   const [step, setStep] = useState("form"); // form -> verify -> pending
   const [clientId, setClientId] = useState("");
+  const [clientSubdomain, setClientSubdomain] = useState("");
 
   const [businessName, setBusinessName] = useState("");
   const [contactName, setContactName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [locations, setLocations] = useState("");
-  const [subdomain, setSubdomain] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
@@ -30,44 +26,23 @@ export default function ClientSignup() {
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
 
-  function sanitizeSubdomain(value) {
-    return value.toLowerCase().replace(/[^a-z0-9-]/g, "");
-  }
-
   async function handleSignup(e) {
     e.preventDefault();
     const name = businessName.trim();
     const contact = contactName.trim();
     const trimmedEmail = email.trim();
-    const sub = subdomain.trim();
-    const selectedLocations = [
-      ...new Set(
-        locations
-          .split(",")
-          .map((location) => location.trim())
-          .filter(Boolean),
-      ),
-    ];
 
     if (
       !name ||
       !contact ||
       !trimmedEmail ||
-      !sub ||
-      !password ||
-      !selectedLocations.length
+      !password
     ) {
-      setErr(
-        "Please fill in all required fields, including at least one location.",
-      );
+      setErr("Please fill in your business name, contact name, email, and password.");
       return;
     }
     if (!validateEmail(trimmedEmail)) {
       setErr("Please enter a valid email address.");
-      return;
-    }
-    if (sub.length < 3) {
-      setErr("Subdomain must be at least 3 characters.");
       return;
     }
     if (password.length < 6) {
@@ -87,11 +62,10 @@ export default function ClientSignup() {
         contactName: contact,
         email: trimmedEmail,
         phone: phone.trim(),
-        subdomain: sub,
-        locations: selectedLocations,
         password,
       });
       setClientId(data.clientId);
+      setClientSubdomain(data.subdomain);
       setStep("verify");
       setNotice(
         data.developmentCode
@@ -278,37 +252,6 @@ export default function ClientSignup() {
                     </div>
 
                     <div className="field">
-                      <label className="field-label" htmlFor="cs-locations">
-                        Locations
-                      </label>
-                      <input
-                        id="cs-locations"
-                        placeholder="e.g. North Campus, South Campus"
-                        value={locations}
-                        onChange={(e) => setLocations(e.target.value)}
-                      />
-                    </div>
-
-                    <div className="field">
-                      <label className="field-label" htmlFor="cs-subdomain">
-                        Choose Your Subdomain
-                      </label>
-                      <div className="flex items-stretch">
-                        <input
-                          id="cs-subdomain"
-                          placeholder="yourbusiness"
-                          value={subdomain}
-                          onChange={(e) =>
-                            setSubdomain(sanitizeSubdomain(e.target.value))
-                          }
-                        />
-                        <span className="flex items-center whitespace-nowrap rounded-r-[10px] border-[1.5px] border-l-0 border-border bg-input px-3 text-[13px] text-muted">
-                          .{PLATFORM_DOMAIN}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="field">
                       <label className="field-label" htmlFor="cs-password">
                         Password
                       </label>
@@ -416,8 +359,8 @@ export default function ClientSignup() {
                     review. We'll email {email} once your platform is approved
                     and ready to use.
                   </p>
-                  <Link to={`/login?client=${encodeURIComponent(subdomain)}`} className="btn-login mt-5 inline-block text-center no-underline">
-                    Back to Sign In
+                  <Link to={`/login?client=${encodeURIComponent(clientSubdomain)}`} className="btn-login mt-5 inline-block text-center no-underline">
+                    Sign in after approval
                   </Link>
                 </div>
               )}

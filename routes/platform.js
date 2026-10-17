@@ -2,6 +2,7 @@ const express = require("express");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const mongoose = require("mongoose");
 
 const Client = require("../models/Client");
 const PlatformAdmin = require("../models/PlatformAdmin");
@@ -14,6 +15,40 @@ const provisionClient = require("../utils/provisionClient");
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET;
+const NODE_ENV = process.env.NODE_ENV || "development";
+
+const { rateLimit } = require("../utils/rateLimit");
+
+// Brute-force protection for credential and verification endpoints.
+const platformLoginLimiter = rateLimit({
+  name: "platform-login",
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+});
+const signupLimiter = rateLimit({
+  name: "client-signup",
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+});
+const verifyEmailLimiter = rateLimit({
+  name: "verify-email",
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+});
+const resendCodeLimiter = rateLimit({
+  name: "resend-code",
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+});
+
+// Log server errors with detail, but never leak internals to clients in
+// production (development keeps the message for local debugging).
+function serverError(error) {
+  console.error(error);
+  return NODE_ENV === "production"
+    ? "Server error"
+    : error?.message || "Server error";
+}
 
 // ─── local sanitizers (mirrors the style already used in server.js) ────────
 function sanitizeString(value) {
@@ -34,6 +69,10 @@ function sanitizeSubdomain(value) {
   return sanitizeString(value)
     .toLowerCase()
     .replace(/[^a-z0-9-]/g, "");
+}
+function generateTenantSubdomain(businessName) {
+  const base = sanitizeSubdomain(businessName).replace(/^-+|-+$/g, "").slice(0, 21);
+  return `${base || "landlord"}-${crypto.randomBytes(3).toString("hex")}`;
 }
 const RESERVED_SUBDOMAINS = new Set([
   "www",
@@ -127,28 +166,22 @@ function requirePlatformOwner(req, res, next) {
 }
 
 // ─── Client signup ───────────────────────────────────────────────────────
-router.post("/client/signup", async (req, res) => {
+router.post("/client/signup", signupLimiter, async (req, res) => {
   try {
     const businessName = sanitizeString(req.body.businessName);
     const contactName = sanitizeString(req.body.contactName);
     const email = sanitizeEmail(req.body.email);
     const phone = sanitizeString(req.body.phone);
-    const subdomain = sanitizeSubdomain(req.body.subdomain);
+    const requestedSubdomain = sanitizeSubdomain(req.body.subdomain);
+    let subdomain = requestedSubdomain || generateTenantSubdomain(businessName);
     const password = sanitizeString(req.body.password);
     const locations = Array.isArray(req.body.locations)
       ? [...new Set(req.body.locations.map(sanitizeString).filter(Boolean))]
       : [];
 
-    if (
-      !businessName ||
-      !contactName ||
-      !email ||
-      !subdomain ||
-      !password ||
-      !locations.length
-    )
+    if (!businessName || !contactName || !email || !password)
       return res.status(400).json({
-        error: "All required fields, including a location, are required",
+        error: "Business name, contact name, email, and password are required",
       });
     if (!isValidEmail(email))
       return res
@@ -158,22 +191,29 @@ router.post("/client/signup", async (req, res) => {
       return res
         .status(400)
         .json({ error: "Password must be at least 6 characters" });
-    if (subdomain.length < 3 || subdomain.length > 30)
+    if (requestedSubdomain && (subdomain.length < 3 || subdomain.length > 30))
       return res
         .status(400)
         .json({ error: "Subdomain must be 3-30 characters" });
     if (RESERVED_SUBDOMAINS.has(subdomain))
       return res.status(400).json({ error: "That subdomain is reserved" });
-    if (locations.some((location) => location.length > 50))
+    if (locations.some((location) => location.length > 100))
       return res
         .status(400)
-        .json({ error: "Location names must be 50 characters or fewer" });
+        .json({ error: "Location names must be 100 characters or fewer" });
 
-    const existing = await Client.findOne({ $or: [{ email }, { subdomain }] });
+    const existing = await Client.findOne({
+      $or: [
+        { email },
+        ...(requestedSubdomain ? [{ subdomain }] : []),
+      ],
+    });
     if (existing)
       return res
         .status(409)
         .json({ error: "Email or subdomain already in use" });
+    while (await Client.exists({ subdomain }))
+      subdomain = generateTenantSubdomain(businessName);
 
     const code = generateCode();
     const passwordHash = await bcrypt.hash(password, 10);
@@ -217,16 +257,17 @@ router.post("/client/signup", async (req, res) => {
     res.json({
       message: "Verification code sent to your email",
       clientId: client._id,
+      subdomain: client.subdomain,
       ...(process.env.NODE_ENV !== "production" &&
         !process.env.RESEND_API_KEY && { developmentCode: code }),
     });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: serverError(e) });
   }
 });
 
 // ─── Email verification ─────────────────────────────────────────────────
-router.post("/client/verify-email", async (req, res) => {
+router.post("/client/verify-email", verifyEmailLimiter, async (req, res) => {
   try {
     const { clientId } = req.body;
     const code = sanitizeString(req.body.code);
@@ -264,11 +305,11 @@ router.post("/client/verify-email", async (req, res) => {
       message: "Email verified — your account is now pending approval",
     });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: serverError(e) });
   }
 });
 
-router.post("/client/resend-code", async (req, res) => {
+router.post("/client/resend-code", resendCodeLimiter, async (req, res) => {
   try {
     const { clientId } = req.body;
     const client = await Client.findById(clientId);
@@ -293,12 +334,12 @@ router.post("/client/resend-code", async (req, res) => {
     });
     res.json({ message: "New code sent" });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: serverError(e) });
   }
 });
 
 // ─── Platform admin (you) login ─────────────────────────────────────────
-router.post("/platform/login", async (req, res) => {
+router.post("/platform/login", platformLoginLimiter, async (req, res) => {
   try {
     const email = sanitizeEmail(req.body.email);
     const password = sanitizeString(req.body.password);
@@ -350,7 +391,7 @@ router.post("/platform/login", async (req, res) => {
     });
     res.json({ token, name: account.name, role });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: serverError(e) });
   }
 });
 
@@ -365,13 +406,18 @@ router.get(
       const filter = status ? { status } : {};
       const clients = await Client.find(
         filter,
-        "businessName contactName email phone subdomain status verified rejectionReason approvedAt createdAt locations",
+        "businessName contactName email phone subdomain status verified rejectionReason approvedAt createdAt locations dbName",
       ).sort({
         createdAt: -1,
       });
-      res.json(clients);
+      res.json(
+        clients.map((client) => {
+          const { dbName, ...data } = client.toObject();
+          return { ...data, workspaceReady: Boolean(dbName) };
+        }),
+      );
     } catch (e) {
-      res.status(500).json({ error: e.message });
+      res.status(500).json({ error: serverError(e) });
     }
   },
 );
@@ -390,11 +436,6 @@ router.put(
           .json({ error: "Client has not verified their email yet" });
       if (client.status === "active")
         return res.status(400).json({ error: "Already active" });
-      if (!client.locations?.length)
-        return res
-          .status(400)
-          .json({ error: "Client must configure at least one location" });
-
       const dbName = await provisionClient(client);
       client.dbName = dbName;
       client.status = "active";
@@ -409,7 +450,7 @@ router.put(
         ),
       });
     } catch (e) {
-      res.status(500).json({ error: e.message });
+      res.status(500).json({ error: serverError(e) });
     }
   },
 );
@@ -428,7 +469,7 @@ router.put(
       await client.save();
       res.json({ message: "Client rejected" });
     } catch (e) {
-      res.status(500).json({ error: e.message });
+      res.status(500).json({ error: serverError(e) });
     }
   },
 );
@@ -558,8 +599,12 @@ router.get(
 
 // Helper: resolve client + tenant models, gate to owner only
 async function resolveTenantCtx(req, res) {
-  if (req.platformAdmin?.role !== "owner")
-    return res.status(403).json({ error: "Overall admin access required" });
+  if (req.platformAdmin?.role !== "owner") {
+    // Send the response and return null — returning res.status().json()
+    // directly would be truthy and defeat callers' `if (!ctx) return;` guard.
+    res.status(403).json({ error: "Overall admin access required" });
+    return null;
+  }
   const client = await Client.findById(req.params.clientId).lean();
   if (!client) return res.status(404).json({ error: "Client not found" });
   if (!client.dbName)
@@ -569,6 +614,354 @@ async function resolveTenantCtx(req, res) {
   const models = getTenantModels(client.dbName);
   return { client, models };
 }
+
+function getCurrentSessionLabel() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const start = now.getMonth() >= 7 ? year : year - 1;
+  return `${start}/${start + 1}`;
+}
+
+function recordDirectorChange(req, action, resource, resourceId) {
+  return recordAudit(req, {
+    actorId: req.platformAdmin.id,
+    actorName: req.platformAdmin.name,
+    actorEmail: req.platformAdmin.email,
+    actorRole: req.platformAdmin.role,
+    action,
+    resource,
+    resourceId,
+  });
+}
+
+router.get(
+  "/platform/tenants/:clientId/settings",
+  verifyPlatformAdmin,
+  requirePlatformOwner,
+  async (req, res) => {
+    try {
+      const ctx = await resolveTenantCtx(req, res);
+      if (!ctx) return;
+      const session = getCurrentSessionLabel();
+      const [registration, locations] = await Promise.all([
+        ctx.models.Registration.findOne({ session }).lean(),
+        ctx.models.Settings.find().sort({ location: 1 }).lean(),
+      ]);
+      res.json({
+        session,
+        registrationOpen: registration?.open ?? true,
+        locations: locations.map(({ location, rentAmount }) => ({
+          name: location,
+          rentAmount,
+        })),
+      });
+    } catch (error) {
+      res.status(500).json({ error: serverError(error) });
+    }
+  },
+);
+
+router.put(
+  "/platform/tenants/:clientId/settings",
+  verifyPlatformAdmin,
+  requirePlatformOwner,
+  async (req, res) => {
+    try {
+      const ctx = await resolveTenantCtx(req, res);
+      if (!ctx) return;
+      const hasLocations = req.body.locations !== undefined;
+      const hasRegistration = req.body.registrationOpen !== undefined;
+      if (!hasLocations && !hasRegistration)
+        return res.status(400).json({ error: "No settings provided" });
+      if (hasLocations && !Array.isArray(req.body.locations))
+        return res.status(400).json({ error: "Invalid property settings" });
+      if (hasRegistration && typeof req.body.registrationOpen !== "boolean")
+        return res.status(400).json({ error: "Invalid registration state" });
+
+      if (hasLocations) {
+        const seen = new Set();
+        for (const item of req.body.locations) {
+          const name = sanitizeString(item?.name);
+          const rentAmount = Number(item?.rentAmount);
+          if (
+            !name ||
+            !ctx.client.locations.includes(name) ||
+            seen.has(name) ||
+            !Number.isFinite(rentAmount) ||
+            rentAmount < 0
+          )
+            return res.status(400).json({ error: "Invalid property settings" });
+          seen.add(name);
+          await ctx.models.Settings.findOneAndUpdate(
+            { location: name },
+            { location: name, rentAmount },
+            { upsert: true, returnDocument: "after", runValidators: true },
+          );
+        }
+      }
+      if (hasRegistration) {
+        const session = getCurrentSessionLabel();
+        await ctx.models.Registration.findOneAndUpdate(
+          { session },
+          { session, open: req.body.registrationOpen },
+          {
+            upsert: true,
+            returnDocument: "after",
+            setDefaultsOnInsert: true,
+          },
+        );
+      }
+      await recordDirectorChange(
+        req,
+        "platform:update-tenant-settings",
+        `tenant:${req.params.clientId}/settings`,
+        req.params.clientId,
+      );
+      res.json({ message: "Settings updated" });
+    } catch (error) {
+      res.status(500).json({ error: serverError(error) });
+    }
+  },
+);
+
+router.post(
+  "/platform/tenants/:clientId/properties",
+  verifyPlatformAdmin,
+  requirePlatformOwner,
+  async (req, res) => {
+    try {
+      const ctx = await resolveTenantCtx(req, res);
+      if (!ctx) return;
+      const name = sanitizeString(req.body.name);
+      const state = sanitizeString(req.body.state);
+      const lga = sanitizeString(req.body.lga);
+      const propertyType = sanitizeString(req.body.propertyType || "hostel").toLowerCase();
+      const address = sanitizeString(req.body.address);
+      const rentAmount = Number(req.body.rentAmount ?? 0);
+      if (
+        !name ||
+        name.length > 100 ||
+        !state ||
+        state.length > 60 ||
+        !lga ||
+        lga.length > 80 ||
+        !["hostel", "apartment", "house", "commercial", "mixed", "other"].includes(propertyType) ||
+        !Number.isFinite(rentAmount) ||
+        rentAmount < 0
+      )
+        return res.status(400).json({ error: "Invalid property details" });
+      if (await ctx.models.Property.exists({ name }))
+        return res.status(409).json({ error: "Property already exists" });
+      const property = await ctx.models.Property.create({
+        name,
+        state,
+        lga,
+        propertyType,
+        address,
+      });
+      await ctx.models.Settings.findOneAndUpdate(
+        { location: name },
+        { location: name, rentAmount, roomCount: 0 },
+        { upsert: true, returnDocument: "after", runValidators: true },
+      );
+      await Client.updateOne(
+        { _id: ctx.client._id },
+        { $addToSet: { locations: name } },
+      );
+      await recordDirectorChange(
+        req,
+        "platform:create-tenant-property",
+        `tenant:${req.params.clientId}/property`,
+        property._id,
+      );
+      res.status(201).json({ ...property.toObject(), units: [] });
+    } catch (error) {
+      if (error.code === 11000)
+        return res.status(409).json({ error: "Property already exists" });
+      res.status(500).json({ error: serverError(error) });
+    }
+  },
+);
+
+router.put(
+  "/platform/tenants/:clientId/properties/:propertyId",
+  verifyPlatformAdmin,
+  requirePlatformOwner,
+  async (req, res) => {
+    try {
+      const ctx = await resolveTenantCtx(req, res);
+      if (!ctx) return;
+      if (!mongoose.isValidObjectId(req.params.propertyId))
+        return res.status(400).json({ error: "Invalid property ID" });
+      const property = await ctx.models.Property.findById(req.params.propertyId);
+      if (!property) return res.status(404).json({ error: "Property not found" });
+      if (req.body.address !== undefined)
+        property.address = sanitizeString(req.body.address);
+      for (const field of ["state", "lga"]) {
+        if (req.body[field] !== undefined) {
+          const value = sanitizeString(req.body[field]);
+          if (!value || value.length > (field === "state" ? 60 : 80))
+            return res.status(400).json({ error: `Invalid property ${field}` });
+          property[field] = value;
+        }
+      }
+      if (req.body.propertyType !== undefined) {
+        const propertyType = sanitizeString(req.body.propertyType).toLowerCase();
+        if (!["hostel", "apartment", "house", "commercial", "mixed", "other"].includes(propertyType))
+          return res.status(400).json({ error: "Invalid property type" });
+        property.propertyType = propertyType;
+      }
+      if (req.body.status !== undefined) {
+        if (!["active", "archived"].includes(req.body.status))
+          return res.status(400).json({ error: "Invalid property status" });
+        if (req.body.status === "archived") {
+          const occupied = await ctx.models.User.exists({
+            session: getCurrentSessionLabel(),
+            status: { $ne: "revoked" },
+            $or: [
+              { propertyId: property._id },
+              { location: property.name },
+            ],
+          });
+          if (occupied)
+            return res.status(409).json({ error: "Property has current tenants" });
+        }
+        property.status = req.body.status;
+      }
+      await property.save();
+      await recordDirectorChange(
+        req,
+        "platform:update-tenant-property",
+        `tenant:${req.params.clientId}/property`,
+        property._id,
+      );
+      res.json(property);
+    } catch (error) {
+      res.status(500).json({ error: serverError(error) });
+    }
+  },
+);
+
+router.post(
+  "/platform/tenants/:clientId/properties/:propertyId/units",
+  verifyPlatformAdmin,
+  requirePlatformOwner,
+  async (req, res) => {
+    try {
+      const ctx = await resolveTenantCtx(req, res);
+      if (!ctx) return;
+      if (!mongoose.isValidObjectId(req.params.propertyId))
+        return res.status(400).json({ error: "Invalid property ID" });
+      const property = await ctx.models.Property.findOne({
+        _id: req.params.propertyId,
+        status: "active",
+      });
+      if (!property) return res.status(404).json({ error: "Property not found" });
+      const unitCode = sanitizeString(req.body.unitCode);
+      const label = sanitizeString(req.body.label);
+      const unitType = sanitizeString(req.body.unitType || "room").toLowerCase();
+      const rentAmount = req.body.rentAmount == null || req.body.rentAmount === ""
+        ? null
+        : Number(req.body.rentAmount);
+      if (!unitCode || unitCode.length > 60 || !label || label.length > 100)
+        return res.status(400).json({ error: "Unit code and label are required" });
+      if (!["room", "apartment", "house", "shop", "office", "other"].includes(unitType))
+        return res.status(400).json({ error: "Invalid unit type" });
+      if (rentAmount !== null && (!Number.isFinite(rentAmount) || rentAmount < 0))
+        return res.status(400).json({ error: "Invalid unit rent" });
+      const unit = await ctx.models.Unit.create({
+        propertyId: property._id,
+        location: property.name,
+        unitCode,
+        label,
+        unitType,
+        rentAmount,
+      });
+      await recordDirectorChange(
+        req,
+        "platform:create-tenant-unit",
+        `tenant:${req.params.clientId}/unit`,
+        unit._id,
+      );
+      res.status(201).json(unit);
+    } catch (error) {
+      if (error.code === 11000)
+        return res.status(409).json({ error: "Unit code or label already exists" });
+      res.status(500).json({ error: serverError(error) });
+    }
+  },
+);
+
+router.put(
+  "/platform/tenants/:clientId/properties/:propertyId/units/:unitId",
+  verifyPlatformAdmin,
+  requirePlatformOwner,
+  async (req, res) => {
+    try {
+      const ctx = await resolveTenantCtx(req, res);
+      if (!ctx) return;
+      if (!mongoose.isValidObjectId(req.params.propertyId) || !mongoose.isValidObjectId(req.params.unitId))
+        return res.status(400).json({ error: "Invalid property or unit ID" });
+      const unit = await ctx.models.Unit.findOne({
+        _id: req.params.unitId,
+        propertyId: req.params.propertyId,
+      });
+      if (!unit) return res.status(404).json({ error: "Unit not found" });
+      const currentTenant = await ctx.models.User.exists({
+        session: getCurrentSessionLabel(),
+        status: { $ne: "revoked" },
+        $or: [
+          { unitId: unit._id },
+          { location: unit.location, roomNo: unit.label },
+        ],
+      });
+      if (currentTenant && (req.body.label !== undefined || req.body.status !== undefined && req.body.status !== "available"))
+        return res.status(409).json({ error: "Unit has a current tenant" });
+      if (req.body.unitCode !== undefined) {
+        const unitCode = sanitizeString(req.body.unitCode);
+        if (!unitCode || unitCode.length > 60)
+          return res.status(400).json({ error: "Invalid unit code" });
+        unit.unitCode = unitCode;
+      }
+      if (req.body.label !== undefined) {
+        const label = sanitizeString(req.body.label);
+        if (!label || label.length > 100)
+          return res.status(400).json({ error: "Invalid unit label" });
+        unit.label = label;
+      }
+      if (req.body.unitType !== undefined) {
+        if (!["room", "apartment", "house", "shop", "office", "other"].includes(req.body.unitType))
+          return res.status(400).json({ error: "Invalid unit type" });
+        unit.unitType = req.body.unitType;
+      }
+      if (req.body.status !== undefined) {
+        if (!["available", "maintenance", "inactive"].includes(req.body.status))
+          return res.status(400).json({ error: "Invalid unit status" });
+        unit.status = req.body.status;
+      }
+      if (req.body.rentAmount !== undefined) {
+        const rentAmount = req.body.rentAmount === null || req.body.rentAmount === ""
+          ? null
+          : Number(req.body.rentAmount);
+        if (rentAmount !== null && (!Number.isFinite(rentAmount) || rentAmount < 0))
+          return res.status(400).json({ error: "Invalid unit rent" });
+        unit.rentAmount = rentAmount;
+      }
+      await unit.save();
+      await recordDirectorChange(
+        req,
+        "platform:update-tenant-unit",
+        `tenant:${req.params.clientId}/unit`,
+        unit._id,
+      );
+      res.json(unit);
+    } catch (error) {
+      if (error.code === 11000)
+        return res.status(409).json({ error: "Unit code or label already exists" });
+      res.status(500).json({ error: serverError(error) });
+    }
+  },
+);
 
 // GET /platform/tenants/:clientId/stats
 router.get(
@@ -599,7 +992,7 @@ router.get(
         locations: client.locations,
       });
     } catch (e) {
-      res.status(500).json({ error: e.message });
+      res.status(500).json({ error: serverError(e) });
     }
   },
 );
@@ -640,7 +1033,7 @@ router.get(
       ]);
       res.json({ users, total, page, limit });
     } catch (e) {
-      res.status(500).json({ error: e.message });
+      res.status(500).json({ error: serverError(e) });
     }
   },
 );
@@ -661,7 +1054,7 @@ router.get(
       if (!user) return res.status(404).json({ error: "User not found" });
       res.json(user);
     } catch (e) {
-      res.status(500).json({ error: e.message });
+      res.status(500).json({ error: serverError(e) });
     }
   },
 );
@@ -676,42 +1069,129 @@ router.put(
     try {
       const ctx = await resolveTenantCtx(req, res);
       if (!ctx) return;
-      const ALLOWED = [
-        "status",
-        "location",
-        "roomNo",
-        "session",
-        "retainPending",
-      ];
+      if (!mongoose.isValidObjectId(req.params.userId))
+        return res.status(400).json({ error: "Invalid user ID" });
+      const user = await ctx.models.User.findById(req.params.userId);
+      if (!user) return res.status(404).json({ error: "User not found" });
       const updates = {};
-      for (const key of ALLOWED) {
-        if (req.body[key] !== undefined) updates[key] = req.body[key];
+
+      if (req.body.status !== undefined) {
+        if (!["active", "revoked"].includes(req.body.status))
+          return res
+            .status(400)
+            .json({ error: "status must be active or revoked" });
+        updates.status = req.body.status;
       }
-      if (updates.status && !["active", "revoked"].includes(updates.status))
+      if (req.body.retainPending !== undefined) {
+        if (typeof req.body.retainPending !== "boolean")
+          return res.status(400).json({ error: "Invalid retention state" });
+        updates.retainPending = req.body.retainPending;
+      }
+      if (req.body.disapproved !== undefined) {
+        if (typeof req.body.disapproved !== "boolean")
+          return res.status(400).json({ error: "Invalid review state" });
+        updates.disapproved = req.body.disapproved;
+        if (!req.body.disapproved) updates.disapprovalReason = null;
+      }
+      if (req.body.disapprovalReason !== undefined) {
+        updates.disapprovalReason = sanitizeString(
+          req.body.disapprovalReason,
+        ).slice(0, 500);
+      }
+      if (req.body.revokeReason !== undefined) {
+        updates.revokeReason = sanitizeString(req.body.revokeReason).slice(
+          0,
+          500,
+        );
+      }
+      if (req.body.session !== undefined) {
+        const session = sanitizeString(req.body.session);
+        if (!session || session.length > 30)
+          return res.status(400).json({ error: "Invalid session" });
+        updates.session = session;
+      }
+      if (req.body.amount !== undefined) {
+        const amount = Number(req.body.amount);
+        if (!Number.isFinite(amount) || amount < 0)
+          return res.status(400).json({ error: "Invalid payment amount" });
+        updates.amount = amount;
+      }
+      if (req.body.paymentDate !== undefined) {
+        updates.paymentDate = sanitizeString(req.body.paymentDate).slice(0, 40);
+      }
+
+      const hasPropertyId = req.body.propertyId !== undefined;
+      const hasUnitId = req.body.unitId !== undefined;
+      if (hasPropertyId !== hasUnitId)
         return res
           .status(400)
-          .json({ error: "status must be active or revoked" });
+          .json({ error: "Property and unit must be assigned together" });
+      if (hasPropertyId) {
+        if (
+          !mongoose.isValidObjectId(req.body.propertyId) ||
+          !mongoose.isValidObjectId(req.body.unitId)
+        )
+          return res.status(400).json({ error: "Invalid property or unit ID" });
+        const property = await ctx.models.Property.findOne({
+          _id: req.body.propertyId,
+          status: "active",
+        });
+        const unit = await ctx.models.Unit.findOne({
+          _id: req.body.unitId,
+          propertyId: req.body.propertyId,
+          status: "available",
+        });
+        if (!property || !unit)
+          return res
+            .status(409)
+            .json({ error: "Property or unit is unavailable" });
+
+        const assignmentSession = updates.session || user.session;
+        const occupied = await ctx.models.User.exists({
+          _id: { $ne: user._id },
+          session: assignmentSession,
+          $or: [
+            { unitId: unit._id },
+            { location: property.name, roomNo: unit.label },
+          ],
+        });
+        if (occupied)
+          return res
+            .status(409)
+            .json({ error: "Unit is already assigned for this session" });
+
+        updates.propertyId = property._id;
+        updates.unitId = unit._id;
+        updates.location = property.name;
+        updates.roomNo = unit.label;
+      }
+      if (req.body.location !== undefined || req.body.roomNo !== undefined) {
+        return res
+          .status(400)
+          .json({ error: "Use propertyId and unitId to change accommodation" });
+      }
       if (Object.keys(updates).length === 0)
         return res.status(400).json({ error: "No valid fields to update" });
 
-      const user = await ctx.models.User.findByIdAndUpdate(
-        req.params.userId,
-        updates,
-        { returnDocument: "after", runValidators: true },
-      ).lean();
-      if (!user) return res.status(404).json({ error: "User not found" });
+      Object.assign(user, updates);
+      await user.save();
+      const savedUser = user.toObject();
       await recordAudit(req, {
         actorId: req.platformAdmin.id,
         actorName: req.platformAdmin.name,
         actorEmail: req.platformAdmin.email,
         actorRole: req.platformAdmin.role,
-        action: "platform:edit-tenant-user",
+        action: "platform:manage-tenant-user",
         resource: `tenant:${req.params.clientId}/user`,
         resourceId: req.params.userId,
       });
-      res.json(user);
+      res.json(savedUser);
     } catch (e) {
-      res.status(500).json({ error: e.message });
+      if (e.code === 11000)
+        return res
+          .status(409)
+          .json({ error: "Accommodation is already assigned" });
+      res.status(500).json({ error: serverError(e) });
     }
   },
 );
@@ -735,7 +1215,7 @@ router.get(
       }));
       res.json(propMap);
     } catch (e) {
-      res.status(500).json({ error: e.message });
+      res.status(500).json({ error: serverError(e) });
     }
   },
 );

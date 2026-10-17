@@ -1,5 +1,5 @@
-import { Routes, Route, Navigate } from "react-router-dom";
-import { useEffect } from "react";
+import { Routes, Route, Navigate, useNavigate, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
 import AdminLogin from "./pages/AdminLogin.jsx";
 import RegistrationForm from "./pages/RegistrationForm.jsx";
 import AdminDashboard from "./pages/AdminDashboard.jsx";
@@ -18,6 +18,7 @@ import PlatformOverview from "./pages/platform/PlatformOverview.jsx";
 import PlatformClients from "./pages/platform/PlatformClients.jsx";
 import PlatformSettings from "./pages/platform/PlatformSettings.jsx";
 import ApprovalQueue from "./pages/ApprovalQueue.jsx";
+import { getJSON } from "./api.js";
 
 import { TenantProvider, useTenant } from "./tenantContext.jsx";
 
@@ -34,6 +35,49 @@ function HomeRedirect() {
     );
   }
   return <Navigate to={isTenant ? "/login" : "/platform/login"} replace />;
+}
+
+function DirectorWorkspaceRoute() {
+  const { clientId } = useParams();
+  const navigate = useNavigate();
+  const [workspace, setWorkspace] = useState({ loading: true, error: "", name: "" });
+
+  useEffect(() => {
+    const token = sessionStorage.getItem("platformToken") || "";
+    if (!token) {
+      navigate("/platform/login", { replace: true });
+      return;
+    }
+    if (sessionStorage.getItem("platformRole") !== "owner") {
+      navigate("/platform/clients", { replace: true });
+      return;
+    }
+    let cancelled = false;
+    getJSON(`/platform/tenants/${clientId}/stats`, token)
+      .then((stats) => {
+        if (!cancelled)
+          setWorkspace({ loading: false, error: "", name: stats.businessName });
+      })
+      .catch((error) => {
+        if (!cancelled)
+          setWorkspace({ loading: false, error: error.message, name: "" });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [clientId, navigate]);
+
+  if (workspace.loading)
+    return <main className="grid min-h-screen place-items-center text-sm text-muted">Loading landlord workspace…</main>;
+  if (workspace.error)
+    return <main className="mx-auto max-w-2xl px-6 py-16 text-sm text-danger">{workspace.error}</main>;
+  return (
+    <OperationsWorkspace
+      directorAccess
+      clientId={clientId}
+      clientName={workspace.name}
+    />
+  );
 }
 
 export default function App() {
@@ -55,6 +99,10 @@ export default function App() {
       <Route path="/profile" element={<TenantProfile />} />
 
       <Route path="/platform/login" element={<PlatformLogin />} />
+      <Route
+        path="/platform/clients/:clientId/workspace"
+        element={<DirectorWorkspaceRoute />}
+      />
       <Route path="/platform" element={<PlatformLayout />}>
         <Route index element={<PlatformOverview />} />
         <Route path="clients" element={<PlatformClients />} />

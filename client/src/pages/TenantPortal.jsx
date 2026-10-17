@@ -262,6 +262,14 @@ export default function TenantPortal() {
 
   function viewReceipt() {
     const rec = history.find((r) => r.session === nextSession);
+    if (profile?.disapproved || rec?.disapproved) {
+      alert("This application was not approved. Contact management if you need help.");
+      return;
+    }
+    if (profile?.retainPending || rec?.retainPending) {
+      alert("Your application is awaiting admin approval. The receipt will be available after approval.");
+      return;
+    }
     let receiptId = profile?._id;
     if (rec && !rec.retainPending) receiptId = rec._id;
     if (!receiptId) {
@@ -276,6 +284,10 @@ export default function TenantPortal() {
 
   function openHistoryReceipt() {
     if (!selRec) return;
+    if (selRec.disapproved) {
+      alert("This application was not approved. Contact management if you need help.");
+      return;
+    }
     if (selRec.retainPending) {
       alert(
         "This session is pending admin approval — receipt unavailable until approved.",
@@ -622,6 +634,17 @@ export default function TenantPortal() {
         </header>
 
         <main className="dash-main">
+          {profile.disapproved && (
+            <div className="mb-4 rounded-xl border border-danger bg-danger-faint px-5 py-4 text-sm text-danger" role="status">
+              <strong>Application not approved.</strong>{" "}
+              {profile.disapprovalReason || "Contact management for more information."}
+            </div>
+          )}
+          {profile.retainPending && !profile.disapproved && (
+            <div className="mb-4 rounded-xl border border-amber-300 bg-amber-50 px-5 py-4 text-sm text-amber-900" role="status">
+              <strong>Application pending review.</strong> Your receipt will be available after management approves your application.
+            </div>
+          )}
           {retainStep === 3 && (
             <div className="block w-full mb-4.5 px-5 py-4.5 rounded-[14px] text-center font-extrabold text-xl leading-snug bg-[#fff0f0] border border-[#ffb3b3] text-[#961b1b]">
               ⏳ <strong>Pending retention request:</strong> your next-session
@@ -914,7 +937,7 @@ export default function TenantPortal() {
                 {history.map((r) => (
                   <option key={r._id} value={r._id}>
                     {r.session}
-                    {r.retainPending ? " ⏳" : ""}
+                    {r.disapproved ? " · Not approved" : r.retainPending ? " · Pending review" : " · Approved"}
                   </option>
                 ))}
               </select>
@@ -930,9 +953,11 @@ export default function TenantPortal() {
                     ["Payment Date", fmtDate(selRec.paymentDate) || "—"],
                     [
                       "Status",
-                      selRec.retainPending
-                        ? "⏳ Pending approval"
-                        : "✅ Confirmed",
+                      selRec.disapproved
+                        ? "Not approved"
+                        : selRec.retainPending
+                          ? "Pending approval"
+                          : "Approved",
                     ],
                   ].map(([label, val]) => (
                     <div className="hdet" key={label}>

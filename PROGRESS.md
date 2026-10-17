@@ -66,3 +66,18 @@ until a backup exists and the dry-run values are confirmed.
 Automated tenant isolation and owner/staff permission/audit tests pass. Real Resend
 delivery, Render configuration, the legacy migration, and staging smoke tests have
 not yet been performed.
+
+## October 2026 implementation review
+
+- [x] Central director workspace for per-client properties, units, tenant records,
+  application review, access control, and rent/registration settings.
+- [x] Public registration now filters inventory by Nigerian state and LGA, then
+  property and available unit.
+- [x] Known legacy De-Crown campuses receive geography defaults at read/validation
+  time, avoiding an automatic write to production records.
+- [x] Login/signup/verification rate limits and production-safe server errors.
+- [x] Receipt access blocked for unapproved/rejected applications.
+- [x] Frontend production build and automated test suite pass locally.
+- [ ] Verify Resend delivery and full onboarding on staging with production-like
+  environment variables; do not apply the legacy migration without a reviewed
+  backup and explicit approval.

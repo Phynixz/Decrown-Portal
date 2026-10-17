@@ -1,6 +1,7 @@
 # De-Crown Cottage — Hostel Management Portal
 
-Hostel registration & payment portal for the Malete and Ila-Orangun campuses.
+Property and tenant management platform with a central agency workspace,
+client onboarding, property/unit inventory, tenant registration, and receipts.
 
 - **Backend:** Node.js / Express / MongoDB (Mongoose) — `server.js`
 - **Frontend:** React (Vite) SPA styled with **Tailwind CSS v4** — `client/`
@@ -18,13 +19,27 @@ Hostel registration & payment portal for the Malete and Ila-Orangun campuses.
 | `receipt.html?id=...`     | `/receipt?id=`  | Receipt               |
 | `terms.html`              | `/terms`        | Terms & policies      |
 
+## Central operations workflow
+
+- The platform owner reviews client signups and opens each approved client's
+  workspace from **Platform → Clients**.
+- The agency manages properties, Nigerian state/LGA, units, rent, registration
+  windows, tenant applications, accommodation assignments, and access centrally.
+- Tenant registration follows **state → LGA → property → available unit**.
+- Client workspaces use isolated MongoDB databases in the current implementation.
+  The application does not require tenants to select or manage a subdomain.
+
 ## Running
 
-Requirements: Node 18+, a MongoDB URI, JWT secret, and Cloudinary keys in `.env`.
+Requirements: Node 20.19.0 or newer, a MongoDB URI, a JWT secret of at least 32
+characters for production, Cloudinary keys, and platform-owner credentials in
+`.env`. Real client-verification email requires a configured Resend API key and
+verified sender address; local development can use the returned development code.
 
 ```bash
 # 1. Install server deps (first time only)
 npm install
+npm install --prefix client
 
 # 2. Build the React client
 npm run build          # → client/dist

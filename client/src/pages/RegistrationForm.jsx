@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Camera, CreditCard, FileText, File } from "lucide-react";
 import { useTenant } from "../tenantContext.jsx";
+import { getLocalGovernments, NIGERIAN_STATES } from "../utils/nigeriaLocationData.js";
 
 const RULES = {
   name: (v) => /^[a-zA-Z\s]{3,50}$/.test(v.trim()),
@@ -14,6 +15,8 @@ const RULES = {
 export default function RegistrationForm() {
   const { businessName, branding, locations: tenantLocations } = useTenant();
   // --- Form state ---
+  const [state, setState] = useState("");
+  const [lga, setLga] = useState("");
   const [location, setLocation] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -79,6 +82,12 @@ export default function RegistrationForm() {
     locations
       .find((item) => item.name === location)
       ?.units?.filter((unit) => unit.status === "available") || [];
+  const availableProperties = locations.filter(
+    (property) =>
+      property.status === "active" &&
+      property.state === state &&
+      property.lga === lga,
+  );
 
   // Load the property's default rent, or the selected unit's override.
   useEffect(() => {
@@ -127,7 +136,7 @@ export default function RegistrationForm() {
   // --- Progress (mirrors form.js updateProgress) ---
   const sections = ["sec-1", "sec-2", "sec-3", "sec-4", "sec-5"];
   function sectionComplete(i) {
-    if (i === 0) return !!location;
+    if (i === 0) return !!(state && lga && location);
     if (i === 1) return !!(name && email && phone);
     if (i === 2) return !!(guardianName && guardianPhone);
     if (i === 3) return !!(level && roomNo && paymentDate);
@@ -149,6 +158,8 @@ export default function RegistrationForm() {
     !!paymentDate &&
     new Date(paymentDate) <= new Date(new Date().setHours(23, 59, 59));
   const selectValid = {
+    state: !!state,
+    lga: !!lga,
     location: !!location,
     level: !!level,
     roomNo: !!roomNo,
@@ -178,6 +189,8 @@ export default function RegistrationForm() {
     if (!allValid) {
       setShowErrors(true);
       const order = [
+        ["state", 0],
+        ["lga", 0],
         ["location", 0],
         ["name", 1],
         ["email", 1],
@@ -209,6 +222,8 @@ export default function RegistrationForm() {
     try {
       const formData = new FormData();
       formData.append("location", location);
+      formData.append("state", state);
+      formData.append("lga", lga);
       formData.append("name", name);
       formData.append("email", email);
       formData.append("phone", phone);
@@ -244,6 +259,9 @@ export default function RegistrationForm() {
       );
       // Reset form
       setName("");
+      setState("");
+      setLga("");
+      setLocation("");
       setEmail("");
       setPhone("");
       setGuardianName("");
@@ -333,7 +351,7 @@ export default function RegistrationForm() {
             )}
             <h1 className="form-title">Application &amp; Payment Submission</h1>
             <p className="form-sub">
-              <span>{displayLocation}</span> · <span>{session}</span>
+                <span>{displayLocation}</span> · <span>{session}</span>
             </p>
           </div>
 
@@ -341,39 +359,71 @@ export default function RegistrationForm() {
             {/* Section 1 — Location */}
             <div className="form-section location-section" id="sec-1">
               <div className="section-label">
-                <span className="section-num">01</span> Campus Location
+                <span className="section-num">01</span> Find accommodation
               </div>
               <p className="location-prompt">
-                Please select the campus location clearly before entering tenant
-                information. This determines the room inventory and payment
-                amount.
+                Choose a state and local government area to see properties with available rooms.
               </p>
               <div className="fields-grid">
+                <div className="field">
+                  <label htmlFor="stateSelect">State</label>
+                  <select
+                    id="stateSelect"
+                    className={
+                      "location-select" + err(state, selectValid.state)
+                    }
+                    value={state}
+                    onChange={(e) => {
+                      setState(e.target.value);
+                      setLga("");
+                      setLocation("");
+                      setRoomNo("");
+                    }}
+                  >
+                    <option value="">Select a state</option>
+                    {NIGERIAN_STATES.map((item) => <option key={item} value={item}>{item}</option>)}
+                  </select>
+                  <small className="err-msg">Please select a state</small>
+                </div>
+                <div className="field">
+                  <label htmlFor="lgaSelect">Local Government Area</label>
+                  <select
+                    id="lgaSelect"
+                    disabled={!state}
+                    className={"location-select" + err(lga, selectValid.lga)}
+                    value={lga}
+                    onChange={(e) => {
+                      setLga(e.target.value);
+                      setLocation("");
+                      setRoomNo("");
+                    }}
+                  >
+                    <option value="">{state ? "Select an LGA" : "Select a state first"}</option>
+                    {getLocalGovernments(state).map((item) => <option key={item} value={item}>{item}</option>)}
+                  </select>
+                  <small className="err-msg">Please select a local government area</small>
+                </div>
                 <div className="field full">
-                  <label htmlFor="locationSelect">Campus Location</label>
+                  <label htmlFor="locationSelect">Property</label>
                   <select
                     id="locationSelect"
-                    className={
-                      "location-select" + err(location, selectValid.location)
-                    }
+                    disabled={!lga}
+                    className={"location-select" + err(location, selectValid.location)}
                     value={location}
                     onChange={(e) => {
                       setLocation(e.target.value);
                       setRoomNo("");
                     }}
                   >
-                    <option value="">Select Location</option>
-                    {locations
-                      .filter((item) => item.status === "active")
-                      .map((item) => (
-                        <option key={item.name} value={item.name}>
-                          {item.name}
-                        </option>
-                      ))}
+                    <option value="">{lga ? "Select a property" : "Select an LGA first"}</option>
+                    {availableProperties.map((item) => (
+                      <option key={item.id || item.name} value={item.name}>
+                        {item.name} · {item.units.filter((unit) => unit.status === "available").length} available
+                      </option>
+                    ))}
                   </select>
-                  <small className="err-msg">
-                    Please select a campus location
-                  </small>
+                  <small className="err-msg">Please select a property</small>
+                  {lga && availableProperties.length === 0 && <small className="hint">No properties with available rooms in this area yet.</small>}
                 </div>
               </div>
             </div>

@@ -42,6 +42,8 @@ export default function Receipt() {
         }
         if (!res.ok) throw new Error("Record not found");
         const d = await res.json();
+        if (d.disapproved)
+          throw new Error("This application was not approved.");
         if (d.retainPending)
           throw new Error("Receipt unavailable until admin approval.");
         setData(d);

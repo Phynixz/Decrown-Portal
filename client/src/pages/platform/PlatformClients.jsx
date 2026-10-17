@@ -19,6 +19,7 @@ import {
   UserX,
   BarChart3,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { getJSON, sendJSON } from "../../api.js";
 import OperationsWorkspace from "../OperationsWorkspace.jsx";
 
@@ -360,7 +361,7 @@ function TenantDrawer({ client, onClose }) {
     >
       <div className="h-full w-full max-w-5xl overflow-y-auto bg-bg shadow-2xl">
         <OperationsWorkspace
-          readOnly
+          directorAccess
           clientId={client._id}
           clientName={client.businessName}
         />
@@ -374,7 +375,7 @@ export default function PlatformClients() {
   const role = sessionStorage.getItem("platformRole");
   const isOwner = role === "owner";
   const canReview = isOwner || role === "reviewer";
-  const [filter, setFilter] = useState("pending_approval");
+  const [filter, setFilter] = useState("all");
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
@@ -510,13 +511,21 @@ export default function PlatformClients() {
 
                 <div className="flex gap-2 shrink-0 flex-wrap justify-end">
                   {/* Platform-owner: view/manage active tenant data */}
-                  {isOwner && c.status === "active" && c.dbName && (
-                    <button
-                      onClick={() => setDrawerClient(c)}
-                      className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-border dark:border-border-dark text-ink dark:text-ink-dark hover:bg-surface dark:hover:bg-white/5 text-xs font-semibold transition-colors"
-                    >
-                      <Settings2 className="w-3.5 h-3.5" /> Manage
-                    </button>
+                  {isOwner && c.workspaceReady && (
+                    <>
+                      <Link
+                        to={`/platform/clients/${c._id}/workspace`}
+                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-ink dark:bg-accent text-white dark:text-ink text-xs font-semibold transition-colors"
+                      >
+                        <Building2 className="w-3.5 h-3.5" /> Open workspace
+                      </Link>
+                      <button
+                        onClick={() => setDrawerClient(c)}
+                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-border dark:border-border-dark text-ink dark:text-ink-dark hover:bg-surface dark:hover:bg-white/5 text-xs font-semibold transition-colors"
+                      >
+                        <Settings2 className="w-3.5 h-3.5" /> Quick view
+                      </button>
+                    </>
                   )}
 
                   {canReview && c.status === "pending_approval" && (

@@ -50,7 +50,12 @@ if (NODE_ENV === "production") {
 }
 
 const app = express();
-const PORT = parseInt(process.env.PORT, 10) || 3000;
+// Behind Render's proxy, trust the first hop so req.ip (used by rate
+// limiting) reflects the real client instead of the proxy address.
+if (NODE_ENV === "production") app.set("trust proxy", 1);
+const parsedPort = parseInt(process.env.PORT, 10);
+// Port 0 is allowed (tests bind a random port); invalid/empty falls back.
+const PORT = Number.isInteger(parsedPort) && parsedPort >= 0 ? parsedPort : 3000;
 
 const { createTenantModelProxies } = require("./utils/tenantModels");
 const tenantModels = createTenantModelProxies();
@@ -59,7 +64,21 @@ const Client = require("./models/Client");
 const ensurePlatformOwner = require("./utils/ensurePlatformOwner");
 const platformRoutes = require("./routes/platform");
 const resolveTenant = require("./utils/tenantContext");
+const getReceiptAccessError = require("./utils/receiptAccess");
 const upload = require("./multer");
+const { rateLimit } = require("./utils/rateLimit");
+
+// Brute-force protection for credential and verification endpoints.
+const adminLoginLimiter = rateLimit({
+  name: "admin-login",
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+});
+const tenantLoginLimiter = rateLimit({
+  name: "tenant-login",
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+});
 
 app.use(cookieParser());
 app.use(
@@ -185,6 +204,22 @@ function sanitizeLocation(value, client) {
   return allowedLocations.includes(loc) ? loc : "";
 }
 
+// Older De-Crown records predate state/LGA fields. Keep those records usable
+// without rewriting production data during application startup; new properties
+// always use the explicit geography saved by the operations workspace.
+const LEGACY_PROPERTY_GEOGRAPHY = {
+  Malete: { state: "Kwara", lga: "Moro" },
+  "Ila-Orangun": { state: "Osun", lga: "Ila" },
+};
+
+function getPropertyGeography(property) {
+  const legacy = LEGACY_PROPERTY_GEOGRAPHY[property?.name] || {};
+  return {
+    state: property?.state || legacy.state || "",
+    lga: property?.lga || legacy.lga || "",
+  };
+}
+
 function sanitizeType(value) {
   const type = sanitizeString(value).toLowerCase();
   return ["tenant", "shop"].includes(type) ? type : "tenant";
@@ -217,6 +252,15 @@ function isValidObjectId(id) {
   return mongoose.Types.ObjectId.isValid(id);
 }
 
+// Log server errors with detail, but never leak internals to clients in
+// production (development keeps the message for local debugging).
+function serverError(error) {
+  console.error(error);
+  return NODE_ENV === "production"
+    ? "Server error"
+    : error?.message || "Server error";
+}
+
 function verifySuperAdmin(req, res, next) {
   verifyAdmin(req, res, () => {
     if (!['owner', 'superadmin'].includes(req.admin.role))
@@ -246,7 +290,7 @@ function verifyTenant(req, res, next) {
 }
 
 // â”€â”€â”€ Admin Auth â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-app.post("/admin/login", async (req, res) => {
+app.post("/admin/login", adminLoginLimiter, async (req, res) => {
   const email = sanitizeEmail(req.body.email);
   const password = sanitizeString(req.body.password);
   if (!email || !password)
@@ -277,7 +321,7 @@ app.post("/admin/login", async (req, res) => {
     );
     res.json({ token, name: admin.name, role: admin.role });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: serverError(e) });
   }
 });
 
@@ -286,7 +330,7 @@ app.get("/admin/list", verifySuperAdmin, async (req, res) => {
     const admins = await Admin.find({}, "-password").sort({ createdAt: 1 });
     res.json(admins);
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: serverError(e) });
   }
 });
 
@@ -308,7 +352,7 @@ app.post("/admin/create", verifySuperAdmin, async (req, res) => {
     }).save();
     res.json({ message: "Admin created", id: admin._id });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: serverError(e) });
   }
 });
 
@@ -319,12 +363,12 @@ app.delete("/admin/:id", verifySuperAdmin, async (req, res) => {
     await Admin.findByIdAndDelete(req.params.id);
     res.json({ message: "Admin removed" });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: serverError(e) });
   }
 });
 
 // â”€â”€â”€ Tenant Auth â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-app.post("/tenant/login", async (req, res) => {
+app.post("/tenant/login", tenantLoginLimiter, async (req, res) => {
   const email = sanitizeEmail(req.body.email);
   const phone = sanitizePhone(req.body.phone);
   if (!email || !phone)
@@ -368,7 +412,7 @@ app.post("/tenant/login", async (req, res) => {
       session: user.session,
     });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: serverError(e) });
   }
 });
 
@@ -386,7 +430,7 @@ app.get("/tenant/me", verifyTenant, async (req, res) => {
       });
     res.json(user);
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: serverError(e) });
   }
 });
 
@@ -403,11 +447,11 @@ app.get("/tenant/history", verifyTenant, async (req, res) => {
     const records = await User.find({ email: req.tenant.email })
       .sort({ createdAt: -1 })
       .select(
-        "session roomNo amount paymentDate paymentProof agreementCopy retainPending renewedFrom _id type level",
+        "session roomNo amount paymentDate paymentProof agreementCopy retainPending disapproved disapprovalReason renewedFrom _id type level",
       );
     res.json(records);
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: serverError(e) });
   }
 });
 
@@ -479,7 +523,7 @@ app.post("/tenant/retain", verifyTenant, async (req, res) => {
       return res
         .status(400)
         .json({ error: "Already retained for next session" });
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: serverError(e) });
   }
 });
 
@@ -515,7 +559,7 @@ app.post(
       await record.save();
       res.json({ message: "Receipt uploaded. Awaiting admin approval." });
     } catch (e) {
-      res.status(500).json({ error: e.message });
+      res.status(500).json({ error: serverError(e) });
     }
   },
 );
@@ -540,7 +584,7 @@ app.put("/admin/grant-reupload/:id", verifyAdmin, async (req, res) => {
 
     res.json({ message: "Re-upload access granted for 24 hours" });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: serverError(e) });
   }
 });
 // Tenant re-uploads a specific document (admin must have granted access)
@@ -611,21 +655,16 @@ app.put(
 
       // Log the change
       if (!user.changeLog) user.changeLog = [];
-      ((locations = settings.map((setting) => ({
-        name: setting.location,
-        rentAmount: setting.rentAmount,
-        roomCount: setting.roomCount ?? 10,
-      }))),
-        user.changeLog.push({
-          field: field,
-          changedAt: new Date(),
-          note: field + " updated by tenant",
-        }));
+      user.changeLog.push({
+        field: field,
+        changedAt: new Date(),
+        note: field + " updated by tenant",
+      });
 
       await user.save();
       res.json({ message: "Document updated successfully" });
     } catch (e) {
-      res.status(500).json({ error: e.message });
+      res.status(500).json({ error: serverError(e) });
     }
   },
 );
@@ -662,11 +701,12 @@ app.get("/current-session", async (req, res) => {
 
 app.get("/tenant-config", async (req, res) => {
   try {
-    let properties = await Property.find().sort({ name: 1 });
-    if (!properties.length) {
-      const locations = req.tenantClient?.locations?.length
-        ? req.tenantClient.locations
-        : ["Malete", "Ila-Orangun"];
+    const storedProperties = await Property.find().sort({ name: 1 });
+    let properties = storedProperties.filter(
+      (property) => property.status === "active",
+    );
+    if (!storedProperties.length && !req.tenantClient) {
+      const locations = ["Malete", "Ila-Orangun"];
       properties = locations.map((name) => ({
         _id: null,
         name,
@@ -695,6 +735,7 @@ app.get("/tenant-config", async (req, res) => {
         return {
           id: property._id,
           name: property.name,
+          ...getPropertyGeography(property),
           propertyType: property.propertyType,
           status: property.status,
           address: property.address,
@@ -724,7 +765,7 @@ app.get("/tenant-config", async (req, res) => {
       locations,
     });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: serverError(e) });
   }
 });
 
@@ -751,7 +792,7 @@ app.get("/current-amount", async (req, res) => {
         : null;
     res.json({ amount: unit?.rentAmount ?? s.rentAmount });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: serverError(e) });
   }
 });
 
@@ -760,6 +801,9 @@ app.get("/user/:id", async (req, res) => {
   try {
     const u = await User.findById(req.params.id);
     if (!u) return res.status(404).json({ error: "Not found" });
+    const receiptAccessError = getReceiptAccessError(u);
+    if (receiptAccessError)
+      return res.status(403).json({ error: receiptAccessError });
     // Receipt is public, but a revoked tenant who sends their token must not
     // be able to view it (the portal blocks revoked logins; this is defense
     // in depth for sessions that are still active).
@@ -796,13 +840,15 @@ app.get("/user/:id", async (req, res) => {
       passport: u.passport,
       paymentProof: u.paymentProof,
       retainPending: u.retainPending,
+      disapproved: u.disapproved,
+      disapprovalReason: u.disapprovalReason,
       renewedFrom: u.renewedFrom,
       type: u.type,
       receiptNumber: u.receiptNumber,
       createdAt: u.createdAt,
     });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: serverError(e) });
   }
 });
 
@@ -817,8 +863,21 @@ async function generateReceiptNumber(location) {
             .slice(0, 3)
             .toUpperCase() || "RCP";
   const year = new Date().getFullYear();
-  const count = await User.countDocuments({ location });
-  const num = String(count + 1).padStart(4, "0");
+  // Monotonic sequence per location+year. The old countDocuments() approach
+  // regressed after record deletions and collided under concurrency; take
+  // the highest number ever issued instead. (Two truly simultaneous submits
+  // could still tie — a unique index on receiptNumber is the follow-up once
+  // legacy data is verified clean.)
+  const issuedPattern = new RegExp(`^${prefix}-${year}-(\\d+)$`);
+  const [latest] = await User.aggregate([
+    { $match: { location, receiptNumber: { $regex: issuedPattern } } },
+    // $regexFind: captures[0] is the first (only) group — the sequence digits
+    { $project: { found: { $regexFind: { input: "$receiptNumber", regex: issuedPattern } } } },
+    { $project: { sequence: { $toInt: { $arrayElemAt: ["$found.captures", 0] } } } },
+    { $sort: { sequence: -1 } },
+    { $limit: 1 },
+  ]);
+  const num = String((latest?.sequence || 0) + 1).padStart(4, "0");
   return `${prefix}-${year}-${num}`;
 }
 app.post(
@@ -844,6 +903,8 @@ app.post(
         guardianName,
         guardianPhone,
         level,
+        state,
+        lga,
         roomNo,
         paymentDate,
         type = "tenant",
@@ -889,6 +950,8 @@ app.post(
       }
 
       const safeLocation = sanitizeLocation(location, req.tenantClient);
+      const safeState = sanitizeString(state);
+      const safeLga = sanitizeString(lga);
       const safeName = sanitizeString(name);
       const safeEmail = sanitizeEmail(email);
       const safePhone = sanitizePhone(phone);
@@ -901,6 +964,8 @@ app.post(
 
       if (!safeLocation)
         return res.status(400).json({ error: "Invalid location" });
+      if (!safeState || !safeLga)
+        return res.status(400).json({ error: "Select a state and local government area" });
 
       const session = getSession();
       const setting = await Settings.findOne({ location: safeLocation });
@@ -910,6 +975,14 @@ app.post(
         name: safeLocation,
         status: "active",
       });
+      const geography = getPropertyGeography(property);
+      // Match the submitted location against the saved property, while still
+      // accepting the known legacy campuses whose geography is inferred above.
+      if (
+        property &&
+        (geography.state !== safeState || geography.lga !== safeLga)
+      )
+        return res.status(400).json({ error: "Property does not match the selected location" });
       const unit = property
         ? await Unit.findOne({
             propertyId: property._id,
@@ -961,7 +1034,7 @@ app.post(
           req.files?.agreementCopy?.[0]?.path ||
           null,
         retainPending: true,
-        receiptNumber: await generateReceiptNumber(location),
+        receiptNumber: await generateReceiptNumber(safeLocation),
       }).save();
 
       res.json({
@@ -978,7 +1051,7 @@ app.post(
               : "Phone already registered",
         });
       }
-      res.status(500).json({ error: err.message });
+      res.status(500).json({ error: serverError(err) });
     }
   },
 );
@@ -1001,7 +1074,7 @@ app.get("/users", verifyAdmin, async (req, res) => {
     );
     res.json(users);
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: serverError(e) });
   }
 });
 
@@ -1012,7 +1085,10 @@ app.get("/admin/get-amounts", verifyAdmin, async (req, res) => {
     const r = {
       malete: null,
       ila: null,
-      registrationOpen: state ? state.open : false,
+      // Default must match isRegistrationOpen()/current-session (open unless
+      // explicitly closed) — this used to report "closed" while the public
+      // registration form accepted submissions.
+      registrationOpen: state ? state.open : true,
       locations: settings.map((setting) => ({
         name: setting.location,
         rentAmount: setting.rentAmount,
@@ -1026,7 +1102,7 @@ app.get("/admin/get-amounts", verifyAdmin, async (req, res) => {
     });
     res.json(r);
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: serverError(e) });
   }
 });
 
@@ -1044,13 +1120,15 @@ app.get("/admin/properties", verifyAdmin, async (req, res) => {
     );
     res.json(result);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: serverError(error) });
   }
 });
 
 app.post("/admin/properties", verifyAdmin, async (req, res) => {
   try {
     const name = sanitizeString(req.body.name);
+    const state = sanitizeString(req.body.state);
+    const lga = sanitizeString(req.body.lga);
     const propertyType = sanitizeString(
       req.body.propertyType || "hostel",
     ).toLowerCase();
@@ -1067,6 +1145,10 @@ app.post("/admin/properties", verifyAdmin, async (req, res) => {
     if (
       !name ||
       name.length > 100 ||
+      !state ||
+      state.length > 60 ||
+      !lga ||
+      lga.length > 80 ||
       !supportedTypes.includes(propertyType) ||
       !Number.isFinite(rentAmount) ||
       rentAmount < 0
@@ -1076,7 +1158,7 @@ app.post("/admin/properties", verifyAdmin, async (req, res) => {
     if (await Property.findOne({ name }))
       return res.status(409).json({ error: "Property already exists" });
 
-    const property = await Property.create({ name, propertyType, address });
+    const property = await Property.create({ name, state, lga, propertyType, address });
     await Settings.create({ location: name, rentAmount, roomCount: 0 });
     if (req.tenantClient) {
       await Client.updateOne(
@@ -1088,7 +1170,7 @@ app.post("/admin/properties", verifyAdmin, async (req, res) => {
   } catch (error) {
     if (error.code === 11000)
       return res.status(409).json({ error: "Property already exists" });
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: serverError(error) });
   }
 });
 
@@ -1099,6 +1181,14 @@ app.put("/admin/properties/:id", verifyAdmin, async (req, res) => {
     const updates = {};
     if (req.body.address != null)
       updates.address = sanitizeString(req.body.address);
+    for (const field of ["state", "lga"]) {
+      if (req.body[field] != null) {
+        const value = sanitizeString(req.body[field]);
+        if (!value || value.length > (field === "state" ? 60 : 80))
+          return res.status(400).json({ error: `Invalid property ${field}` });
+        updates[field] = value;
+      }
+    }
     if (req.body.propertyType != null) {
       const type = sanitizeString(req.body.propertyType).toLowerCase();
       if (
@@ -1126,7 +1216,7 @@ app.put("/admin/properties/:id", verifyAdmin, async (req, res) => {
     if (!property) return res.status(404).json({ error: "Property not found" });
     res.json(property);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: serverError(error) });
   }
 });
 
@@ -1172,7 +1262,7 @@ app.post("/admin/properties/:id/units", verifyAdmin, async (req, res) => {
       return res
         .status(409)
         .json({ error: "Unit code already exists for this property" });
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: serverError(error) });
   }
 });
 
@@ -1210,7 +1300,7 @@ app.put(
         return res
           .status(409)
           .json({ error: "Unit code already exists for this property" });
-      res.status(400).json({ error: error.message });
+      res.status(400).json({ error: serverError(error) });
     }
   },
 );
@@ -1234,7 +1324,7 @@ app.delete(
       await unit.save();
       res.json({ message: "Unit archived" });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: serverError(error) });
     }
   },
 );
@@ -1257,7 +1347,7 @@ app.put("/admin/set-registration", verifyAdmin, async (req, res) => {
       session: state.session,
     });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: serverError(e) });
   }
 });
 
@@ -1303,7 +1393,7 @@ app.put("/admin/set-amount", verifyAdmin, async (req, res) => {
       );
     res.json({ message: "Updated" });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: serverError(e) });
   }
 });
 
@@ -1353,7 +1443,7 @@ app.post("/renew/:id", verifyAdmin, async (req, res) => {
       return res
         .status(400)
         .json({ error: "Already renewed for next session" });
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: serverError(e) });
   }
 });
 
@@ -1367,7 +1457,7 @@ app.put("/approve-retain/:id", verifyAdmin, async (req, res) => {
     });
     res.json({ message: "Tenant approved" });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: serverError(e) });
   }
 });
 
@@ -1382,7 +1472,7 @@ app.put("/disapprove/:id", verifyAdmin, async (req, res) => {
     });
     res.json({ message: "Application rejected" });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: serverError(e) });
   }
 });
 
@@ -1469,7 +1559,7 @@ app.get("/export-users", verifyAdmin, async (req, res) => {
     );
     res.send(buf);
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: serverError(e) });
   }
 });
 
@@ -1484,7 +1574,7 @@ app.put("/revoke/:id", verifyAdmin, async (req, res) => {
     });
     res.json({ message: "Tenant revoked" });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: serverError(e) });
   }
 });
 
@@ -1498,7 +1588,7 @@ app.put("/reinstate/:id", verifyAdmin, async (req, res) => {
     });
     res.json({ message: "Tenant reinstated" });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: serverError(e) });
   }
 });
 
@@ -1509,7 +1599,7 @@ app.get("/admin/user/:id", verifyAdmin, async (req, res) => {
     if (!user) return res.status(404).json({ error: "User not found" });
     res.json(user);
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: serverError(e) });
   }
 });
 
@@ -1588,7 +1678,7 @@ app.put("/admin/user/:id", verifyAdmin, async (req, res) => {
     await user.save();
     res.json({ message: "User updated successfully", user });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: serverError(e) });
   }
 });
 
@@ -1690,13 +1780,19 @@ async function connectDatabase() {
   }
 }
 
-connectDatabase()
+const serverStartup = connectDatabase()
   .then(async (uri) => {
     console.log("MongoDB connected");
     await seed();
-    app.listen(PORT, () => console.log(` Server on port ${PORT}`));
+    return app.listen(PORT, () => console.log(` Server on port ${PORT}`));
   })
   .catch((e) => {
     console.error(e);
     process.exit(1);
   });
+
+// Exported for integration tests: `await app.startup` resolves to the
+// listening HTTP server. Normal boots (node server.js / index.js) are
+// unaffected — the startup chain still runs on require.
+module.exports = app;
+module.exports.startup = serverStartup;

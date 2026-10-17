@@ -4,7 +4,7 @@ async function provisionClient(client) {
   const dbName = client.dbName || `tenant_${client.subdomain}`;
   const { Admin, Property, Settings, Unit } = getTenantModels(dbName);
 
-  for (const location of client.locations) {
+  for (const location of client.locations || []) {
     let property = await Property.findOne({ name: location });
     if (!property) {
       property = await Property.create({
