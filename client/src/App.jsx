@@ -20,22 +20,7 @@ import PlatformSettings from "./pages/platform/PlatformSettings.jsx";
 import LandingPage from "./pages/LandingPage.jsx";
 import { getJSON } from "./api.js";
 
-import { TenantProvider, useTenant } from "./tenantContext.jsx";
-
-function HomeRedirect() {
-  const { isTenant, loading } = useTenant();
-  if (loading) {
-    return (
-      <main
-        className="grid min-h-screen place-items-center bg-bg text-sm text-muted"
-        role="status"
-      >
-        Loading workspace…
-      </main>
-    );
-  }
-  return isTenant ? <Navigate to="/login" replace /> : <LandingPage />;
-}
+import { TenantProvider } from "./tenantContext.jsx";
 
 function DirectorWorkspaceRoute() {
   const { clientId } = useParams();
@@ -84,7 +69,7 @@ export default function App() {
   return (
     <TenantProvider>
       <Routes>
-      <Route path="/" element={<HomeRedirect />} />
+      <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<AdminLogin />} />
       <Route path="/signup" element={<ClientSignup />} />
       <Route path="/register" element={<RegistrationForm />} />
@@ -117,7 +102,8 @@ export default function App() {
       <Route path="/platform/queue" element={<Navigate to="/platform/clients" replace />} />
       <Route path="/operator/*" element={<Navigate to="/platform" replace />} />
 
-      <Route path="*" element={<Navigate to="/platform/login" replace />} />
+      {/* Unknown public URLs return to the public homepage, not an admin login. */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   </TenantProvider>
 );
