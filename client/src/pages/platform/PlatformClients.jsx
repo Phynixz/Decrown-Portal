@@ -60,6 +60,7 @@ function LegacyTenantDrawer({ client, onClose }) {
   const [loading, setLoading] = useState(false);
   const [loadingProps, setLoadingProps] = useState(false);
   const [busyUserId, setBusyUserId] = useState("");
+  const [busyPropertyId, setBusyPropertyId] = useState("");
   const [err, setErr] = useState("");
 
   const token = getPlatformToken();
@@ -122,6 +123,24 @@ function LegacyTenantDrawer({ client, onClose }) {
       alert("Error: " + e.message);
     } finally {
       setBusyUserId("");
+    }
+  }
+
+  async function reviewProperty(property, status) {
+    const action = status === "active" ? "approve" : "reject";
+    const reason = status === "rejected" ? (prompt("Reason for rejecting this hostel (optional):") || "") : "";
+    if (!confirm(`${action === "approve" ? "Approve" : "Reject"} ${property.name}?`)) return;
+    setBusyPropertyId(property._id);
+    try {
+      const updated = await sendJSON("PUT", `${base}/properties/${property._id}`, {
+        status,
+        ...(reason ? { reviewNote: reason } : {}),
+      }, token);
+      setProps((current) => current.map((item) => item._id === property._id ? { ...item, ...updated } : item));
+    } catch (error) {
+      alert(`Could not ${action} hostel: ${error.message}`);
+    } finally {
+      setBusyPropertyId("");
     }
   }
 
@@ -318,10 +337,16 @@ function LegacyTenantDrawer({ client, onClose }) {
                   >
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="text-xs font-semibold text-ink dark:text-ink-dark">{p.name}</h4>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-white/10 text-muted dark:text-muted-dark">
-                        {p.units?.length ?? 0} units
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full ${p.status === "active" ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400" : p.status === "pending_review" ? "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400" : "bg-slate-100 dark:bg-white/10 text-muted dark:text-muted-dark"}`}>
+                          {(p.status || "active").replaceAll("_", " ")}
+                        </span>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-white/10 text-muted dark:text-muted-dark">
+                          {p.units?.length ?? 0} rooms
+                        </span>
+                      </div>
                     </div>
+                    {(p.address || p.lga || p.state) && <p className="mb-3 text-[11px] text-muted dark:text-muted-dark">{[p.address, p.lga, p.state].filter(Boolean).join(", ")}</p>}
                     <div className="grid grid-cols-2 gap-1">
                       {(p.units || []).map((u) => (
                         <div
@@ -343,6 +368,17 @@ function LegacyTenantDrawer({ client, onClose }) {
                         </div>
                       ))}
                     </div>
+                    {p.status === "pending_review" && (
+                      <div className="mt-3 flex gap-2 border-t border-border dark:border-border-dark pt-3">
+                        <button disabled={busyPropertyId === p._id} onClick={() => reviewProperty(p, "active")} className="rounded-lg bg-emerald-600 px-3 py-1.5 text-[11px] font-semibold text-white disabled:opacity-50">
+                          {busyPropertyId === p._id ? "Saving…" : "Approve hostel"}
+                        </button>
+                        <button disabled={busyPropertyId === p._id} onClick={() => reviewProperty(p, "rejected")} className="rounded-lg bg-red-600 px-3 py-1.5 text-[11px] font-semibold text-white disabled:opacity-50">
+                          Reject
+                        </button>
+                      </div>
+                    )}
+                    {p.status === "rejected" && p.reviewNote && <p className="mt-2 text-[11px] text-red-600 dark:text-red-400">Review note: {p.reviewNote}</p>}
                   </div>
                 ))}
               </div>
@@ -426,11 +462,23 @@ export default function PlatformClients() {
   const [err, setErr] = useState("");
   const [busyId, setBusyId] = useState("");
   const [drawerClient, setDrawerClient] = useState(null);
+  const [pendingHostels, setPendingHostels] = useState([]);
+  const [loadingHostels, setLoadingHostels] = useState(false);
+  const [hostelQueueError, setHostelQueueError] = useState("");
 
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter]);
+
+  useEffect(() => {
+    if (!isOwner) return;
+    setLoadingHostels(true);
+    getJSON("/platform/hostels/pending-review", getPlatformToken())
+      .then(setPendingHostels)
+      .catch((error) => setHostelQueueError(error.message))
+      .finally(() => setLoadingHostels(false));
+  }, [isOwner]);
 
   async function load() {
     setLoading(true);
@@ -459,6 +507,25 @@ export default function PlatformClients() {
       load();
     } catch (e) {
       alert("Error: " + e.message);
+    } finally {
+      setBusyId("");
+    }
+  }
+
+  async function reviewHostel(item, status) {
+    const property = item.property;
+    const action = status === "active" ? "approve" : "reject";
+    const reviewNote = status === "rejected" ? (prompt("Reason for rejecting this hostel (optional):") || "") : "";
+    if (!confirm(`${action === "approve" ? "Approve" : "Reject"} ${property.name} submitted by ${item.businessName}?`)) return;
+    setBusyId(String(property._id));
+    try {
+      await sendJSON("PUT", `/platform/tenants/${item.clientId}/properties/${property._id}`, {
+        status,
+        reviewNote,
+      }, getPlatformToken());
+      setPendingHostels((current) => current.filter((entry) => String(entry.property._id) !== String(property._id)));
+    } catch (error) {
+      alert(`Could not ${action} hostel: ${error.message}`);
     } finally {
       setBusyId("");
     }
@@ -498,9 +565,41 @@ export default function PlatformClients() {
           Clients
         </h1>
         <p className="text-sm text-muted dark:text-muted-dark mt-1">
-          Review sign-ups and manage every business on the platform.
+          Manage landlord accounts and review every hostel before it becomes public.
         </p>
       </div>
+
+      {isOwner && (
+        <section className="mb-7 rounded-xl2 border border-border bg-card p-5 shadow-card dark:border-border-dark dark:bg-card-dark">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 className="text-sm font-semibold text-ink dark:text-ink-dark">Hostels awaiting review</h2>
+              <p className="mt-1 text-xs text-muted dark:text-muted-dark">Landlords can sign up immediately. Their hostels stay hidden from tenants until you approve them.</p>
+            </div>
+            <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">{loadingHostels ? "Loading…" : pendingHostels.length} pending</span>
+          </div>
+          {hostelQueueError && <p role="alert" className="text-sm text-red-600 dark:text-red-400">{hostelQueueError}</p>}
+          {!loadingHostels && !hostelQueueError && pendingHostels.length === 0 && <p className="rounded-lg border border-dashed border-border p-5 text-center text-sm text-muted dark:border-border-dark dark:text-muted-dark">No hostels are waiting for approval.</p>}
+          <div className="grid gap-3 md:grid-cols-2">
+            {pendingHostels.map((item) => (
+              <article key={`${item.clientId}-${item.property._id}`} className="rounded-xl border border-border p-4 dark:border-border-dark">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-semibold text-ink dark:text-ink-dark">{item.property.name}</h3>
+                    <p className="mt-1 text-xs text-muted dark:text-muted-dark">Submitted by {item.businessName} · {item.contactName}</p>
+                    <p className="mt-1 text-xs text-muted dark:text-muted-dark">{[item.property.address, item.property.lga, item.property.state].filter(Boolean).join(", ")}</p>
+                  </div>
+                  <span className="shrink-0 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">Pending</span>
+                </div>
+                <div className="mt-3 flex gap-2">
+                  <button disabled={busyId === String(item.property._id)} onClick={() => reviewHostel(item, "active")} className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"><CheckCircle2 className="h-3.5 w-3.5" /> Approve hostel</button>
+                  <button disabled={busyId === String(item.property._id)} onClick={() => reviewHostel(item, "rejected")} className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"><XCircle className="h-3.5 w-3.5" /> Reject</button>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
 
       <div className="flex flex-wrap gap-2 mb-6">
         {FILTERS.map((f) => (

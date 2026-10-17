@@ -70,8 +70,8 @@ export default function PropertyForm() {
   const inputClass = "mt-1.5 w-full rounded-lg border border-border bg-input px-3.5 py-2.5 text-sm text-text outline-none focus:border-navy focus:ring-2 focus:ring-navy/10";
   if (saved) return (
     <div className="min-h-screen bg-bg px-4 py-12 font-sans text-text sm:px-6"><div className="mx-auto max-w-2xl rounded-2xl border border-border bg-card p-5 text-center shadow-sm sm:p-8">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-terra">Hostel saved</p><h1 className="mt-3 font-display text-3xl">Your hostel is ready.</h1>
-      <p className="mx-auto mt-3 max-w-md text-sm text-muted">{property.name} has been added to {businessName || "your portfolio"}, with {property.roomCount} individual rooms.</p>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-terra">Submitted for review</p><h1 className="mt-3 font-display text-3xl">Your hostel is awaiting approval.</h1>
+      <p className="mx-auto mt-3 max-w-md text-sm text-muted">{property.name} has been submitted to {businessName || "De-Crown Cottage"} with {property.roomCount} individual rooms. It will appear to tenants after the De-Crown team reviews and approves it.</p>
       <div className="mt-6 flex flex-wrap justify-center gap-3"><Link to="/admin" className="rounded-lg bg-navy px-4 py-2.5 text-sm font-semibold text-white">View dashboard</Link><button onClick={() => { setSaved(false); setProperty({ name: "", address: "", state: "", lga: "", rentAmount: "", roomCount: "" }); }} className="rounded-lg border border-border px-4 py-2.5 text-sm font-semibold">Add another hostel</button></div>
     </div></div>
   );
@@ -81,7 +81,7 @@ export default function PropertyForm() {
       <header className="border-b border-border bg-card"><div className="mx-auto flex h-16 max-w-4xl items-center justify-between px-4 sm:px-6"><Link to="/admin" className="inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-text"><ArrowLeft className="h-4 w-4" /> Dashboard</Link><span className="font-display text-lg">Add hostel</span></div></header>
       <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-terra">Hostel setup</p><h1 className="mt-2 font-display text-3xl sm:text-4xl">Add your hostel and rooms.</h1>
-        <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted">For now, this platform supports hostels with separate rooms. Enter the total room count once; we’ll create Room 1, Room 2, Room 3, and so on. No need to invent unit codes.</p>
+        <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted">Submit your hostel details for De-Crown review. It will not be visible to tenants until approved. Enter the total room count once; we’ll create Room 1, Room 2, Room 3, and so on.</p>
         {error && <div role="alert" aria-live="assertive" className="mt-6 rounded-lg border-l-4 border-danger bg-danger-faint px-4 py-3 text-sm leading-relaxed text-danger">{error}</div>}
         {partialSave && <div className="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950"><p className="font-semibold">Partial setup: {createdRooms} room(s) created.</p><p className="mt-1">Do not submit the form again, because the hostel already exists.</p><Link to="/admin/operations" className="mt-3 inline-flex font-semibold underline underline-offset-4">Open Operations to finish room setup</Link></div>}
         <form onSubmit={submit} className="mt-8 space-y-6">
@@ -96,7 +96,7 @@ export default function PropertyForm() {
               <div><label className="block text-sm font-semibold" htmlFor="room-rent">Rent per room (₦)</label><input id="room-rent" name="rentAmount" type="number" required min="1" step="1" value={property.rentAmount} onChange={updateProperty} placeholder="e.g. 150000" className={inputClass} /></div></div>
             {Number(property.roomCount) > 0 && Number(property.roomCount) <= 1000 && <p className="rounded-lg bg-surface px-4 py-3 text-sm text-muted">We’ll create <strong>{Number(property.roomCount)} rooms</strong>, numbered Room 1 to Room {Number(property.roomCount)}. The rent entered above is the default rent for each room.</p>}
           </section>
-          <button disabled={busy || partialSave} className="w-full rounded-lg bg-navy px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-navy2 disabled:cursor-not-allowed disabled:opacity-50">{busy ? "Creating hostel and rooms…" : partialSave ? "Hostel already created" : "Create hostel and rooms"}</button>
+          <button disabled={busy || partialSave} className="w-full rounded-lg bg-navy px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-navy2 disabled:cursor-not-allowed disabled:opacity-50">{busy ? "Submitting hostel…" : partialSave ? "Hostel already submitted" : "Submit hostel for review"}</button>
         </form>
       </main>
     </div>

@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>List Your Property | Haven Properties</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@500;600&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <style type="text/tailwindcss">
+      @theme {
+        --color-ink: #1a1a18;
+        --color-paper: #ffffff;
+        --color-surface: #f6f5f2;
+        --color-border: #e7e5e0;
+        --color-muted: #78766f;
+        --color-accent: #a8482a;
+        --color-accent-dark: #8a3a21;
+        --font-display: "Fraunces", ui-serif, Georgia, serif;
+        --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+        --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+      }
+    </style>
+  </head>
+  <body class="bg-white font-sans text-ink antialiased">
+    <!-- ===================== HEADER ===================== -->
+    <header class="border-b border-border bg-white">
+      <div
+        class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8"
+      >
+        <a href="#top" class="flex items-baseline gap-2.5">
+          <span
+            class="font-display text-[26px] font-semibold tracking-tight text-ink"
+            >Marlstone</span
+          >
+          <span
+            class="hidden font-mono text-[11px] uppercase tracking-widest2 text-sage sm:inline"
+            >Property Group</span
+          >
+        </a>
+
+        <nav class="hidden items-center gap-8 md:flex">
+          <a
+            href="index.html"
+            class="text-[14px] font-medium text-muted transition-colors hover:text-ink"
+            >Home</a
+          >
+          <a
+            href="index.html?listingType=sale"
+            class="text-[14px] font-medium text-muted transition-colors hover:text-ink"
+            >Buy</a
+          >
+          <a
+            href="index.html?listingType=rent"
+            class="text-[14px] font-medium text-muted transition-colors hover:text-ink"
+            >Rent</a
+          >
+        </nav>
+
+        <div class="flex items-center gap-3">
+          <a
+            href="list-property.html"
+            class="hidden rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-white sm:inline-flex"
+            >List Your Property</a
+          >
+          <button
+            type="button"
+            id="mobile-menu-btn"
+            class="flex h-9 w-9 items-center justify-center rounded-lg text-ink md:hidden"
+            aria-label="Open menu"
+            aria-expanded="false"
+          >
+            <span class="text-[20px] leading-none">☰</span>
+          </button>
+        </div>
+      </div>
+
+      <div
+        id="mobile-menu"
+        class="hidden border-t border-border px-4 py-3 md:hidden"
+      >
+        <a href="index.html" class="block py-2 text-[14px] font-medium text-ink"
+          >Home</a
+        >
+        <a
+          href="index.html?listingType=sale"
+          class="block py-2 text-[14px] font-medium text-ink"
+          >Buy</a
+        >
+        <a
+          href="index.html?listingType=rent"
+          class="block py-2 text-[14px] font-medium text-ink"
+          >Rent</a
+        >
+        <a
+          href="list-property.html"
+          class="mt-2 block rounded-lg bg-ink px-4 py-2.5 text-center text-[13px] font-medium text-white"
+          >List Your Property</a
+        >
+      </div>
+    </header>
+
+    <main class="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
+      <p
+        class="text-[12px] font-semibold uppercase tracking-[0.14em] text-accent"
+      >
+        List a Property
+      </p>
+      <h1
+        class="mt-2 font-display text-[30px] font-medium leading-tight text-ink sm:text-[34px]"
+      >
+        Tell us about your property
+      </h1>
+      <p class="mt-3 max-w-xl text-[14px] leading-relaxed text-muted">
+        Fill in the details below and our team will review your listing. This is
+        a demo submission form — entries aren't saved to a live database yet.
+      </p>
+
+      <!-- ===================== FORM ===================== -->
+      <form id="listing-form" class="mt-10 space-y-8">
+        <!-- Basic info -->
+        <div class="space-y-5 border-b border-border pb-8">
+          <div>
+            <label for="lp-title" class="block text-[13px] font-medium text-ink"
+              >Property Title</label
+            >
+            <input
+              type="text"
+              id="lp-title"
+              name="title"
+              required
+              placeholder="e.g. 4 Bedroom Detached Duplex"
+              class="mt-1.5 w-full rounded-lg border border-border bg-white px-3.5 py-2.5 text-[14px] text-ink placeholder-muted/60 focus:border-ink/30 focus:outline-none focus:ring-[3px] focus:ring-ink/[0.06]"
+            />
+          </div>
+
+          <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div>
+              <label
+                for="lp-type"
+                class="block text-[13px] font-medium text-ink"
+                >Property Type</label
+              >
+              <select
+                id="lp-type"
+                name="propertyType"
+                required
+                class="mt-1.5 w-full rounded-lg border border-border bg-white px-3.5 py-2.5 text-[14px] text-ink focus:border-ink/30 focus:outline-none focus:ring-[3px] focus:ring-ink/[0.06]"
+              >
+                <option value="">Select type</option>
+                <option>House</option>
+                <option>Apartment</option>
+                <option>Duplex</option>
+                <option>Bungalow</option>
+                <option>Terrace</option>
+                <option>Penthouse</option>
+                <option>Office</option>
+                <option>Land</option>
+              </select>
+            </div>
+            <div>
+              <span class="block text-[13px] font-medium text-ink"
+                >Listing Type</span
+              >
+              <div
+                class="mt-1.5 flex overflow-hidden rounded-lg border border-border"
+              >
+                <label
+                  class="flex-1 cursor-pointer px-4 py-2.5 text-center text-[13px] font-medium text-muted transition-colors has-[:checked]:bg-ink has-[:checked]:text-white"
+                >
+                  <input
+                    type="radio"
+                    name="listingType"
+                    value="sale"
+                    checked
+                    class="sr-only"
+                  />
+                  Sale
+                </label>
+                <label
+                  class="flex-1 cursor-pointer border-l border-border px-4 py-2.5 text-center text-[13px] font-medium text-muted transition-colors has-[:checked]:bg-ink has-[:checked]:text-white"
+                >
+                  <input
+                    type="radio"
+                    name="listingType"
+                    value="rent"
+                    class="sr-only"
+                  />
+                  Rent
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label
+              for="lp-location"
+              class="block text-[13px] font-medium text-ink"
+              >Location</label
+            >
+            <input
+              type="text"
+              id="lp-location"
+              name="location"
+              required
+              placeholder="e.g. Lekki Phase 1, Lagos"
+              class="mt-1.5 w-full rounded-lg border border-border bg-white px-3.5 py-2.5 text-[14px] text-ink placeholder-muted/60 focus:border-ink/30 focus:outline-none focus:ring-[3px] focus:ring-ink/[0.06]"
+            />
+          </div>
+
+          <div id="period-wrap" class="hidden">
+            <label
+              for="lp-period"
+              class="block text-[13px] font-medium text-ink"
+              >Rent Period</label
+            >
+            <select
+              id="lp-period"
+              name="period"
+              class="mt-1.5 w-full max-w-[220px] rounded-lg border border-border bg-white px-3.5 py-2.5 text-[14px] text-ink focus:border-ink/30 focus:outline-none focus:ring-[3px] focus:ring-ink/[0.06]"
+            >
+              <option value="year">Per Year</option>
+              <option value="month">Per Month</option>
+            </select>
+          </div>
+
+          <div class="grid grid-cols-2 gap-5 sm:grid-cols-4">
+            <div class="col-span-2 sm:col-span-1">
+              <label
+                for="lp-price"
+                class="block text-[13px] font-medium text-ink"
+                >Price (₦)</label
+              >
+              <input
+                type="number"
+                id="lp-price"
+                name="price"
+                min="0"
+                required
+                placeholder="85000000"
+                class="mt-1.5 w-full rounded-lg border border-border bg-white px-3.5 py-2.5 text-[14px] text-ink placeholder-muted/60 focus:border-ink/30 focus:outline-none focus:ring-[3px] focus:ring-ink/[0.06]"
+              />
+            </div>
+            <div>
+              <label
+                for="lp-beds"
+                class="block text-[13px] font-medium text-ink"
+                >Bedrooms</label
+              >
+              <input
+                type="number"
+                id="lp-beds"
+                name="bedrooms"
+                min="0"
+                placeholder="0"
+                class="mt-1.5 w-full rounded-lg border border-border bg-white px-3.5 py-2.5 text-[14px] text-ink placeholder-muted/60 focus:border-ink/30 focus:outline-none focus:ring-[3px] focus:ring-ink/[0.06]"
+              />
+            </div>
+            <div>
+              <label
+                for="lp-baths"
+                class="block text-[13px] font-medium text-ink"
+                >Bathrooms</label
+              >
+              <input
+                type="number"
+                id="lp-baths"
+                name="bathrooms"
+                min="0"
+                placeholder="0"
+                class="mt-1.5 w-full rounded-lg border border-border bg-white px-3.5 py-2.5 text-[14px] text-ink placeholder-muted/60 focus:border-ink/30 focus:outline-none focus:ring-[3px] focus:ring-ink/[0.06]"
+              />
+            </div>
+          </div>
+
+          <div class="max-w-[220px]">
+            <label for="lp-area" class="block text-[13px] font-medium text-ink"
+              >Area (optional)</label
+            >
+            <input
+              type="text"
+              id="lp-area"
+              name="area"
+              placeholder="e.g. 450 sqm"
+              class="mt-1.5 w-full rounded-lg border border-border bg-white px-3.5 py-2.5 text-[14px] text-ink placeholder-muted/60 focus:border-ink/30 focus:outline-none focus:ring-[3px] focus:ring-ink/[0.06]"
+            />
+          </div>
+        </div>
+
+        <!-- Description & features -->
+        <div class="space-y-5 border-b border-border pb-8">
+          <div>
+            <label
+              for="lp-description"
+              class="block text-[13px] font-medium text-ink"
+              >Description</label
+            >
+            <textarea
+              id="lp-description"
+              name="description"
+              rows="4"
+              required
+              placeholder="Describe the property…"
+              class="mt-1.5 w-full resize-none rounded-lg border border-border bg-white px-3.5 py-2.5 text-[14px] text-ink placeholder-muted/60 focus:border-ink/30 focus:outline-none focus:ring-[3px] focus:ring-ink/[0.06]"
+            ></textarea>
+          </div>
+
+          <div>
+            <label
+              for="feature-input"
+              class="block text-[13px] font-medium text-ink"
+              >Features</label
+            >
+            <div class="mt-1.5 flex gap-2">
+              <input
+                type="text"
+                id="feature-input"
+                placeholder="e.g. Swimming Pool"
+                class="w-full rounded-lg border border-border bg-white px-3.5 py-2.5 text-[14px] text-ink placeholder-muted/60 focus:border-ink/30 focus:outline-none focus:ring-[3px] focus:ring-ink/[0.06]"
+              />
+              <button
+                type="button"
+                id="feature-add-btn"
+                class="shrink-0 rounded-lg border border-border px-4 text-[13px] font-medium text-ink transition-colors hover:bg-surface"
+              >
+                Add
+              </button>
+            </div>
+            <div id="feature-list" class="mt-3 flex flex-wrap gap-2"></div>
+          </div>
+        </div>
+
+        <!-- Images -->
+        <div class="space-y-3 border-b border-border pb-8">
+          <label class="block text-[13px] font-medium text-ink"
+            >Image URL(s)</label
+          >
+          <p class="text-[12px] text-muted">
+            Paste direct image links. The first image will be used as the cover
+            photo.
+          </p>
+          <div id="image-fields" class="space-y-2">
+            <div class="flex gap-2">
+              <input
+                type="url"
+                name="imageUrl"
+                placeholder="https://images.unsplash.com/…"
+                class="w-full rounded-lg border border-border bg-white px-3.5 py-2.5 text-[13px] text-ink placeholder-muted/60 focus:border-ink/30 focus:outline-none focus:ring-[3px] focus:ring-ink/[0.06]"
+              />
+            </div>
+          </div>
+          <button
+            type="button"
+            id="add-image-btn"
+            class="text-[13px] font-medium text-accent transition-colors hover:text-accent-dark"
+          >
+            + Add another image
+          </button>
+        </div>
+
+        <!-- Contact -->
+        <div class="space-y-5 border-b border-border pb-8">
+          <p class="text-[13px] font-medium text-ink">Contact Information</p>
+          <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div>
+              <label
+                for="lp-contact-name"
+                class="block text-[13px] font-medium text-ink sm:sr-only"
+                >Full name</label
+              >
+              <input
+                type="text"
+                id="lp-contact-name"
+                name="contactName"
+                required
+                placeholder="Full name"
+                class="w-full rounded-lg border border-border bg-white px-3.5 py-2.5 text-[14px] text-ink placeholder-muted/60 focus:border-ink/30 focus:outline-none focus:ring-[3px] focus:ring-ink/[0.06]"
+              />
+            </div>
+            <div>
+              <label
+                for="lp-contact-phone"
+                class="block text-[13px] font-medium text-ink sm:sr-only"
+                >Phone number</label
+              >
+              <input
+                type="tel"
+                id="lp-contact-phone"
+                name="contactPhone"
+                required
+                placeholder="Phone number"
+                class="w-full rounded-lg border border-border bg-white px-3.5 py-2.5 text-[14px] text-ink placeholder-muted/60 focus:border-ink/30 focus:outline-none focus:ring-[3px] focus:ring-ink/[0.06]"
+              />
+            </div>
+          </div>
+          <div>
+            <label
+              for="lp-contact-email"
+              class="block text-[13px] font-medium text-ink sm:sr-only"
+              >Email address</label
+            >
+            <input
+              type="email"
+              id="lp-contact-email"
+              name="contactEmail"
+              required
+              placeholder="Email address"
+              class="w-full rounded-lg border border-border bg-white px-3.5 py-2.5 text-[14px] text-ink placeholder-muted/60 focus:border-ink/30 focus:outline-none focus:ring-[3px] focus:ring-ink/[0.06]"
+            />
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          class="w-full rounded-lg bg-ink px-6 py-3.5 text-[14px] font-medium text-white transition-colors hover:bg-ink/90 sm:w-auto"
+        >
+          Submit Listing
+        </button>
+      </form>
+
+      <!-- ===================== SUCCESS STATE ===================== -->
+      <div
+        id="listing-success"
+        class="hidden mt-10 rounded-2xl border border-border bg-surface p-8 text-center"
+      >
+        <p class="font-display text-[20px] text-ink">Listing received</p>
+        <p class="mt-2 text-[14px] text-muted">
+          Thanks — your property has been submitted. Our team will review it
+          shortly.
+        </p>
+        <a
+          href="index.html"
+          class="mt-6 inline-flex rounded-lg bg-ink px-5 py-2.5 text-[13px] font-medium text-white transition-colors hover:bg-ink/90"
+          >Back to Properties</a
+        >
+      </div>
+    </main>
+
+    <!-- ===================== FOOTER ===================== -->
+    <footer class="mt-10 bg-surface">
+      <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <div
+          class="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between"
+        >
+          <div>
+            <div class="flex items-center gap-2.5">
+              <a href="#top" class="flex items-baseline gap-2.5">
+                <span
+                  class="font-display text-[26px] font-semibold tracking-tight text-ink"
+                  >Marlstone</span
+                >
+                <span
+                  class="hidden font-mono text-[11px] uppercase tracking-widest2 text-sage sm:inline"
+                  >Property Group</span
+                >
+              </a>
+            </div>
+            <p class="mt-2 max-w-xs text-[13px] text-muted">
+              Verified homes for rent and sale across Lagos, curated for a
+              straightforward search.
+            </p>
+          </div>
+          <div class="grid grid-cols-2 gap-8 sm:flex sm:gap-16">
+            <div>
+              <p
+                class="text-[12px] font-semibold uppercase tracking-wide text-muted"
+              >
+                Explore
+              </p>
+              <div class="mt-3 flex flex-col gap-2 text-[13px] text-ink">
+                <a href="index.html" class="hover:text-accent"
+                  >All Properties</a
+                >
+                <a href="index.html?listingType=sale" class="hover:text-accent"
+                  >For Sale</a
+                >
+                <a href="index.html?listingType=rent" class="hover:text-accent"
+                  >For Rent</a
+                >
+              </div>
+            </div>
+            <div>
+              <p
+                class="text-[12px] font-semibold uppercase tracking-wide text-muted"
+              >
+                Get Started
+              </p>
+              <div class="mt-3 flex flex-col gap-2 text-[13px] text-ink">
+                <a href="list-property.html" class="hover:text-accent"
+                  >List Your Property</a
+                >
+                <a href="mailto:hello@haven.example" class="hover:text-accent"
+                  >Contact Us</a
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mt-10 border-t border-border pt-6 text-[12px] text-muted">
+          © 2026 Marlstow Properties. All rights reserved.
+        </div>
+      </div>
+    </footer>
+
+    <script src="js/utils.js"></script>
+    <script src="js/nav.js"></script>
+    <script src="js/list-property.js"></script>
+  </body>
+</html>

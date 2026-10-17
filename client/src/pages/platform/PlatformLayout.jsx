@@ -3,7 +3,6 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
   LayoutGrid,
   Users,
-  Settings,
   LogOut,
   ShieldCheck,
   Moon,
@@ -20,7 +19,6 @@ function getPlatformToken() {
 const NAV_ITEMS = [
   { to: "/platform", label: "Overview", icon: LayoutGrid, end: true },
   { to: "/platform/clients", label: "Clients", icon: Users },
-  { to: "/platform/settings", label: "Team & Audit", icon: Settings },
 ];
 
 export default function PlatformLayout() {
@@ -29,10 +27,7 @@ export default function PlatformLayout() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const name = sessionStorage.getItem("platformName") || "Operator";
   const role = sessionStorage.getItem("platformRole") || "viewer";
-  const visibleNavItems =
-    role === "owner"
-      ? NAV_ITEMS
-      : NAV_ITEMS.filter((item) => item.to !== "/platform/settings");
+  const visibleNavItems = NAV_ITEMS;
 
   useEffect(() => {
     if (!getPlatformToken()) navigate("/platform/login", { replace: true });

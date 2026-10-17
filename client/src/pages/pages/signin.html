@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign In | Marlstone Property Group</title>
+    <meta
+      name="description"
+      content="Sign in to your Marlstone Property Group account. Access your properties, agency tools, and management dashboard."
+    />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Fraunces:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+      @theme {
+        --color-ink: #171717;
+        --color-ink-light: #262626;
+        --color-paper: #fafaf9;
+        --color-moss: #2f4438;
+        --color-moss-dark: #22332a;
+        --color-moss-light: #3c5747;
+        --color-brass: #b8860b;
+        --color-brass-dark: #8f642f;
+        --color-stone: #e5e5e5;
+        --color-stone-dark: #d4d4d4;
+        --color-sage: #737373;
+        --font-display: "Fraunces", ui-serif, Georgia, serif;
+        --font-sans: "Archivo", ui-sans-serif, system-ui, sans-serif;
+        --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+        --radius: 4px;
+        --tracking-widest2: 0.22em;
+      }
+    </style>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+  </head>
+  <body class="bg-paper font-sans text-ink antialiased">
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded focus:bg-ink focus:px-4 focus:py-3 focus:text-sm focus:font-medium focus:text-paper"
+    >
+      Skip to main content
+    </a>
+
+    <main id="main">
+      <div class="mx-auto max-w-7xl px-5 sm:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 lg:gap-0">
+          <!-- ===================== IMAGE PANEL ===================== -->
+          <div
+            class="relative hidden lg:col-span-5 lg:flex lg:min-h-screen lg:flex-col lg:justify-between overflow-hidden rounded-br"
+          >
+            <img
+              src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80"
+              alt="Elegant modern home with large windows and landscaped garden"
+              class="absolute inset-0 h-full w-full object-cover"
+            />
+            <div class="absolute inset-0 bg-ink/55"></div>
+
+            <!-- Top corner accents -->
+            <span
+              aria-hidden="true"
+              class="absolute left-6 top-6 h-5 w-5 border-l-2 border-t-2 border-brass/80"
+            ></span>
+            <span
+              aria-hidden="true"
+              class="absolute right-6 top-6 h-5 w-5 border-r-2 border-t-2 border-brass/80"
+            ></span>
+
+            <div class="relative z-10 p-8">
+              <a href="Landing.html" class="flex items-baseline gap-2.5">
+                <span class="font-display text-2xl font-semibold text-paper"
+                  >Marlstone</span
+                >
+                <span
+                  class="font-mono text-[11px] uppercase tracking-widest2 text-paper/60"
+                  >Property Group</span
+                >
+              </a>
+            </div>
+
+            <div class="relative z-10 p-8">
+              <p
+                class="font-mono text-xs uppercase tracking-widest2 text-brass"
+              >
+                Welcome Back
+              </p>
+              <h2
+                class="mt-4 font-display text-3xl font-semibold leading-tight tracking-tight text-paper"
+              >
+                Your property dashboard awaits.
+              </h2>
+              <p
+                class="mt-4 max-w-sm text-[15px] leading-relaxed text-paper/70"
+              >
+                Sign in to manage listings, track tenants, review reports, and
+                stay on top of your portfolio.
+              </p>
+
+              <dl class="mt-8 grid grid-cols-2 gap-4">
+                <div class="rounded border border-paper/15 p-4">
+                  <dd class="font-mono text-xl font-medium text-paper">12</dd>
+                  <dt class="mt-1 text-xs text-paper/60">
+                    Years in the market
+                  </dt>
+                </div>
+                <div class="rounded border border-paper/15 p-4">
+                  <dd class="font-mono text-xl font-medium text-paper">24/7</dd>
+                  <dt class="mt-1 text-xs text-paper/60">Platform access</dt>
+                </div>
+              </dl>
+            </div>
+
+            <!-- Bottom corner accents -->
+            <span
+              aria-hidden="true"
+              class="absolute bottom-6 left-6 h-5 w-5 border-b-2 border-l-2 border-brass/80"
+            ></span>
+            <span
+              aria-hidden="true"
+              class="absolute bottom-6 right-6 h-5 w-5 border-b-2 border-r-2 border-brass/80"
+            ></span>
+          </div>
+
+          <!-- ===================== FORM PANEL ===================== -->
+          <div
+            class="flex min-h-screen items-center py-12 lg:col-span-7 lg:py-0"
+          >
+            <div class="w-full max-w-lg px-5 sm:px-8 lg:mx-auto">
+              <!-- Mobile logo -->
+              <div class="mb-8 lg:hidden">
+                <a href="Landing.html" class="flex items-baseline gap-2.5">
+                  <span
+                    class="font-display text-[26px] font-semibold tracking-tight text-ink"
+                    >Marlstone</span
+                  >
+                  <span
+                    class="font-mono text-[11px] uppercase tracking-widest2 text-sage"
+                    >Property Group</span
+                  >
+                </a>
+              </div>
+
+              <p
+                class="font-mono text-xs uppercase tracking-widest2 text-brass"
+              >
+                Sign In
+              </p>
+              <h1
+                class="mt-3 font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl"
+              >
+                Welcome back
+              </h1>
+              <p class="mt-3 max-w-md text-[15px] leading-relaxed text-sage">
+                Sign in to your account to access your properties, reports, and
+                management tools.
+              </p>
+
+              <!-- =================== ROLE SELECTOR =================== -->
+              <div
+                class="mt-8 hidden"
+                role="tablist"
+                aria-label="Select your role"
+              >
+                <div class="flex rounded border border-stone bg-stone/25 p-1">
+                  <button
+                    type="button"
+                    role="tab"
+                    id="tab-admin"
+                    aria-selected="true"
+                    aria-controls="panel-admin"
+                    data-role="admin"
+                    class="role-tab flex-1 rounded px-3 py-2.5 text-sm font-medium text-ink transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-moss sm:px-4"
+                  >
+                    Administrator
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    id="tab-owner"
+                    aria-selected="false"
+                    aria-controls="panel-owner"
+                    data-role="owner"
+                    class="role-tab flex-1 rounded px-3 py-2.5 text-sm font-medium text-sage transition-colors hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-moss sm:px-4"
+                  >
+                    Property Owner
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    id="tab-agent"
+                    aria-selected="false"
+                    aria-controls="panel-agent"
+                    data-role="agent"
+                    class="role-tab flex-1 rounded px-3 py-2.5 text-sm font-medium text-sage transition-colors hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-moss sm:px-4"
+                  >
+                    House Agent
+                  </button>
+                </div>
+
+                <!-- Role descriptions -->
+                <div class="mt-4 min-h-[48px]">
+                  <div
+                    id="panel-admin"
+                    role="tabpanel"
+                    aria-labelledby="tab-admin"
+                    class="role-panel"
+                  >
+                    <p
+                      class="rounded border border-stone bg-white p-4 text-sm leading-relaxed text-sage"
+                    >
+                      <span class="font-medium text-ink">Administrator</span>
+                      &mdash; Access agency management tools, user accounts, and
+                      platform settings.
+                    </p>
+                  </div>
+                  <div
+                    id="panel-owner"
+                    role="tabpanel"
+                    aria-labelledby="tab-owner"
+                    class="role-panel hidden"
+                  >
+                    <p
+                      class="rounded border border-stone bg-white p-4 text-sm leading-relaxed text-sage"
+                    >
+                      <span class="font-medium text-ink">Property Owner</span>
+                      &mdash; Access and manage your properties, listings, and
+                      tenant relationships.
+                    </p>
+                  </div>
+                  <div
+                    id="panel-agent"
+                    role="tabpanel"
+                    aria-labelledby="tab-agent"
+                    class="role-panel hidden"
+                  >
+                    <p
+                      class="rounded border border-stone bg-white p-4 text-sm leading-relaxed text-sage"
+                    >
+                      <span class="font-medium text-ink">House Agent</span>
+                      &mdash; Access assigned properties, viewings, and agency
+                      tasks.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- =================== SIGN IN FORM =================== -->
+              <form id="signinForm" class="mt-6 flex flex-col gap-5" novalidate>
+                <input
+                  type="hidden"
+                  id="selectedRole"
+                  name="role"
+                  value="admin"
+                />
+
+                <!-- Email -->
+                <div>
+                  <label for="email" class="block text-sm font-medium text-ink"
+                    >Email Address</label
+                  >
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    autocomplete="email"
+                    placeholder="you@example.com"
+                    class="mt-2 block w-full rounded border border-stone bg-white px-4 py-3 text-[15px] text-ink placeholder-sage/60 transition-colors focus:border-moss focus:outline-none focus:ring-1 focus:ring-moss"
+                  />
+                </div>
+
+                <!-- Password -->
+                <div>
+                  <div class="flex items-center justify-between">
+                    <label
+                      for="password"
+                      class="block text-sm font-medium text-ink"
+                      >Password</label
+                    >
+                    <a
+                      href="#"
+                      class="text-sm font-medium text-moss underline underline-offset-2 hover:text-moss-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-moss"
+                      >Forgot password?</a
+                    >
+                  </div>
+                  <div class="relative mt-2">
+                    <input
+                      type="password"
+                      id="password"
+                      name="password"
+                      autocomplete="current-password"
+                      placeholder="Enter your password"
+                      class="block w-full rounded border border-stone bg-white px-4 py-3 pr-12 text-[15px] text-ink placeholder-sage/60 transition-colors focus:border-moss focus:outline-none focus:ring-1 focus:ring-moss"
+                    />
+                    <button
+                      type="button"
+                      class="password-toggle absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[12px] font-medium text-sage transition-colors hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-moss"
+                      aria-label="Show password"
+                      data-target="password"
+                    >
+                      Show
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Remember Me -->
+                <div class="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    id="remember"
+                    name="remember"
+                    class="h-4 w-4 shrink-0 rounded border-stone text-moss focus:ring-moss"
+                  />
+                  <label for="remember" class="text-sm text-sage">
+                    Remember me for 30 days
+                  </label>
+                </div>
+
+                <!-- Submit -->
+                <button
+                  type="submit"
+                  class="mt-2 w-full rounded bg-moss px-7 py-3.5 text-sm font-medium text-paper transition-colors hover:bg-moss-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-moss"
+                >
+                  Sign In
+                </button>
+              </form>
+
+              <!-- Divider -->
+              <div class="mt-8 flex items-center gap-4">
+                <div class="h-px flex-1 bg-stone"></div>
+                <span class="text-sm text-sage">or</span>
+                <div class="h-px flex-1 bg-stone"></div>
+              </div>
+
+              <!-- Sign Up Link -->
+              <p class="mt-6 text-center text-[15px] text-sage">
+                Don't have an account?
+                <a
+                  href="signup.html"
+                  class="font-medium text-moss underline underline-offset-2 hover:text-moss-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-moss"
+                  >Create one</a
+                >
+              </p>
+
+              <!-- Back to Landing -->
+              <p class="mt-4 text-center text-sm text-sage">
+                <a
+                  href="Landing.html"
+                  class="font-medium text-ink underline underline-offset-2 hover:text-moss focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-moss"
+                  >&larr; Back to Marlstone</a
+                >
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+    <script src="../js/validation.js"></script>
+    <script type="module" src="../js/signin.js"></script>
+  </body>
+</html>

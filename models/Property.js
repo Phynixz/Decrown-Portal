@@ -13,9 +13,11 @@ const propertySchema = new mongoose.Schema(
     address: { type: String, trim: true, default: "" },
     status: {
       type: String,
-      enum: ["active", "archived"],
+      enum: ["pending_review", "active", "rejected", "archived"],
       default: "active",
     },
+    reviewNote: { type: String, default: "" },
+    reviewedAt: { type: Date, default: null },
   },
   { timestamps: true },
 );

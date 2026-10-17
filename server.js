@@ -1344,7 +1344,14 @@ app.post("/admin/properties", verifyAdmin, async (req, res) => {
     if (await Property.findOne({ name }))
       return res.status(409).json({ error: "Property already exists" });
 
-    const property = await Property.create({ name, state, lga, propertyType, address });
+    const property = await Property.create({
+      name,
+      state,
+      lga,
+      propertyType,
+      address,
+      status: "pending_review",
+    });
     await Settings.create({ location: name, rentAmount, roomCount: 0 });
     if (req.tenantClient) {
       await Client.updateOne(
@@ -1391,8 +1398,8 @@ app.put("/admin/properties/:id", verifyAdmin, async (req, res) => {
       updates.propertyType = type;
     }
     if (req.body.status != null) {
-      if (!["active", "archived"].includes(req.body.status))
-        return res.status(400).json({ error: "Invalid property status" });
+      if (req.body.status !== "archived")
+        return res.status(400).json({ error: "Only the platform team can change a hostel's review status" });
       updates.status = req.body.status;
     }
     const property = await Property.findByIdAndUpdate(req.params.id, updates, {
@@ -1412,7 +1419,7 @@ app.post("/admin/properties/:id/units", verifyAdmin, async (req, res) => {
       return res.status(400).json({ error: "Invalid property ID" });
     const property = await Property.findOne({
       _id: req.params.id,
-      status: "active",
+      status: { $in: ["active", "pending_review"] },
     });
     if (!property) return res.status(404).json({ error: "Property not found" });
     const unitCode = sanitizeString(req.body.unitCode);

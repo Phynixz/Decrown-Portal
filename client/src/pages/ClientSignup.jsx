@@ -8,21 +8,19 @@ import { validateEmail, validateName, validatePhone, validatePassword } from "..
 export default function ClientSignup() {
   const { dark, toggleTheme } = useTheme();
 
-  const [step, setStep] = useState("form"); // form -> verify -> pending
-  const [clientId, setClientId] = useState("");
-  const [clientSubdomain, setClientSubdomain] = useState("");
-
   const [contactName, setContactName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
-
+  const [step, setStep] = useState("form");
+  const [clientId, setClientId] = useState("");
+  const [clientSubdomain, setClientSubdomain] = useState("");
   const [code, setCode] = useState("");
+  const [notice, setNotice] = useState("");
 
   const [err, setErr] = useState("");
-  const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
 
   async function handleSignup(e) {
@@ -70,7 +68,7 @@ export default function ClientSignup() {
       setNotice(
         data.developmentCode
           ? `Local verification code: ${data.developmentCode}`
-          : "We sent a 6-digit code to " + trimmedEmail,
+          : `We sent a 6-digit code to ${trimmedEmail}`,
       );
     } catch (e) {
       setErr(e.message);
@@ -92,7 +90,10 @@ export default function ClientSignup() {
         clientId,
         code: code.trim(),
       });
-      setStep("pending");
+      sessionStorage.setItem("tenantSubdomain", clientSubdomain);
+      window.location.assign(
+        `/login?client=${encodeURIComponent(clientSubdomain)}&email=${encodeURIComponent(email.trim())}`,
+      );
     } catch (e) {
       setErr(e.message);
     } finally {
@@ -102,7 +103,6 @@ export default function ClientSignup() {
 
   async function handleResend() {
     setErr("");
-    setNotice("");
     setBusy(true);
     try {
       await sendJSON("POST", "/client/resend-code", { clientId });
@@ -143,18 +143,18 @@ export default function ClientSignup() {
               <p className="welcome-label">Get Started</p>
               <h2>Manage all your hostel branches from one account.</h2>
               <p className="welcome-desc">
-                Create your landlord account first. Once your account is
-                approved, you can add each hostel branch and its rooms.
+                Create your account and start your landlord workspace immediately.
+                Each hostel you submit will be reviewed before it is listed.
               </p>
 
               <dl className="stats-grid">
                 <div className="stat-box">
-                  <dd className="stat-num">3</dd>
-                  <dt className="stat-desc">Simple steps</dt>
+                  <dd className="stat-num">1</dd>
+                  <dt className="stat-desc">Instant account</dt>
                 </div>
                 <div className="stat-box">
-                  <dd className="stat-num">1:1</dd>
-                  <dt className="stat-desc">Reviewed sign-ups</dt>
+                  <dd className="stat-num">1</dd>
+                  <dt className="stat-desc">Hostel review step</dt>
                 </div>
               </dl>
             </div>
@@ -185,9 +185,8 @@ export default function ClientSignup() {
                 </Link>
               </div>
 
-              {step === "form" && (
-                <>
-                  <p className="login-label">Step 1 of 3</p>
+              {step === "form" && <>
+                  <p className="login-label">Create your account</p>
                   <h1 className="login-title">Create your landlord account</h1>
                   <p className="login-subtitle">
                     Start with your personal account details. You can provide
@@ -295,79 +294,45 @@ export default function ClientSignup() {
                     </div>
 
                     <button className="btn-login" type="submit" disabled={busy}>
-                      {busy ? "Creating account…" : "Create Account"}
+                    {busy ? "Creating account…" : "Create account & continue"}
                     </button>
 
                     <div className={"error-box" + (err ? " show" : "")}>
                       {err}
                     </div>
                   </form>
-                </>
-              )}
+              </>}
 
-              {step === "verify" && (
-                <>
-                  <p className="login-label">Step 2 of 3</p>
-                  <h1 className="login-title">Verify your email</h1>
-                  <p className="login-subtitle">{notice}</p>
-
-                  <form
-                    className="login-form"
-                    onSubmit={handleVerify}
-                    noValidate
-                  >
-                    <div className="field">
-                      <label className="field-label" htmlFor="cs-code">
-                        6-Digit Code
-                      </label>
-                      <input
-                        id="cs-code"
-                        inputMode="numeric"
-                        maxLength={6}
-                        placeholder="000000"
-                        className="text-center text-xl font-semibold tracking-[8px]"
-                        value={code}
-                        onChange={(e) =>
-                          setCode(e.target.value.replace(/[^0-9]/g, ""))
-                        }
-                      />
-                    </div>
-
-                    <button className="btn-login" type="submit" disabled={busy}>
-                      {busy ? "Verifying…" : "Verify Email"}
-                    </button>
-
-                    <div className={"error-box" + (err ? " show" : "")}>
-                      {err}
-                    </div>
-                  </form>
-
-                  <button
-                    type="button"
-                    className="mx-auto mt-3.5 block cursor-pointer border-none bg-transparent text-[13px] text-terra underline disabled:cursor-default disabled:opacity-60"
-                    onClick={handleResend}
-                    disabled={busy}
-                  >
-                    Didn't get a code? Resend
+              {step === "verify" && <>
+                <p className="login-label">Email verification</p>
+                <h1 className="login-title">Verify your email</h1>
+                <p className="login-subtitle">{notice}</p>
+                <form className="login-form" onSubmit={handleVerify} noValidate>
+                  <div className="field">
+                    <label className="field-label" htmlFor="cs-code">6-Digit Code</label>
+                    <input
+                      id="cs-code"
+                      inputMode="numeric"
+                      maxLength={6}
+                      placeholder="000000"
+                      value={code}
+                      onChange={(e) => setCode(e.target.value.replace(/[^0-9]/g, ""))}
+                    />
+                  </div>
+                  <button className="btn-login" type="submit" disabled={busy}>
+                    {busy ? "Verifying…" : "Verify email & continue to sign in"}
                   </button>
-                </>
-              )}
-
-              {step === "pending" && (
-                <div className="text-center">
-                  <p className="login-label">Step 3 of 3</p>
-                  <h1 className="login-title">You're all set — almost</h1>
-                  <p className="login-subtitle">
-                    Your email is verified and your landlord account is pending
-                    review by the De-Crown team. We'll email {email} when your
-                    account is approved. You can then add one or more hostel
-                    branches from your dashboard.
-                  </p>
-                  <Link to={`/login?client=${encodeURIComponent(clientSubdomain)}&email=${encodeURIComponent(email.trim())}`} className="btn-login mt-5 inline-block text-center no-underline">
-                    Sign in after approval
-                  </Link>
-                </div>
-              )}
+                  <div className={"error-box" + (err ? " show" : "")}>{err}</div>
+                </form>
+                <button
+                  type="button"
+                  className="mx-auto mt-3.5 block cursor-pointer border-none bg-transparent text-[13px] text-terra underline disabled:cursor-default disabled:opacity-60"
+                  onClick={handleResend}
+                  disabled={busy}
+                >
+                  Didn't get a code? Resend
+                </button>
+              </>}
             </div>
           </div>
         </div>

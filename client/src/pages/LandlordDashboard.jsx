@@ -4,6 +4,7 @@ import {
   ArrowRight,
   Building2,
   CheckCircle2,
+  Clock3,
   LogOut,
   Menu,
   Moon,
@@ -127,9 +128,10 @@ export default function LandlordDashboard() {
 
         {error && <div className="mb-6 rounded-lg border-l-4 border-danger bg-danger-faint px-4 py-3 text-sm text-danger">{error}</div>}
 
-        <section className="overflow-hidden rounded-2xl border border-border bg-card sm:grid sm:grid-cols-4">
+        <section className="overflow-hidden rounded-2xl border border-border bg-card sm:grid sm:grid-cols-5">
           <Stat label="Hostels" value={loading ? "—" : properties.length} detail="In your portfolio" icon={Building2} />
           <Stat label="Active hostels" value={loading ? "—" : properties.filter((p) => p.status === "active").length} detail="Open for management" icon={CheckCircle2} />
+          <Stat label="Pending review" value={loading ? "—" : properties.filter((p) => p.status === "pending_review").length} detail="Not public yet" icon={Clock3} />
           <Stat label="Rooms" value={loading ? "—" : units.length} detail={`${occupied} currently occupied`} icon={Building2} />
           <Stat label="Tenants" value={loading ? "—" : users.length} detail="Tenant records" icon={Users} />
         </section>
@@ -144,7 +146,7 @@ export default function LandlordDashboard() {
           ) : latest ? (
             <div className="mt-4 rounded-2xl border border-border bg-card p-6 sm:flex sm:items-center sm:justify-between">
               <div>
-                <span className="rounded-full bg-success-faint px-2.5 py-1 text-[11px] font-semibold text-success">{latest.status}</span>
+                <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${latest.status === "active" ? "bg-success-faint text-success" : latest.status === "pending_review" ? "bg-amber-50 text-amber-700" : latest.status === "rejected" ? "bg-danger-faint text-danger" : "bg-surface text-muted"}`}>{(latest.status || "active").replaceAll("_", " ")}</span>
                 <h3 className="mt-3 font-display text-2xl text-text">{latest.name}</h3>
                 <p className="mt-1 text-sm text-muted">{latest.address || "Address not added"} · {latest.propertyType}</p>
               </div>

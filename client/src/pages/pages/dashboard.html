@@ -1,0 +1,1525 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard | Marlstone Property Group</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+      @theme {
+        --color-ink: #171717;
+        --color-ink-light: #262626;
+        --color-paper: #fafaf9;
+        --color-moss: #2f4438;
+        --color-moss-dark: #22332a;
+        --color-moss-light: #3c5747;
+        --color-brass: #b8860b;
+        --color-brass-dark: #8f642f;
+        --color-stone: #e5e5e5;
+        --color-stone-dark: #d4d4d4;
+        --color-sage: #737373;
+        --font-display: "Fraunces", ui-serif, Georgia, serif;
+        --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+        --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+      }
+      ::-webkit-scrollbar {
+        width: 4px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #d4d4d4;
+        border-radius: 4px;
+      }
+      .sidebar-scroll::-webkit-scrollbar {
+        width: 0;
+      }
+      @keyframes skeleton-pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.4;
+        }
+      }
+      .skeleton-pulse {
+        animation: skeleton-pulse 1.8s ease-in-out infinite;
+      }
+    </style>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+  </head>
+  <body class="overflow-x-hidden bg-[#f2f1ed] font-sans text-ink antialiased">
+    <div class="flex min-h-screen">
+      <!-- =================== SIDEBAR =================== -->
+      <aside
+        id="sidebar"
+        class="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 lg:flex lg:w-[240px] lg:flex-col"
+      >
+        <div class="flex h-full flex-col bg-[#1c1c1e]">
+          <!-- Brand -->
+          <div class="flex h-14 items-center gap-3 px-5">
+            <div
+              class="flex h-8 w-8 items-center justify-center rounded-lg bg-[#2f4438]"
+            >
+              <span class="text-[11px] font-bold tracking-wide text-white"
+                >M</span
+              >
+            </div>
+            <div>
+              <p class="text-[14px] font-semibold text-white/90 leading-none">
+                Marlstone
+              </p>
+              <p class="text-[10px] text-white/30 mt-0.5">Property Group</p>
+            </div>
+          </div>
+
+          <!-- Navigation -->
+          <nav
+            id="sidebar-nav"
+            class="sidebar-scroll mt-3 flex-1 overflow-y-auto px-3"
+          >
+            <p
+              class="mb-2 px-2 pt-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-white/20"
+            >
+              Main
+            </p>
+            <a
+              href="dashboard.html"
+              data-nav="dashboard"
+              class="nav-item group mb-[3px] flex items-center gap-3 rounded-xl bg-white/[0.08] px-3 py-2 text-[13px] font-medium text-white/90"
+            >
+              <i
+                class="fa-solid fa-house h-[18px] w-[18px] flex-none text-[#b8860b]"
+              ></i>
+              Dashboard
+            </a>
+
+            <p
+              class="mb-2 px-2 pt-5 text-[10px] font-semibold uppercase tracking-[0.1em] text-white/20"
+            >
+              Management
+            </p>
+            <a
+              href="properties.html"
+              data-nav="properties"
+              class="nav-item group mb-[3px] flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium text-white/35 transition-colors hover:bg-white/[0.05] hover:text-white/60"
+            >
+              <i
+                class="fa-solid fa-house h-[18px] w-[18px] text-white/20 group-hover:text-white/35"
+              ></i>
+              Properties
+            </a>
+            <a
+              href="properties.html?owner=me"
+              data-nav="my-properties"
+              class="nav-item group mb-[3px] flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium text-white/35 transition-colors hover:bg-white/[0.05] hover:text-white/60"
+            >
+              <i
+                class="fa-solid fa-house h-[18px] w-[18px] text-white/20 group-hover:text-white/35"
+              ></i>
+              My Properties
+            </a>
+            <a
+              href="owners.html"
+              data-nav="owners"
+              data-roles="ADMIN"
+              class="nav-item group mb-[3px] flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium text-white/35 transition-colors hover:bg-white/[0.05] hover:text-white/60"
+            >
+              <i
+                class="fa-solid fa-user h-[18px] w-[18px] text-white/20 group-hover:text-white/35"
+              ></i>
+              Owners
+            </a>
+            <a
+              href="agents.html"
+              data-nav="agents"
+              data-roles="ADMIN"
+              class="nav-item group mb-[3px] flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium text-white/35 transition-colors hover:bg-white/[0.05] hover:text-white/60"
+            >
+              <i
+                class="fa-solid fa-user-group h-[18px] w-[18px] text-white/20 group-hover:text-white/35"
+              ></i>
+              Agents
+            </a>
+            <a
+              href="listings.html"
+              data-nav="listings"
+              class="nav-item group mb-[3px] flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium text-white/35 transition-colors hover:bg-white/[0.05] hover:text-white/60"
+            >
+              <i
+                class="fa-solid fa-file h-[18px] w-[18px] text-white/20 group-hover:text-white/35"
+              ></i>
+              Listings
+            </a>
+            <a
+              href="listings.html?owner=me"
+              data-nav="my-listings"
+              class="nav-item group mb-[3px] flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium text-white/35 transition-colors hover:bg-white/[0.05] hover:text-white/60"
+            >
+              <i
+                class="fa-solid fa-file h-[18px] w-[18px] text-white/20 group-hover:text-white/35"
+              ></i>
+              My Listings
+            </a>
+            <a
+              href="applications.html"
+              data-nav="applications"
+              class="nav-item group mb-[3px] flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium text-white/35 transition-colors hover:bg-white/[0.05] hover:text-white/60"
+            >
+              <i
+                class="fa-solid fa-clipboard-list h-[18px] w-[18px] text-white/20 group-hover:text-white/35"
+              ></i>
+              Applications
+              <span
+                data-badge="applications"
+                class="ml-auto rounded-full bg-[#b8860b]/20 px-2 py-px text-[10px] font-semibold text-[#b8860b]"
+                >18</span
+              >
+            </a>
+            <a
+              href="transactions.html"
+              data-nav="transactions"
+              data-roles="ADMIN,LANDLORD"
+              class="nav-item group mb-[3px] flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium text-white/35 transition-colors hover:bg-white/[0.05] hover:text-white/60"
+            >
+              <i
+                class="fa-solid fa-naira-sign h-[18px] w-[18px] text-white/20 group-hover:text-white/35"
+              ></i>
+              Transactions
+            </a>
+
+            <p
+              class="mb-2 px-2 pt-5 text-[10px] font-semibold uppercase tracking-[0.1em] text-white/20"
+            >
+              Tools
+            </p>
+            <a
+              href="reports.html"
+              data-nav="reports"
+              class="nav-item group mb-[3px] flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium text-white/35 transition-colors hover:bg-white/[0.05] hover:text-white/60"
+            >
+              <i
+                class="fa-solid fa-chart-line h-[18px] w-[18px] text-white/20 group-hover:text-white/35"
+              ></i>
+              Reports
+            </a>
+            <a
+              href="notifications.html"
+              data-nav="notifications"
+              class="nav-item group mb-[3px] flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium text-white/35 transition-colors hover:bg-white/[0.05] hover:text-white/60"
+            >
+              <i
+                class="fa-solid fa-bell h-[18px] w-[18px] text-white/20 group-hover:text-white/35"
+              ></i>
+              Notifications
+              <span
+                data-badge="notifications"
+                class="ml-auto flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[#b8860b] px-1.5 text-[10px] font-bold text-white"
+                >5</span
+              >
+            </a>
+            <a
+              href="profile.html"
+              data-nav="profile"
+              class="nav-item group mb-[3px] flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium text-white/35 transition-colors hover:bg-white/[0.05] hover:text-white/60"
+            >
+              <i
+                class="fa-solid fa-user h-[18px] w-[18px] text-white/20 group-hover:text-white/35"
+              ></i>
+              Profile
+            </a>
+            <a
+              href="settings.html"
+              data-nav="settings"
+              data-roles="ADMIN"
+              class="nav-item group mb-[3px] flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium text-white/35 transition-colors hover:bg-white/[0.05] hover:text-white/60"
+            >
+              <i
+                class="fa-solid fa-gear h-[18px] w-[18px] text-white/20 group-hover:text-white/35"
+              ></i>
+              Settings
+            </a>
+          </nav>
+
+          <!-- User -->
+          <div class="border-t border-white/[0.06] px-3 py-3">
+            <div
+              id="sidebar-user"
+              class="flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-white/[0.04]"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=120&q=80"
+                alt=""
+                class="avatar h-8 w-8 rounded-full object-cover ring-2 ring-white/10"
+              />
+              <div class="min-w-0 flex-1">
+                <p
+                  class="username truncate text-[13px] font-medium text-white/80 user-display-name"
+                >
+                  User
+                </p>
+                <p class="role-label truncate text-[11px] text-white/30 user-display-role">
+                  User
+                </p>
+              </div>
+              <button
+                id="btn-logout"
+                class="flex h-7 w-7 items-center justify-center rounded-lg text-white/20 transition-colors hover:bg-white/[0.08] hover:text-white/50"
+                aria-label="Sign out"
+              >
+                <i class="fa-solid fa-right-from-bracket h-4 w-4"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- =================== MOBILE SIDEBAR =================== -->
+      <div
+        id="mobile-sidebar"
+        class="fixed inset-0 z-50 hidden"
+        aria-hidden="true"
+      >
+        <div
+          class="absolute inset-0 bg-black/40"
+          id="mobile-sidebar-backdrop"
+        ></div>
+        <div class="absolute inset-y-0 left-0 w-[260px] bg-[#1c1c1e]">
+          <div class="flex h-14 items-center gap-3 px-5">
+            <div
+              class="flex h-8 w-8 items-center justify-center rounded-lg bg-[#2f4438]"
+            >
+              <span class="text-[11px] font-bold text-white">M</span>
+            </div>
+            <div>
+              <p class="text-[14px] font-semibold text-white/90 leading-none">
+                Marlstone
+              </p>
+              <p class="text-[10px] text-white/30 mt-0.5">Property Group</p>
+            </div>
+          </div>
+          <nav class="mt-3 px-3" id="mobile-sidebar-nav"></nav>
+        </div>
+      </div>
+
+      <!-- =================== MAIN WORKSPACE =================== -->
+      <div class="flex flex-1 flex-col lg:pl-[240px]">
+        <!-- ===== HEADER ===== -->
+        <header
+          id="app-header"
+          class="sticky top-0 z-30 flex h-[56px] items-center gap-4 bg-[#f2f1ed]/80 backdrop-blur-md px-4 sm:px-6 lg:px-8"
+        >
+          <button
+            type="button"
+            id="btn-mobile-menu"
+            class="flex h-9 w-9 items-center justify-center rounded-xl text-ink lg:hidden"
+            aria-label="Open menu"
+          >
+            <i class="fa-solid fa-bars h-[18px] w-[18px]"></i>
+          </button>
+
+          <!-- Global Search -->
+          <div class="relative hidden flex-1 sm:block sm:max-w-[320px]">
+            <i
+              class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-sage"
+            ></i>
+            <input
+              type="text"
+              id="global-search"
+              placeholder="Search properties, owners, agents..."
+              class="w-full rounded-xl border border-transparent bg-white py-2 pl-10 pr-4 text-[13px] text-ink placeholder-sage/70 transition-all focus:border-stone focus:outline-none focus:shadow-[0_0_0_3px_rgba(0,0,0,0.04)]"
+            />
+          </div>
+
+          <div class="flex flex-1 items-center justify-end gap-1">
+            <!-- Notifications -->
+            <button
+              type="button"
+              id="btn-notifications"
+              class="relative flex h-9 w-9 items-center justify-center rounded-xl text-sage transition-colors hover:bg-white hover:text-ink"
+              aria-label="Notifications"
+            >
+              <i class="fa-solid fa-bell h-[18px] w-[18px]"></i>
+              <span
+                class="absolute right-2 top-2 h-2 w-2 rounded-full bg-[#b8860b] ring-2 ring-[#f2f1ed]"
+              ></span>
+            </button>
+
+            <!-- User Menu -->
+            <button
+              type="button"
+              id="btn-user-menu"
+              class="flex items-center gap-2.5 rounded-xl py-1.5 pl-1.5 pr-3 transition-colors hover:bg-white"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=120&q=80"
+                alt=""
+                class="avatar h-8 w-8 rounded-full object-cover"
+              />
+              <div class="hidden min-w-0 text-left sm:block">
+                <p
+                  class="username truncate text-[13px] font-medium leading-tight text-ink"
+                >
+                  Marcus Webb
+                </p>
+                <p
+                  class="role-label truncate text-[11px] leading-tight text-sage"
+                >
+                  Administrator
+                </p>
+              </div>
+              <i
+                class="fa-solid fa-chevron-down hidden h-4 w-4 text-sage sm:block"
+              ></i>
+            </button>
+          </div>
+        </header>
+
+        <!-- ===== PAGE CONTENT ===== -->
+        <main id="page-content" class="flex-1 px-4 py-6 sm:px-6 lg:px-8">
+          <!-- Page Header -->
+          <div
+            class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"
+          >
+            <div>
+              <h1
+                class="text-[20px] font-semibold tracking-tight text-ink sm:text-[22px]"
+              >
+                Dashboard
+              </h1>
+              <p
+                class="welcome-msg mt-1 text-[13px] text-sage"
+                id="welcome-text"
+              >
+                Welcome back, Marcus. Here's your agency overview.
+              </p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button
+                type="button"
+                id="btn-date-range"
+                class="inline-flex items-center gap-1.5 rounded-xl border border-stone/80 bg-white px-3.5 py-2 text-[12px] font-medium text-ink transition-colors hover:border-stone hover:bg-[#f5f5f3]"
+              >
+                <i class="fa-solid fa-calendar h-4 w-4 text-sage"></i>
+                Last 30 days
+              </button>
+              <button
+                type="button"
+                id="btn-add-property"
+                class="inline-flex items-center gap-1.5 rounded-xl bg-ink px-3.5 py-2 text-[12px] font-medium text-white transition-colors hover:bg-ink-light"
+              >
+                <i class="fa-solid fa-plus h-4 w-4"></i>
+                Add Property
+              </button>
+            </div>
+          </div>
+
+          <!-- ===== KPI CARDS ===== -->
+          <div
+            id="kpi-grid"
+            class="grid grid-cols-2 gap-3 lg:grid-cols-4"
+            data-state="populated"
+          >
+            <!-- Skeleton state -->
+            <div
+              class="skeleton-pulse rounded-2xl bg-white p-5"
+              data-state="loading"
+              style="display: none"
+            >
+              <div class="h-3 w-20 rounded bg-[#f2f1ed]"></div>
+              <div class="mt-3 h-7 w-16 rounded bg-[#f2f1ed]"></div>
+              <div class="mt-3 h-3 w-24 rounded bg-[#f2f1ed]"></div>
+            </div>
+
+            <!-- Populated state -->
+            <div
+              data-kpi="total-properties"
+              class="content-block rounded-2xl bg-white p-5"
+            >
+              <p class="text-[12px] font-medium text-sage">Total Properties</p>
+              <p
+                class="mt-2 font-mono text-[28px] font-semibold leading-none tracking-tight text-ink"
+                data-value="248"
+              >
+                248
+              </p>
+              <div class="mt-2.5 flex items-center gap-1.5">
+                <span
+                  class="inline-flex items-center gap-0.5 rounded-full bg-[#16a34a]/10 px-1.5 py-0.5 text-[10px] font-semibold text-[#16a34a]"
+                >
+                  <i class="fa-solid fa-chevron-up h-2.5 w-2.5"></i>
+                  <span data-trend>+12</span>
+                </span>
+                <span class="text-[11px] text-sage">this month</span>
+              </div>
+            </div>
+
+            <div
+              data-kpi="owners"
+              class="content-block rounded-2xl bg-white p-5"
+            >
+              <p class="text-[12px] font-medium text-sage">Property Owners</p>
+              <p
+                class="mt-2 font-mono text-[28px] font-semibold leading-none tracking-tight text-ink"
+                data-value="86"
+              >
+                86
+              </p>
+              <div class="mt-2.5 flex items-center gap-1.5">
+                <span
+                  class="inline-flex items-center gap-0.5 rounded-full bg-[#16a34a]/10 px-1.5 py-0.5 text-[10px] font-semibold text-[#16a34a]"
+                >
+                  <i class="fa-solid fa-chevron-up h-2.5 w-2.5"></i>
+                  <span data-trend>+3</span>
+                </span>
+                <span class="text-[11px] text-sage">this month</span>
+              </div>
+            </div>
+
+            <div
+              data-kpi="agents"
+              class="content-block rounded-2xl bg-white p-5"
+            >
+              <p class="text-[12px] font-medium text-sage">Agents</p>
+              <p
+                class="mt-2 font-mono text-[28px] font-semibold leading-none tracking-tight text-ink"
+                data-value="24"
+              >
+                24
+              </p>
+              <div class="mt-2.5 flex items-center gap-1.5">
+                <span
+                  class="inline-flex items-center gap-0.5 rounded-full bg-[#16a34a]/10 px-1.5 py-0.5 text-[10px] font-semibold text-[#16a34a]"
+                >
+                  <i class="fa-solid fa-chevron-up h-2.5 w-2.5"></i>
+                  <span data-trend>+1</span>
+                </span>
+                <span class="text-[11px] text-sage">this month</span>
+              </div>
+            </div>
+
+            <div
+              data-kpi="active-listings"
+              class="content-block rounded-2xl bg-white p-5"
+            >
+              <p class="stat-label text-[12px] font-medium text-sage">
+                Active Listings
+              </p>
+              <p
+                class="mt-2 font-mono text-[28px] font-semibold leading-none tracking-tight text-ink"
+                data-value="142"
+              >
+                142
+              </p>
+              <div class="mt-2.5 flex items-center gap-1.5">
+                <span
+                  class="inline-flex items-center gap-0.5 rounded-full bg-[#16a34a]/10 px-1.5 py-0.5 text-[10px] font-semibold text-[#16a34a]"
+                >
+                  <i class="fa-solid fa-chevron-up h-2.5 w-2.5"></i>
+                  <span data-trend>+8</span>
+                </span>
+                <span class="stat-change text-[11px] text-sage"
+                  >this month</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== APPLICATIONS + REVENUE + ALERTS ===== -->
+          <div class="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-12">
+            <!-- Applications Breakdown -->
+            <div
+              data-section="applications-breakdown"
+              class="content-block rounded-2xl bg-white p-5 lg:col-span-5"
+            >
+              <div class="flex items-center justify-between">
+                <h3 class="text-[13px] font-semibold text-ink">Applications</h3>
+                <a
+                  href="applications.html"
+                  class="text-[12px] font-medium text-sage transition-colors hover:text-ink"
+                  >View all</a
+                >
+              </div>
+              <div class="mt-4 flex items-end gap-6">
+                <div>
+                  <p
+                    class="font-mono text-[28px] font-semibold leading-none tracking-tight text-ink"
+                  >
+                    47
+                  </p>
+                  <p class="mt-1.5 text-[11px] text-sage">pending review</p>
+                </div>
+                <div class="flex-1">
+                  <div
+                    class="h-2.5 w-full overflow-hidden rounded-full bg-[#f2f1ed]"
+                  >
+                    <div class="flex h-full">
+                      <div
+                        class="rounded-l-full bg-[#16a34a]"
+                        style="width: 51%"
+                      ></div>
+                      <div class="bg-[#b8860b]" style="width: 38%"></div>
+                      <div
+                        class="rounded-r-full bg-stone-dark"
+                        style="width: 11%"
+                      ></div>
+                    </div>
+                  </div>
+                  <div class="mt-2.5 flex gap-4 text-[10px] text-sage">
+                    <span class="flex items-center gap-1.5"
+                      ><span
+                        class="h-1.5 w-1.5 rounded-full bg-[#16a34a]"
+                      ></span
+                      >12 Approved</span
+                    >
+                    <span class="flex items-center gap-1.5"
+                      ><span
+                        class="h-1.5 w-1.5 rounded-full bg-[#b8860b]"
+                      ></span
+                      >18 Pending</span
+                    >
+                    <span class="flex items-center gap-1.5"
+                      ><span
+                        class="h-1.5 w-1.5 rounded-full bg-stone-dark"
+                      ></span
+                      >5 Rejected</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Revenue -->
+            <div
+              data-section="revenue"
+              class="content-block rounded-2xl bg-white p-5 lg:col-span-4"
+            >
+              <div class="flex items-center justify-between">
+                <h3 class="text-[13px] font-semibold text-ink">Revenue</h3>
+                <span
+                  class="inline-flex items-center gap-1 rounded-full bg-[#16a34a]/10 px-2 py-0.5 text-[10px] font-semibold text-[#16a34a]"
+                >
+                  <i class="fa-solid fa-chevron-up h-2.5 w-2.5"></i>
+                  +14%
+                </span>
+              </div>
+              <p
+                class="mt-3 font-mono text-[28px] font-semibold leading-none tracking-tight text-ink"
+              >
+                ₦4,280,000
+              </p>
+              <p class="mt-1.5 text-[11px] text-sage">32 transactions</p>
+              <!-- Revenue chart placeholder — JS will render a real chart here -->
+              <div
+                id="revenue-chart"
+                class="mt-4 flex items-end gap-[3px]"
+                data-chart="revenue"
+              >
+                <div
+                  class="w-full rounded-sm bg-[#f2f1ed]"
+                  style="height: 35%"
+                ></div>
+                <div
+                  class="w-full rounded-sm bg-[#f2f1ed]"
+                  style="height: 50%"
+                ></div>
+                <div
+                  class="w-full rounded-sm bg-[#f2f1ed]"
+                  style="height: 30%"
+                ></div>
+                <div
+                  class="w-full rounded-sm bg-[#f2f1ed]"
+                  style="height: 65%"
+                ></div>
+                <div
+                  class="w-full rounded-sm bg-[#f2f1ed]"
+                  style="height: 45%"
+                ></div>
+                <div
+                  class="w-full rounded-sm bg-[#f2f1ed]"
+                  style="height: 60%"
+                ></div>
+                <div
+                  class="w-full rounded-sm bg-stone-dark/70"
+                  style="height: 75%"
+                ></div>
+                <div
+                  class="w-full rounded-sm bg-ink"
+                  style="height: 100%"
+                ></div>
+              </div>
+              <div
+                class="mt-1.5 flex justify-between text-[9px] font-medium text-stone-dark"
+              >
+                <span>Jan</span><span>Aug</span>
+              </div>
+            </div>
+
+            <!-- Alerts -->
+            <div
+              data-section="alerts"
+              class="content-block rounded-2xl bg-white p-5 lg:col-span-3"
+            >
+              <div class="flex items-center justify-between">
+                <h3 class="text-[13px] font-semibold text-ink">Alerts</h3>
+                <span
+                  data-badge="alerts-count"
+                  class="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[#b8860b]/15 px-1.5 text-[10px] font-bold text-[#b8860b]"
+                  >5</span
+                >
+              </div>
+              <div
+                id="alerts-list"
+                class="mt-4 flex flex-col gap-3"
+                data-list="alerts"
+              >
+                <div data-alert-id="1" class="flex items-start gap-2.5">
+                  <span
+                    class="mt-[5px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#b8860b]"
+                  ></span>
+                  <p class="text-[12px] leading-snug text-ink">
+                    New application for 14 Elm St
+                  </p>
+                </div>
+                <div data-alert-id="2" class="flex items-start gap-2.5">
+                  <span
+                    class="mt-[5px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#16a34a]"
+                  ></span>
+                  <p class="text-[12px] leading-snug text-ink">
+                    Payment received — ₦320k
+                  </p>
+                </div>
+                <div data-alert-id="3" class="flex items-start gap-2.5">
+                  <span
+                    class="mt-[5px] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-dark"
+                  ></span>
+                  <p class="text-[12px] leading-snug text-sage">
+                    Listing expired — 22 Oak Dr
+                  </p>
+                </div>
+              </div>
+              <!-- Empty state (hidden by default) -->
+              <div
+                id="alerts-empty"
+                class="mt-6 text-center"
+                style="display: none"
+              >
+                <i class="fa-solid fa-bell mx-auto h-8 w-8 text-stone"></i>
+                <p class="mt-2 text-[12px] text-sage">No alerts right now</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== PROPERTIES TABLE + ACTIVITY ===== -->
+          <div class="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-12">
+            <!-- Recent Properties -->
+            <div
+              data-section="recent-properties"
+              class="content-block overflow-hidden rounded-2xl bg-white xl:col-span-8"
+            >
+              <div class="flex items-center justify-between px-5 pt-5 pb-3">
+                <h3 class="text-[13px] font-semibold text-ink">
+                  Recent Properties
+                </h3>
+                <a
+                  href="properties.html"
+                  class="text-[12px] font-medium text-sage transition-colors hover:text-ink"
+                  >View all</a
+                >
+              </div>
+              <div
+                id="properties-table-container"
+                class="overflow-x-auto"
+                data-table="properties"
+              >
+                <table class="w-full min-w-[520px]">
+                  <thead>
+                    <tr class="border-y border-[#f2f1ed]">
+                      <th
+                        class="px-5 py-2 text-left text-[10px] font-semibold uppercase tracking-[0.06em] text-sage"
+                      >
+                        Property
+                      </th>
+                      <th
+                        class="px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-[0.06em] text-sage"
+                      >
+                        Type
+                      </th>
+                      <th
+                        class="px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-[0.06em] text-sage"
+                      >
+                        Status
+                      </th>
+                      <th
+                        class="px-3 py-2 text-right text-[10px] font-semibold uppercase tracking-[0.06em] text-sage"
+                      >
+                        Rent
+                      </th>
+                      <th class="px-5 py-2"></th>
+                    </tr>
+                  </thead>
+                  <tbody
+                    id="properties-tbody"
+                    class="divide-y divide-[#f2f1ed]"
+                    data-template="property-row"
+                  >
+                    <tr
+                      data-property-id="1"
+                      class="transition-colors hover:bg-[#f8f7f4]"
+                    >
+                      <td class="px-5 py-3">
+                        <div class="flex items-center gap-3">
+                          <img
+                            src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=120&q=80"
+                            alt="14 Elm Street"
+                            class="h-10 w-10 shrink-0 rounded-xl object-cover"
+                          />
+                          <div class="min-w-0">
+                            <p class="text-[13px] font-medium text-ink">
+                              14 Elm Street
+                            </p>
+                            <p class="text-[11px] text-sage">
+                              3 bed · 2 bath · Riverton
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="px-3 py-3 text-[12px] text-sage">Rental</td>
+                      <td class="px-3 py-3">
+                        <span
+                          class="inline-flex rounded-full bg-[#16a34a]/10 px-2 py-0.5 text-[10px] font-semibold text-[#16a34a]"
+                          >Occupied</span
+                        >
+                      </td>
+                      <td
+                        class="px-3 py-3 text-right font-mono text-[13px] font-medium text-ink"
+                      >
+                        ₦850k<span class="text-sage font-normal">/mo</span>
+                      </td>
+                      <td class="px-5 py-3 text-right">
+                        <a
+                          href="property-detail.html?id=1"
+                          class="text-[12px] font-medium text-sage transition-colors hover:text-ink"
+                          >View</a
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      data-property-id="2"
+                      class="transition-colors hover:bg-[#f8f7f4]"
+                    >
+                      <td class="px-5 py-3">
+                        <div class="flex items-center gap-3">
+                          <img
+                            src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=120&q=80"
+                            alt="22 Oak Drive"
+                            class="h-10 w-10 shrink-0 rounded-xl object-cover"
+                          />
+                          <div class="min-w-0">
+                            <p class="text-[13px] font-medium text-ink">
+                              22 Oak Drive
+                            </p>
+                            <p class="text-[11px] text-sage">
+                              4 bed · 3 bath · Riverton
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="px-3 py-3 text-[12px] text-sage">Rental</td>
+                      <td class="px-3 py-3">
+                        <span
+                          class="inline-flex rounded-full bg-[#b8860b]/10 px-2 py-0.5 text-[10px] font-semibold text-[#b8860b]"
+                          >Listed</span
+                        >
+                      </td>
+                      <td
+                        class="px-3 py-3 text-right font-mono text-[13px] font-medium text-ink"
+                      >
+                        ₦1.2M<span class="text-sage font-normal">/mo</span>
+                      </td>
+                      <td class="px-5 py-3 text-right">
+                        <a
+                          href="property-detail.html?id=2"
+                          class="text-[12px] font-medium text-sage transition-colors hover:text-ink"
+                          >View</a
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      data-property-id="3"
+                      class="transition-colors hover:bg-[#f8f7f4]"
+                    >
+                      <td class="px-5 py-3">
+                        <div class="flex items-center gap-3">
+                          <img
+                            src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=120&q=80"
+                            alt="8 Birchwood Lane"
+                            class="h-10 w-10 shrink-0 rounded-xl object-cover"
+                          />
+                          <div class="min-w-0">
+                            <p class="text-[13px] font-medium text-ink">
+                              8 Birchwood Lane
+                            </p>
+                            <p class="text-[11px] text-sage">
+                              2 bed · 2 bath · Elmhurst
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="px-3 py-3 text-[12px] text-sage">Rental</td>
+                      <td class="px-3 py-3">
+                        <span
+                          class="inline-flex rounded-full bg-[#16a34a]/10 px-2 py-0.5 text-[10px] font-semibold text-[#16a34a]"
+                          >Occupied</span
+                        >
+                      </td>
+                      <td
+                        class="px-3 py-3 text-right font-mono text-[13px] font-medium text-ink"
+                      >
+                        ₦620k<span class="text-sage font-normal">/mo</span>
+                      </td>
+                      <td class="px-5 py-3 text-right">
+                        <a
+                          href="property-detail.html?id=3"
+                          class="text-[12px] font-medium text-sage transition-colors hover:text-ink"
+                          >View</a
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      data-property-id="4"
+                      class="transition-colors hover:bg-[#f8f7f4]"
+                    >
+                      <td class="px-5 py-3">
+                        <div class="flex items-center gap-3">
+                          <img
+                            src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=120&q=80"
+                            alt="31 Maple Court"
+                            class="h-10 w-10 shrink-0 rounded-xl object-cover"
+                          />
+                          <div class="min-w-0">
+                            <p class="text-[13px] font-medium text-ink">
+                              31 Maple Court
+                            </p>
+                            <p class="text-[11px] text-sage">
+                              5 bed · 4 bath · Riverton
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="px-3 py-3 text-[12px] text-sage">Sale</td>
+                      <td class="px-3 py-3">
+                        <span
+                          class="inline-flex rounded-full bg-[#b8860b]/10 px-2 py-0.5 text-[10px] font-semibold text-[#b8860b]"
+                          >Listed</span
+                        >
+                      </td>
+                      <td
+                        class="px-3 py-3 text-right font-mono text-[13px] font-medium text-ink"
+                      >
+                        ₦1.5M<span class="text-sage font-normal">/mo</span>
+                      </td>
+                      <td class="px-5 py-3 text-right">
+                        <a
+                          href="property-detail.html?id=4"
+                          class="text-[12px] font-medium text-sage transition-colors hover:text-ink"
+                          >View</a
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      data-property-id="5"
+                      class="transition-colors hover:bg-[#f8f7f4]"
+                    >
+                      <td class="px-5 py-3">
+                        <div class="flex items-center gap-3">
+                          <img
+                            src="https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=120&q=80"
+                            alt="7 Kestrel Row"
+                            class="h-10 w-10 shrink-0 rounded-xl object-cover"
+                          />
+                          <div class="min-w-0">
+                            <p class="text-[13px] font-medium text-ink">
+                              7 Kestrel Row
+                            </p>
+                            <p class="text-[11px] text-sage">
+                              2 bed · 1 bath · Elmhurst
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="px-3 py-3 text-[12px] text-sage">Rental</td>
+                      <td class="px-3 py-3">
+                        <span
+                          class="inline-flex rounded-full bg-[#dc2626]/10 px-2 py-0.5 text-[10px] font-semibold text-[#dc2626]"
+                          >Vacant</span
+                        >
+                      </td>
+                      <td
+                        class="px-3 py-3 text-right font-mono text-[13px] font-medium text-ink"
+                      >
+                        ₦450k<span class="text-sage font-normal">/mo</span>
+                      </td>
+                      <td class="px-5 py-3 text-right">
+                        <a
+                          href="property-detail.html?id=5"
+                          class="text-[12px] font-medium text-sage transition-colors hover:text-ink"
+                          >View</a
+                        >
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <!-- Empty state (hidden) -->
+                <div
+                  id="properties-empty"
+                  class="px-5 py-12 text-center"
+                  style="display: none"
+                >
+                  <i class="fa-solid fa-house mx-auto h-10 w-10 text-stone"></i>
+                  <p class="mt-3 text-[13px] font-medium text-ink">
+                    No properties found
+                  </p>
+                  <p class="mt-1 text-[12px] text-sage">
+                    Try adjusting your search or filters.
+                  </p>
+                  <button
+                    type="button"
+                    class="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-ink px-3.5 py-2 text-[12px] font-medium text-white hover:bg-ink-light"
+                  >
+                    <i class="fa-solid fa-plus h-4 w-4"></i>
+                    Add Property
+                  </button>
+                </div>
+                <!-- Error state (hidden) -->
+                <div
+                  id="properties-error"
+                  class="px-5 py-12 text-center"
+                  style="display: none"
+                >
+                  <i
+                    class="fa-solid fa-circle-exclamation mx-auto h-10 w-10 text-[#dc2626]/40"
+                  ></i>
+                  <p class="mt-3 text-[13px] font-medium text-ink">
+                    Failed to load properties
+                  </p>
+                  <p class="mt-1 text-[12px] text-sage">
+                    Something went wrong. Please try again.
+                  </p>
+                  <button
+                    type="button"
+                    id="btn-retry-properties"
+                    class="mt-4 inline-flex items-center gap-1.5 rounded-xl border border-stone bg-white px-3.5 py-2 text-[12px] font-medium text-ink hover:bg-[#f5f5f3]"
+                  >
+                    <i class="fa-solid fa-arrows-rotate h-4 w-4"></i>
+                    Retry
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Activity Feed -->
+            <div
+              data-section="activity"
+              class="content-block overflow-hidden rounded-2xl bg-white xl:col-span-4"
+            >
+              <div class="flex items-center justify-between px-5 pt-5 pb-3">
+                <h3 class="text-[13px] font-semibold text-ink">Activity</h3>
+                <a
+                  href="reports.html"
+                  class="text-[12px] font-medium text-sage transition-colors hover:text-ink"
+                  >View all</a
+                >
+              </div>
+              <div id="activity-list" class="px-5 pb-5" data-list="activity">
+                <div data-activity-id="1" class="flex items-start gap-3 py-3">
+                  <img
+                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=80&q=80"
+                    alt=""
+                    class="h-8 w-8 shrink-0 rounded-full object-cover"
+                  />
+                  <div class="min-w-0 flex-1">
+                    <p class="text-[12px] text-ink">
+                      <span class="font-medium">Daniel Osei</span> applied for
+                      <span class="font-medium">14 Elm St</span>
+                    </p>
+                    <p class="mt-0.5 text-[11px] text-sage">2 hours ago</p>
+                  </div>
+                  <span
+                    class="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#16a34a]"
+                  ></span>
+                </div>
+                <div
+                  data-activity-id="2"
+                  class="flex items-start gap-3 py-3 border-t border-[#f2f1ed]"
+                >
+                  <img
+                    src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=80&q=80"
+                    alt=""
+                    class="h-8 w-8 shrink-0 rounded-full object-cover"
+                  />
+                  <div class="min-w-0 flex-1">
+                    <p class="text-[12px] text-ink">
+                      <span class="font-medium">Amina Bello</span> payment
+                      received — <span class="font-medium">₦320,000</span>
+                    </p>
+                    <p class="mt-0.5 text-[11px] text-sage">5 hours ago</p>
+                  </div>
+                  <span
+                    class="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#b8860b]"
+                  ></span>
+                </div>
+                <div
+                  data-activity-id="3"
+                  class="flex items-start gap-3 py-3 border-t border-[#f2f1ed]"
+                >
+                  <img
+                    src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80"
+                    alt=""
+                    class="h-8 w-8 shrink-0 rounded-full object-cover"
+                  />
+                  <div class="min-w-0 flex-1">
+                    <p class="text-[12px] text-ink">
+                      <span class="font-medium">Tunde Adesanya</span> listed
+                      <span class="font-medium">31 Maple Court</span>
+                    </p>
+                    <p class="mt-0.5 text-[11px] text-sage">Yesterday</p>
+                  </div>
+                  <span
+                    class="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#16a34a]"
+                  ></span>
+                </div>
+                <div
+                  data-activity-id="4"
+                  class="flex items-start gap-3 py-3 border-t border-[#f2f1ed]"
+                >
+                  <img
+                    src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=80&q=80"
+                    alt=""
+                    class="h-8 w-8 shrink-0 rounded-full object-cover"
+                  />
+                  <div class="min-w-0 flex-1">
+                    <p class="text-[12px] text-ink">
+                      Lease renewed —
+                      <span class="font-medium">8 Birchwood Lane</span>
+                    </p>
+                    <p class="mt-0.5 text-[11px] text-sage">3 days ago</p>
+                  </div>
+                  <span
+                    class="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-stone-dark"
+                  ></span>
+                </div>
+                <div
+                  data-activity-id="5"
+                  class="flex items-start gap-3 py-3 border-t border-[#f2f1ed]"
+                >
+                  <img
+                    src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=80&q=80"
+                    alt=""
+                    class="h-8 w-8 shrink-0 rounded-full object-cover"
+                  />
+                  <div class="min-w-0 flex-1">
+                    <p class="text-[12px] text-ink">
+                      <span class="font-medium">Kemi Adeyemi</span> profile
+                      approved
+                    </p>
+                    <p class="mt-0.5 text-[11px] text-sage">4 days ago</p>
+                  </div>
+                  <span
+                    class="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#16a34a]"
+                  ></span>
+                </div>
+              </div>
+              <!-- Empty state -->
+              <div
+                id="activity-empty"
+                class="px-5 pb-10 text-center"
+                style="display: none"
+              >
+                <i
+                  class="fa-solid fa-chart-line mx-auto h-8 w-8 text-stone"
+                ></i>
+                <p class="mt-2 text-[12px] text-sage">No recent activity</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== AGENT PROFILE — agent only ===== -->
+          <div
+            data-section="agent-profile"
+            class="mt-4 rounded-2xl bg-white p-5"
+          >
+            <h3 class="text-[13px] font-semibold text-ink">Your Profile</h3>
+            <div class="mt-4 flex items-start gap-4">
+              <img
+                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=200&q=80"
+                alt=""
+                class="h-14 w-14 rounded-2xl object-cover"
+              />
+              <div class="flex-1">
+                <p class="text-[15px] font-semibold text-ink">Tunde Adesanya</p>
+                <p class="text-[12px] text-sage">
+                  House Agent · Riverton Office
+                </p>
+                <div class="mt-4 grid grid-cols-4 gap-4">
+                  <div>
+                    <p
+                      class="font-mono text-[18px] font-semibold text-ink"
+                      data-value="18"
+                    >
+                      18
+                    </p>
+                    <p class="text-[11px] text-sage">Assigned</p>
+                  </div>
+                  <div>
+                    <p
+                      class="font-mono text-[18px] font-semibold text-ink"
+                      data-value="12"
+                    >
+                      12
+                    </p>
+                    <p class="text-[11px] text-sage">Listings</p>
+                  </div>
+                  <div>
+                    <p
+                      class="font-mono text-[18px] font-semibold text-ink"
+                      data-value="34"
+                    >
+                      34
+                    </p>
+                    <p class="text-[11px] text-sage">Handled</p>
+                  </div>
+                  <div>
+                    <p
+                      class="font-mono text-[18px] font-semibold text-[#16a34a]"
+                      data-value="4.8"
+                    >
+                      4.8
+                    </p>
+                    <p class="text-[11px] text-sage">Rating</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- =================== MODALS =================== -->
+
+    <!-- Add Property Modal -->
+    <div
+      id="modal-add-property"
+      class="fixed inset-0 z-[60] hidden"
+      aria-hidden="true"
+    >
+      <div
+        class="absolute inset-0 bg-black/40"
+        data-modal-panel="add-property"
+      ></div>
+      <div class="absolute inset-0 flex items-center justify-center p-4">
+        <div
+          class="w-full max-w-lg rounded-2xl bg-white shadow-xl"
+          role="dialog"
+          aria-labelledby="modal-add-property-title"
+          aria-modal="true"
+        >
+          <!-- Modal Header -->
+          <div
+            class="flex items-center justify-between border-b border-[#f2f1ed] px-6 py-4"
+          >
+            <h2
+              id="modal-add-property-title"
+              class="text-[15px] font-semibold text-ink"
+            >
+              Add Property
+            </h2>
+            <button
+              type="button"
+              data-modal-close="add-property"
+              class="flex h-8 w-8 items-center justify-center rounded-lg text-sage transition-colors hover:bg-[#f2f1ed] hover:text-ink"
+              aria-label="Close"
+            >
+              <i class="fa-solid fa-xmark h-4 w-4"></i>
+            </button>
+          </div>
+          <!-- Modal Body -->
+          <div class="max-h-[70vh] overflow-y-auto px-6 py-5">
+            <form
+              id="form-add-property"
+              data-form="add-property"
+              class="space-y-4"
+            >
+              <!-- Property Name -->
+              <div>
+                <label
+                  for="prop-name"
+                  class="block text-[12px] font-medium text-ink"
+                  >Property Name</label
+                >
+                <input
+                  type="text"
+                  id="prop-name"
+                  name="name"
+                  placeholder="e.g. 14 Elm Street"
+                  class="mt-1.5 w-full rounded-xl border border-stone bg-[#f8f7f4] px-3.5 py-2.5 text-[13px] text-ink placeholder-sage/50 transition-colors focus:border-sage focus:outline-none focus:bg-white"
+                />
+              </div>
+              <!-- Address -->
+              <div>
+                <label
+                  for="prop-address"
+                  class="block text-[12px] font-medium text-ink"
+                  >Address</label
+                >
+                <input
+                  type="text"
+                  id="prop-address"
+                  name="address"
+                  placeholder="Full address"
+                  class="mt-1.5 w-full rounded-xl border border-stone bg-[#f8f7f4] px-3.5 py-2.5 text-[13px] text-ink placeholder-sage/50 transition-colors focus:border-sage focus:outline-none focus:bg-white"
+                />
+              </div>
+              <!-- Type + Status row -->
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label
+                    for="prop-type"
+                    class="block text-[12px] font-medium text-ink"
+                    >Type</label
+                  >
+                  <select
+                    id="prop-type"
+                    name="type"
+                    class="mt-1.5 w-full rounded-xl border border-stone bg-[#f8f7f4] px-3.5 py-2.5 text-[13px] text-ink transition-colors focus:border-sage focus:outline-none focus:bg-white"
+                  >
+                    <option value="">Select type</option>
+                    <option value="rental">Rental</option>
+                    <option value="sale">Sale</option>
+                  </select>
+                </div>
+                <div>
+                  <label
+                    for="prop-status"
+                    class="block text-[12px] font-medium text-ink"
+                    >Status</label
+                  >
+                  <select
+                    id="prop-status"
+                    name="status"
+                    class="mt-1.5 w-full rounded-xl border border-stone bg-[#f8f7f4] px-3.5 py-2.5 text-[13px] text-ink transition-colors focus:border-sage focus:outline-none focus:bg-white"
+                  >
+                    <option value="">Select status</option>
+                    <option value="vacant">Vacant</option>
+                    <option value="occupied">Occupied</option>
+                    <option value="listed">Listed</option>
+                  </select>
+                </div>
+              </div>
+              <!-- Bedrooms + Bathrooms -->
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label
+                    for="prop-beds"
+                    class="block text-[12px] font-medium text-ink"
+                    >Bedrooms</label
+                  >
+                  <input
+                    type="number"
+                    id="prop-beds"
+                    name="beds"
+                    min="0"
+                    placeholder="0"
+                    class="mt-1.5 w-full rounded-xl border border-stone bg-[#f8f7f4] px-3.5 py-2.5 text-[13px] text-ink placeholder-sage/50 transition-colors focus:border-sage focus:outline-none focus:bg-white"
+                  />
+                </div>
+                <div>
+                  <label
+                    for="prop-baths"
+                    class="block text-[12px] font-medium text-ink"
+                    >Bathrooms</label
+                  >
+                  <input
+                    type="number"
+                    id="prop-baths"
+                    name="baths"
+                    min="0"
+                    placeholder="0"
+                    class="mt-1.5 w-full rounded-xl border border-stone bg-[#f8f7f4] px-3.5 py-2.5 text-[13px] text-ink placeholder-sage/50 transition-colors focus:border-sage focus:outline-none focus:bg-white"
+                  />
+                </div>
+              </div>
+              <!-- Rent / Price -->
+              <div>
+                <label
+                  for="prop-rent"
+                  class="block text-[12px] font-medium text-ink"
+                  >Rent / Price (₦)</label
+                >
+                <input
+                  type="number"
+                  id="prop-rent"
+                  name="rent"
+                  min="0"
+                  placeholder="e.g. 850000"
+                  class="mt-1.5 w-full rounded-xl border border-stone bg-[#f8f7f4] px-3.5 py-2.5 text-[13px] text-ink placeholder-sage/50 transition-colors focus:border-sage focus:outline-none focus:bg-white"
+                />
+              </div>
+              <!-- Owner -->
+              <div>
+                <label
+                  for="prop-owner"
+                  class="block text-[12px] font-medium text-ink"
+                  >Owner</label
+                >
+                <select
+                  id="prop-owner"
+                  name="ownerId"
+                  class="mt-1.5 w-full rounded-xl border border-stone bg-[#f8f7f4] px-3.5 py-2.5 text-[13px] text-ink transition-colors focus:border-sage focus:outline-none focus:bg-white"
+                >
+                  <option value="">Select owner</option>
+                  <option value="1">Amina Bello</option>
+                  <option value="2">Kemi Adeyemi</option>
+                  <option value="3">Oluwaseun Coker</option>
+                </select>
+              </div>
+              <!-- Description -->
+              <div>
+                <label
+                  for="prop-desc"
+                  class="block text-[12px] font-medium text-ink"
+                  >Description</label
+                >
+                <textarea
+                  id="prop-desc"
+                  name="description"
+                  rows="3"
+                  placeholder="Brief property description..."
+                  class="mt-1.5 w-full resize-none rounded-xl border border-stone bg-[#f8f7f4] px-3.5 py-2.5 text-[13px] text-ink placeholder-sage/50 transition-colors focus:border-sage focus:outline-none focus:bg-white"
+                ></textarea>
+              </div>
+            </form>
+          </div>
+          <!-- Modal Footer -->
+          <div
+            class="flex items-center justify-end gap-2 border-t border-[#f2f1ed] px-6 py-4"
+          >
+            <button
+              type="button"
+              data-modal-close="add-property"
+              class="rounded-xl border border-stone bg-white px-4 py-2 text-[12px] font-medium text-ink transition-colors hover:bg-[#f5f5f3]"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              form="form-add-property"
+              class="rounded-xl bg-ink px-4 py-2 text-[12px] font-medium text-white transition-colors hover:bg-ink-light"
+            >
+              Add Property
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Confirm Delete Modal -->
+    <div
+      id="modal-confirm-delete"
+      class="fixed inset-0 z-[60] hidden"
+      aria-hidden="true"
+    >
+      <div
+        class="absolute inset-0 bg-black/40"
+        data-modal-panel="confirm-delete"
+      ></div>
+      <div class="absolute inset-0 flex items-center justify-center p-4">
+        <div
+          class="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl"
+          role="alertdialog"
+          aria-labelledby="modal-confirm-delete-title"
+          aria-modal="true"
+        >
+          <div
+            class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#dc2626]/10"
+          >
+            <i
+              class="fa-solid fa-triangle-exclamation h-6 w-6 text-[#dc2626]"
+            ></i>
+          </div>
+          <h3
+            id="modal-confirm-delete-title"
+            class="mt-4 text-center text-[15px] font-semibold text-ink"
+          >
+            Delete Property?
+          </h3>
+          <p class="mt-2 text-center text-[13px] text-sage">
+            This action cannot be undone. The property and all associated data
+            will be permanently removed.
+          </p>
+          <div class="mt-6 flex gap-2">
+            <button
+              type="button"
+              data-modal-close="confirm-delete"
+              class="flex-1 rounded-xl border border-stone bg-white px-4 py-2.5 text-[12px] font-medium text-ink transition-colors hover:bg-[#f5f5f3]"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              id="btn-confirm-delete"
+              class="flex-1 rounded-xl bg-[#dc2626] px-4 py-2.5 text-[12px] font-medium text-white transition-colors hover:bg-[#dc2626]/90"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success Toast -->
+    <div
+      id="toast-success"
+      class="fixed bottom-6 right-6 z-[70] hidden"
+      role="status"
+      aria-live="polite"
+    >
+      <div
+        class="flex items-center gap-3 rounded-xl bg-[#1c1c1e] px-4 py-3 shadow-lg"
+      >
+        <span
+          class="flex h-6 w-6 items-center justify-center rounded-full bg-[#16a34a]/20"
+        >
+          <i class="fa-solid fa-check h-3.5 w-3.5 text-[#16a34a]"></i>
+        </span>
+        <p id="toast-message" class="text-[13px] font-medium text-white">
+          Property added successfully
+        </p>
+        <button
+          type="button"
+          data-toast-close
+          class="ml-2 text-white/40 hover:text-white/70"
+          aria-label="Dismiss"
+        >
+          <i class="fa-solid fa-xmark h-4 w-4"></i>
+        </button>
+      </div>
+    </div>
+
+    <script src="../js/validation.js"></script>
+    <script type="module" src="../js/dashboard.js"></script>
+  </body>
+</html>

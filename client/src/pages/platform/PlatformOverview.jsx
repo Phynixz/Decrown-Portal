@@ -12,6 +12,7 @@ import {
   Mail,
   RefreshCw,
   ShieldCheck,
+  Settings,
   Users,
   UserCheck,
   XCircle,
@@ -74,6 +75,7 @@ export default function PlatformOverview() {
   const [overview, setOverview] = useState(null);
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(true);
+  const [showTeamAudit, setShowTeamAudit] = useState(false);
 
   const loadOverview = useCallback(async () => {
     setLoading(true);
@@ -121,6 +123,9 @@ export default function PlatformOverview() {
         <button onClick={loadOverview} disabled={loading} className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3.5 py-2 text-sm font-medium text-ink hover:bg-surface disabled:opacity-60 dark:border-border-dark dark:bg-card-dark dark:text-ink-dark dark:hover:bg-white/5">
           <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} /> Refresh data
         </button>
+        {isOwner && <button onClick={() => setShowTeamAudit((visible) => !visible)} aria-expanded={showTeamAudit} aria-controls="team-audit-panel" className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3.5 py-2 text-sm font-medium text-ink hover:bg-surface dark:border-border-dark dark:bg-card-dark dark:text-ink-dark dark:hover:bg-white/5">
+          <Settings className="h-4 w-4" /> {showTeamAudit ? "Hide team & audit" : "Show team & audit"}
+        </button>}
       </header>
 
       {err && <p role="alert" className="text-sm text-amber-700 dark:text-amber-400">Some information may be out of date: {err}</p>}
@@ -132,7 +137,7 @@ export default function PlatformOverview() {
         </div>
         <div className={`grid grid-cols-2 gap-4 ${isOwner ? "xl:grid-cols-4" : "xl:grid-cols-2"}`}>
           <MetricCard icon={Building2} label="Total client businesses" value={clients.total} detail={`${clients.active || 0} currently active`} accent="bg-ink/5 text-ink dark:bg-white/10 dark:text-ink-dark" />
-          <MetricCard icon={Clock3} label="Awaiting review" value={(clients.pendingVerification || 0) + (clients.pendingApproval || 0)} detail={`${clients.pendingVerification || 0} need email verification · ${clients.pendingApproval || 0} need approval`} accent="bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400" />
+          <MetricCard icon={Clock3} label={isOwner ? "Hostels awaiting review" : "Landlord accounts awaiting review"} value={isOwner ? (operations.pendingHostels || 0) : (clients.pendingVerification || 0) + (clients.pendingApproval || 0)} detail={isOwner ? "Hostels stay hidden until you approve them" : `${clients.pendingVerification || 0} need email verification · ${clients.pendingApproval || 0} need approval`} accent="bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400" />
           {isOwner && <MetricCard icon={UserCheck} label="Registered tenants" value={operations.tenants} detail={`${operations.activeTenants || 0} marked active`} accent="bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400" />}
           {isOwner && <MetricCard icon={Users} label="Active platform staff" value={overview?.staff?.active} detail="Active reviewer and viewer accounts; CEO excluded" accent="bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400" />}
         </div>
@@ -175,7 +180,7 @@ export default function PlatformOverview() {
         </div>}
       </section>
 
-      {isOwner && <section className="overflow-hidden rounded-xl2 border border-border bg-card shadow-card dark:border-border-dark dark:bg-card-dark">
+      {isOwner && showTeamAudit && <section id="team-audit-panel" className="overflow-hidden rounded-xl2 border border-border bg-card shadow-card dark:border-border-dark dark:bg-card-dark">
         <div className="flex items-center justify-between border-b border-border px-5 py-4 dark:border-border-dark"><div><h2 className="text-sm font-semibold text-ink dark:text-ink-dark">Platform activity</h2><p className="mt-1 text-xs text-muted dark:text-muted-dark">Recent sign-ins and administrative actions</p></div><Link to="/platform/settings" className="text-xs font-medium text-accent hover:underline">Open security & audit</Link></div>
         {!overview?.recentActivity?.length ? <p className="px-5 py-8 text-center text-sm text-muted dark:text-muted-dark">No activity recorded yet.</p> : <div className="divide-y divide-border dark:divide-border-dark">{overview.recentActivity.map((event) => <div key={event._id} className="grid gap-1 px-5 py-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"><div><p className="text-sm font-medium text-ink dark:text-ink-dark">{formatAction(event.action)}</p><p className="mt-0.5 text-xs text-muted dark:text-muted-dark">{event.actorName || event.actorEmail} · {event.actorRole}</p></div><time className="text-xs text-muted dark:text-muted-dark sm:text-right">{event.createdAt ? new Date(event.createdAt).toLocaleString() : "Time unavailable"}</time></div>)}</div>}
       </section>}

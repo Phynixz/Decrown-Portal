@@ -1,0 +1,938 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Marlstone Property Group | Real Estate, Done Properly</title>
+    <meta
+      name="description"
+      content="Marlstone Property Group is a full-service real estate agency guiding owners, buyers, and tenants through every stage of a property's life."
+    />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Fraunces:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+      @theme {
+        --color-ink: #171717;
+        --color-ink-light: #262626;
+        --color-paper: #fafaf9;
+        --color-moss: #2f4438;
+        --color-moss-dark: #22332a;
+        --color-moss-light: #3c5747;
+        --color-brass: #b8860b;
+        --color-brass-dark: #8f642f;
+        --color-stone: #e5e5e5;
+        --color-stone-dark: #d4d4d4;
+        --color-sage: #737373;
+        --font-display: "Fraunces", ui-serif, Georgia, serif;
+        --font-sans: "Archivo", ui-sans-serif, system-ui, sans-serif;
+        --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+        --radius: 4px;
+        --container-8xl: 90rem;
+        --tracking-widest2: 0.22em;
+      }
+    </style>
+    <style>
+      /* Smooth anchor scrolling; offset handled per-section via scroll-margin-top */
+      html {
+        scroll-behavior: smooth;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+      }
+    </style>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+  </head>
+  <body class="overflow-x-hidden bg-paper font-sans text-ink antialiased">
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded focus:bg-ink focus:px-4 focus:py-3 focus:text-sm focus:font-medium focus:text-paper"
+    >
+      Skip to main content
+    </a>
+
+    <!-- ============================= HEADER ============================= -->
+    <header
+      id="top"
+      class="sticky top-0 z-50 border-b border-stone bg-paper/95 backdrop-blur-0"
+    >
+      <div
+        class="mx-auto flex h-[76px] max-w-7xl items-center justify-between px-5 sm:px-8"
+      >
+        <a href="#top" class="flex items-baseline gap-2.5">
+          <span
+            class="font-display text-[26px] font-semibold tracking-tight text-ink"
+            >Marlstone</span
+          >
+          <span
+            class="hidden font-mono text-[11px] uppercase tracking-widest2 text-sage sm:inline"
+            >Property Group</span
+          >
+        </a>
+
+        <nav aria-label="Primary" class="hidden items-center gap-10 md:flex">
+          <a
+            href="#home"
+            data-nav="home"
+            class="text-[15px] font-medium text-ink transition-colors hover:text-moss focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-moss"
+            >Home</a
+          >
+          <a
+            href="#about"
+            data-nav="about"
+            class="text-[15px] font-medium text-ink transition-colors hover:text-moss focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-moss"
+            >About</a
+          >
+          <a
+            href="index.html"
+            class="text-[15px] font-medium text-ink transition-colors hover:text-moss focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-moss"
+            >Properties</a
+          >
+          <a
+            href="#testimonials"
+            class="text-[15px] font-medium text-ink transition-colors hover:text-moss focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-moss"
+            >Testimonials</a
+          >
+          <a
+            href="#contact"
+            class="text-[15px] font-medium text-ink transition-colors hover:text-moss focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-moss"
+            >Contact</a
+          >
+        </nav>
+
+        <div class="flex items-center gap-3">
+          <a
+            href="signup.html"
+            class="hidden items-center justify-center rounded border border-ink/15 px-4 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-ink/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-moss sm:inline-flex"
+          >
+            List Property
+          </a>
+          <a
+            href="signup.html"
+            class="hidden items-center justify-center rounded bg-moss px-5 py-2.5 text-sm font-medium text-paper transition-colors hover:bg-moss-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-moss sm:inline-flex"
+          >
+            Sign Up / Sign In
+          </a>
+
+          <details class="group relative md:hidden">
+            <summary
+              class="flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded border border-ink/15 text-ink [&::-webkit-details-marker]:hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-moss"
+            >
+              <i class="fa-solid fa-bars h-5 w-5"></i>
+              <span class="sr-only">Open menu</span>
+            </summary>
+            <div
+              class="absolute right-0 top-[calc(100%+0.75rem)] z-50 w-60 rounded border border-stone bg-paper p-5 shadow-lg"
+            >
+              <nav aria-label="Mobile" class="flex flex-col gap-4">
+                <a
+                  href="#home"
+                  data-nav="home"
+                  class="text-base font-medium text-ink transition-colors hover:text-moss"
+                  >Home</a
+                >
+                <a
+                  href="#about"
+                  data-nav="about"
+                  class="text-base font-medium text-ink transition-colors hover:text-moss"
+                  >About</a
+                >
+                <a
+                  href="index.html"
+                  class="text-base font-medium text-ink transition-colors hover:text-moss"
+                  >Properties</a
+                >
+                <a
+                  href="#testimonials"
+                  class="text-base font-medium text-ink transition-colors hover:text-moss"
+                  >Testimonials</a
+                >
+                <a
+                  href="#contact"
+                  class="text-base font-medium text-ink transition-colors hover:text-moss"
+                  >Contact</a
+                >
+                <a
+                  href="signup.html"
+                  class="text-base font-medium text-ink transition-colors hover:text-moss"
+                  >List Your Property</a
+                >
+                <a
+                  href="signup.html"
+                  class="mt-1 inline-flex items-center justify-center rounded bg-moss px-5 py-2.5 text-sm font-medium text-paper transition-colors hover:bg-moss-dark"
+                  >Sign Up / Sign In</a
+                >
+              </nav>
+            </div>
+          </details>
+        </div>
+      </div>
+    </header>
+
+    <main id="main">
+      <!-- ============================= HERO ============================= -->
+      <section
+        id="home"
+        aria-labelledby="hero-heading"
+        class="scroll-mt-[76px] overflow-hidden"
+      >
+        <div
+          class="relative min-h-[480px] sm:min-h-[560px] md:min-h-[640px] lg:min-h-[700px]"
+        >
+          <img
+            src="https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=2400&q=80"
+            alt="Modern two-story home with an illuminated entrance and garage at dusk"
+            class="absolute inset-0 h-full w-full object-cover"
+          />
+
+          <div class="absolute inset-0 bg-ink/60"></div>
+
+          <span
+            aria-hidden="true"
+            class="absolute left-3 top-3 h-4 w-4 border-l-2 border-t-2 border-brass/80 sm:left-6 sm:top-6 sm:h-5 sm:w-5"
+          ></span>
+          <span
+            aria-hidden="true"
+            class="absolute right-3 top-3 h-4 w-4 border-r-2 border-t-2 border-brass/80 sm:right-6 sm:top-6 sm:h-5 sm:w-5"
+          ></span>
+          <span
+            aria-hidden="true"
+            class="absolute bottom-3 left-3 h-4 w-4 border-b-2 border-l-2 border-brass/80 sm:bottom-6 sm:left-6 sm:h-5 sm:w-5"
+          ></span>
+          <span
+            aria-hidden="true"
+            class="absolute bottom-3 right-3 h-4 w-4 border-b-2 border-r-2 border-brass/80 sm:bottom-6 sm:right-6 sm:h-5 sm:w-5"
+          ></span>
+
+          <div
+            class="relative z-10 mx-auto flex min-h-[480px] sm:min-h-[560px] md:min-h-[640px] lg:min-h-[700px] max-w-7xl flex-col justify-end px-4 pb-12 sm:px-8 sm:pb-16 md:pb-20 lg:px-12"
+          >
+            <p
+              class="font-mono text-[11px] sm:text-xs uppercase tracking-widest2 text-brass"
+            >
+              Residential · Rental · Management
+            </p>
+
+            <h1
+              id="hero-heading"
+              class="mt-3 max-w-3xl text-balance font-display text-[2rem] font-semibold leading-[1.1] tracking-tight text-paper sm:text-5xl md:text-6xl"
+            >
+              Welcome to Marlstone.
+            </h1>
+
+            <p
+              class="mt-4 max-w-xl text-balance text-base leading-relaxed text-paper/80 sm:text-lg"
+            >
+              Real estate, done properly. We guide owners, buyers, and tenants
+              through every stage of a property's life — from the first viewing
+              to the final signature, and everything after.
+            </p>
+
+            <div
+              class="mt-6 flex flex-wrap items-center gap-3 sm:mt-8 sm:gap-4"
+            >
+              <a
+                href="index.html"
+                class="inline-flex items-center justify-center rounded bg-paper px-5 py-3 text-sm font-medium text-ink transition-colors hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-paper sm:px-7 sm:py-3.5"
+              >
+                Browse Properties
+              </a>
+              <a
+                href="signup.html"
+                class="inline-flex items-center justify-center rounded border border-paper/30 px-5 py-3 text-sm font-medium text-paper transition-colors hover:border-paper hover:bg-paper/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-paper sm:px-7 sm:py-3.5"
+              >
+                List Your Property
+              </a>
+            </div>
+
+            <dl
+              class="mt-8 grid max-w-2xl grid-cols-3 gap-4 border-t border-paper/15 pt-6 sm:mt-12 sm:gap-6 sm:pt-8"
+            >
+              <div
+                class="border-l border-paper/15 pl-3 first:border-l-0 first:pl-0 sm:pl-5"
+              >
+                <dt
+                  class="order-2 mt-1 text-[11px] leading-snug text-paper/65 sm:text-xs sm:text-sm"
+                >
+                  Years in the local market
+                </dt>
+                <dd
+                  class="order-1 font-mono text-xl font-medium sm:text-2xl sm:font-medium md:text-3xl"
+                >
+                  12
+                </dd>
+              </div>
+              <div class="border-l border-paper/15 pl-3 sm:pl-5">
+                <dt
+                  class="order-2 mt-1 text-[11px] leading-snug text-paper/65 sm:text-xs sm:text-sm"
+                >
+                  Properties bought, sold &amp; managed
+                </dt>
+                <dd
+                  class="order-1 font-mono text-xl font-medium sm:text-2xl sm:font-medium md:text-3xl"
+                >
+                  1,240+
+                </dd>
+              </div>
+              <div class="border-l border-paper/15 pl-3 sm:pl-5">
+                <dt
+                  class="order-2 mt-1 text-[11px] leading-snug text-paper/65 sm:text-xs sm:text-sm"
+                >
+                  Average client rating
+                </dt>
+                <dd
+                  class="order-1 font-mono text-xl font-medium sm:text-2xl sm:font-medium md:text-3xl"
+                >
+                  4.9/5
+                </dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================= ABOUT ============================= -->
+      <section
+        id="about"
+        aria-labelledby="about-heading"
+        class="scroll-mt-[76px] bg-paper py-20 md:py-28"
+      >
+        <div class="mx-auto max-w-7xl px-5 sm:px-8">
+          <p class="font-mono text-xs uppercase tracking-widest2 text-brass">
+            The Agency
+          </p>
+          <h2
+            id="about-heading"
+            class="mt-4 max-w-2xl text-balance font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl md:text-5xl"
+          >
+            One agency, every stage of the property journey.
+          </h2>
+          <p class="mt-6 max-w-2xl text-lg leading-relaxed text-sage">
+            Marlstone represents property owners, buyers, tenants, and investors
+            — often at the same time, on the same street. We built the agency
+            around one idea: real estate goes smoothly when a single team
+            understands the whole picture, not just one side of the transaction.
+          </p>
+
+          <div
+            class="mt-14 grid grid-cols-1 gap-10 lg:mt-16 lg:grid-cols-12 lg:gap-12"
+          >
+            <!-- Services -->
+            <div class="lg:col-span-7">
+              <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                <div
+                  class="rounded border border-stone bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <i class="fa-solid fa-key h-7 w-7 text-moss"></i>
+                  <h3 class="mt-4 font-display text-lg font-semibold text-ink">
+                    For Buyers
+                  </h3>
+                  <p class="mt-2 text-[15px] leading-relaxed text-sage">
+                    We shortlist honestly, negotiate firmly, and walk every
+                    contract line by line before you sign anything.
+                  </p>
+                </div>
+
+                <div
+                  class="rounded border border-stone bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <i class="fa-solid fa-tag h-7 w-7 text-moss"></i>
+                  <h3 class="mt-4 font-display text-lg font-semibold text-ink">
+                    For Sellers
+                  </h3>
+                  <p class="mt-2 text-[15px] leading-relaxed text-sage">
+                    From pricing and staging to marketing and closing, we manage
+                    the sale so it holds up under offer.
+                  </p>
+                </div>
+
+                <div
+                  class="rounded border border-stone bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <i class="fa-solid fa-file-contract h-7 w-7 text-moss"></i>
+                  <h3 class="mt-4 font-display text-lg font-semibold text-ink">
+                    For Tenants
+                  </h3>
+                  <p class="mt-2 text-[15px] leading-relaxed text-sage">
+                    Clear listings, fast applications, and a lease you can
+                    actually read. No surprises at move-in.
+                  </p>
+                </div>
+
+                <div
+                  class="rounded border border-stone bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <i class="fa-solid fa-pen h-7 w-7 text-moss"></i>
+                  <h3 class="mt-4 font-display text-lg font-semibold text-ink">
+                    For Owners
+                  </h3>
+                  <p class="mt-2 text-[15px] leading-relaxed text-sage">
+                    Full management for landlords — screening, rent collection,
+                    maintenance, and reporting, handled end to end.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Image pair -->
+            <div class="lg:col-span-5">
+              <div class="relative md:mb-8">
+                <img
+                  src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80"
+                  alt="Contemporary home exterior with a swimming pool"
+                  class="h-72 w-full rounded border border-stone object-cover sm:h-96 md:h-[420px]"
+                />
+                <img
+                  src="https://images.unsplash.com/photo-1601760562234-9814eea6663a?auto=format&fit=crop&w=800&q=80"
+                  alt="Bright modern kitchen with white cabinetry"
+                  class="relative mt-4 h-44 w-full rounded border-4 border-paper object-cover shadow-md sm:h-52 md:absolute md:-bottom-8 md:-left-8 md:mt-0 md:h-48 md:w-2/5"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================= HOW IT WORKS =========================== -->
+      <section aria-labelledby="how-heading" class="bg-stone/25 py-20 md:py-28">
+        <div class="mx-auto max-w-7xl px-5 sm:px-8">
+          <p class="font-mono text-xs uppercase tracking-widest2 text-brass">
+            How It Works
+          </p>
+          <h2
+            id="how-heading"
+            class="mt-4 max-w-2xl text-balance font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl md:text-5xl"
+          >
+            Three steps to a properly handled property.
+          </h2>
+
+          <div
+            class="relative mt-16 grid grid-cols-1 gap-12 md:grid-cols-3 md:gap-8"
+          >
+            <div
+              aria-hidden="true"
+              class="absolute left-0 right-0 top-6 hidden h-px bg-stone-dark md:block"
+            ></div>
+
+            <div class="relative">
+              <div
+                class="relative z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 border-moss bg-stone/25 font-mono text-base text-moss md:bg-paper"
+              >
+                01
+              </div>
+              <h3 class="mt-6 font-display text-xl font-semibold text-ink">
+                Create your account
+              </h3>
+              <p class="mt-2 max-w-xs text-[15px] leading-relaxed text-sage">
+                Sign up and tell us what you're working on — buying, selling,
+                renting, or handing us the keys to manage.
+              </p>
+            </div>
+
+            <div class="relative">
+              <div
+                class="relative z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 border-moss bg-stone/25 font-mono text-base text-moss md:bg-paper"
+              >
+                02
+              </div>
+              <h3 class="mt-6 font-display text-xl font-semibold text-ink">
+                Tell us what you need
+              </h3>
+              <p class="mt-2 max-w-xs text-[15px] leading-relaxed text-sage">
+                A Marlstone agent builds your shortlist, valuation, or
+                management plan around your goals and timeline.
+              </p>
+            </div>
+
+            <div class="relative">
+              <div
+                class="relative z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 border-moss bg-stone/25 font-mono text-base text-moss md:bg-paper"
+              >
+                03
+              </div>
+              <h3 class="mt-6 font-display text-xl font-semibold text-ink">
+                We handle the process
+              </h3>
+              <p class="mt-2 max-w-xs text-[15px] leading-relaxed text-sage">
+                Viewings, paperwork, negotiations, inspections — we run point on
+                the details so you don't have to.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================= FEATURED PROPERTIES ======================= -->
+      <section
+        id="properties"
+        aria-labelledby="properties-heading"
+        class="bg-stone/25 py-20 md:py-28"
+      >
+        <div class="mx-auto max-w-7xl px-5 sm:px-8">
+          <p class="font-mono text-xs uppercase tracking-widest2 text-brass">
+            Featured Properties
+          </p>
+          <h2
+            id="properties-heading"
+            class="mt-4 max-w-2xl text-balance font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl md:text-5xl"
+          >
+            Properties available now.
+          </h2>
+          <p class="mt-6 max-w-2xl text-lg leading-relaxed text-sage">
+            Browse our current listings — residential homes, commercial spaces,
+            and investment opportunities across Lagos.
+          </p>
+
+          <!-- Filters -->
+          <div
+            class="mt-10 flex flex-wrap items-center gap-2 sm:gap-3 hidden
+            role="tablist"
+            aria-label="Filter properties"
+          >
+            <button
+              data-filter="all"
+              role="tab"
+              aria-selected="true"
+              class="prop-filter rounded border border-moss bg-moss px-4 py-2 text-sm font-medium text-paper transition-colors"
+            >
+              All
+            </button>
+            <button
+              data-filter="sale"
+              role="tab"
+              aria-selected="false"
+              class="prop-filter rounded border border-stone-dark bg-white px-4 py-2 text-sm font-medium text-sage transition-colors hover:border-ink/25 hover:text-ink"
+            >
+              For Sale
+            </button>
+            <button
+              data-filter="rent"
+              role="tab"
+              aria-selected="false"
+              class="prop-filter rounded border border-stone-dark bg-white px-4 py-2 text-sm font-medium text-sage transition-colors hover:border-ink/25 hover:text-ink"
+            >
+              For Rent / Lease
+            </button>
+            <button
+              data-filter="commercial"
+              role="tab"
+              aria-selected="false"
+              class="prop-filter rounded border border-stone-dark bg-white px-4 py-2 text-sm font-medium text-sage transition-colors hover:border-ink/25 hover:text-ink"
+            >
+              Commercial
+            </button>
+          </div>
+
+          <!-- Property grid -->
+          <div
+            id="properties-grid"
+            class="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
+          >
+            <!-- Populated by JS -->
+          </div>
+
+          <!-- Empty state -->
+          <div id="properties-empty" class="hidden mt-16 text-center">
+            <i class="fa-solid fa-house-chimney h-10 w-10 text-stone-dark"></i>
+            <p class="mt-4 text-lg font-medium text-ink">No properties found</p>
+            <p class="mt-1 text-sage">
+              Try a different filter or check back soon.
+            </p>
+          </div>
+
+          <!-- View All CTA -->
+          <div class="mt-12 text-center">
+            <a
+              href="index.html"
+              class="inline-flex items-center gap-2 rounded border border-ink/15 bg-white px-6 py-3 text-sm font-medium text-ink transition-colors hover:border-ink/30 hover:bg-stone/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-moss"
+            >
+              View All Properties
+              <i class="fa-solid fa-arrow-right h-3.5 w-3.5"></i>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Property Detail Modal -->
+      <div
+        id="property-modal"
+        class="fixed inset-0 z-[60] hidden"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
+      >
+        <div class="absolute inset-0 bg-ink/50" data-modal-backdrop></div>
+        <div
+          class="relative mx-auto my-8 max-h-[calc(100vh-4rem)] w-full max-w-3xl overflow-y-auto rounded border border-stone bg-paper shadow-xl sm:my-16"
+        >
+          <!-- Modal header -->
+          <div
+            class="sticky top-0 z-10 flex items-center justify-between border-b border-stone bg-paper px-6 py-4"
+          >
+            <h3
+              id="modal-title"
+              class="font-display text-lg font-semibold text-ink"
+            ></h3>
+            <button
+              data-modal-close
+              class="flex h-9 w-9 items-center justify-center rounded text-sage transition-colors hover:bg-stone/40 hover:text-ink"
+              aria-label="Close"
+            >
+              <i class="fa-solid fa-xmark h-5 w-5"></i>
+            </button>
+          </div>
+          <!-- Modal body -->
+          <div id="modal-body" class="p-6"></div>
+        </div>
+      </div>
+
+      <!-- ========================== TESTIMONIALS =========================== -->
+      <section
+        id="testimonials"
+        aria-labelledby="testimonials-heading"
+        class="bg-paper py-20 md:py-28"
+      >
+        <div class="mx-auto max-w-7xl px-5 sm:px-8">
+          <p class="font-mono text-xs uppercase tracking-widest2 text-brass">
+            Client Stories
+          </p>
+          <h2
+            id="testimonials-heading"
+            class="mt-4 max-w-2xl text-balance font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl md:text-5xl"
+          >
+            What clients say once the keys change hands.
+          </h2>
+
+          <div class="mt-14 grid grid-cols-1 gap-6 md:grid-cols-3">
+            <blockquote
+              class="flex flex-col rounded border border-stone bg-white p-7 shadow-sm"
+            >
+              <span
+                aria-hidden="true"
+                class="font-display text-5xl leading-none text-moss/20"
+                >&ldquo;</span
+              >
+              <p class="mt-3 flex-1 text-[15px] leading-relaxed text-ink">
+                Marlstone found three houses that actually matched what we asked
+                for, not just what was on the market. We closed in six weeks.
+              </p>
+              <footer
+                class="mt-6 flex items-center gap-3 border-t border-stone pt-5"
+              >
+                <img
+                  src="https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=200&q=80"
+                  alt="Portrait of Priya Nandakumar"
+                  class="h-12 w-12 rounded-full object-cover"
+                />
+                <div>
+                  <cite
+                    class="block text-[15px] font-semibold not-italic text-ink"
+                    >Priya Nandakumar</cite
+                  >
+                  <p class="text-sm text-sage">
+                    First-time buyer, Elmhurst Row
+                  </p>
+                </div>
+              </footer>
+            </blockquote>
+
+            <blockquote
+              class="flex flex-col rounded border border-stone bg-white p-7 shadow-sm"
+            >
+              <span
+                aria-hidden="true"
+                class="font-display text-5xl leading-none text-moss/20"
+                >&ldquo;</span
+              >
+              <p class="mt-3 flex-1 text-[15px] leading-relaxed text-ink">
+                They priced it right the first time. No sitting on the market
+                for months waiting for a reduction.
+              </p>
+              <footer
+                class="mt-6 flex items-center gap-3 border-t border-stone pt-5"
+              >
+                <img
+                  src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&w=200&q=80"
+                  alt="Portrait of Daniel Osei"
+                  class="h-12 w-12 rounded-full object-cover"
+                />
+                <div>
+                  <cite
+                    class="block text-[15px] font-semibold not-italic text-ink"
+                    >Daniel Osei</cite
+                  >
+                  <p class="text-sm text-sage">Seller, Birchwood Lane</p>
+                </div>
+              </footer>
+            </blockquote>
+
+            <blockquote
+              class="flex flex-col rounded border border-stone bg-white p-7 shadow-sm"
+            >
+              <span
+                aria-hidden="true"
+                class="font-display text-5xl leading-none text-moss/20"
+                >&ldquo;</span
+              >
+              <p class="mt-3 flex-1 text-[15px] leading-relaxed text-ink">
+                I get one report a month and my rent on the same day, every
+                month. That's the whole pitch, and they deliver it.
+              </p>
+              <footer
+                class="mt-6 flex items-center gap-3 border-t border-stone pt-5"
+              >
+                <img
+                  src="https://images.unsplash.com/photo-1627161683077-e34782c24d81?auto=format&fit=crop&w=200&q=80"
+                  alt="Portrait of Marisol Feldman"
+                  class="h-12 w-12 rounded-full object-cover"
+                />
+                <div>
+                  <cite
+                    class="block text-[15px] font-semibold not-italic text-ink"
+                    >Marisol Feldman</cite
+                  >
+                  <p class="text-sm text-sage">Landlord, 4-unit portfolio</p>
+                </div>
+              </footer>
+            </blockquote>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================= CONTACT ============================= -->
+      <section
+        id="contact"
+        aria-labelledby="contact-heading"
+        class="bg-stone/25 py-20 md:py-28"
+      >
+        <div class="mx-auto max-w-7xl px-5 sm:px-8">
+          <p class="font-mono text-xs uppercase tracking-widest2 text-brass">
+            Get In Touch
+          </p>
+          <h2
+            id="contact-heading"
+            class="mt-4 max-w-2xl text-balance font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl md:text-5xl"
+          >
+            Talk to the agency directly.
+          </h2>
+
+          <div class="mt-14 grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-12">
+            <div class="lg:col-span-6">
+              <ul
+                class="flex flex-col divide-y divide-stone-dark rounded border border-stone bg-white shadow-sm"
+              >
+                <li>
+                  <a
+                    href="tel:+14155550148"
+                    class="group flex items-start gap-4 p-6 transition-colors hover:bg-stone/20 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-moss"
+                  >
+                    <i class="fa-solid fa-phone mt-0.5 h-5 w-5 text-moss"></i>
+                    <div>
+                      <p
+                        class="font-mono text-xs uppercase tracking-widest2 text-sage"
+                      >
+                        Phone
+                      </p>
+                      <p
+                        class="mt-1 text-lg text-ink transition-colors group-hover:text-moss"
+                      >
+                        +1 (415) 555-0148
+                      </p>
+                    </div>
+                  </a>
+                </li>
+
+                <li>
+                  <a
+                    href="mailto:hello@marlstonepropertygroup.com"
+                    class="group flex items-start gap-4 p-6 transition-colors hover:bg-stone/20 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-moss"
+                  >
+                    <i
+                      class="fa-solid fa-envelope mt-0.5 h-5 w-5 text-moss"
+                    ></i>
+                    <div>
+                      <p
+                        class="font-mono text-xs uppercase tracking-widest2 text-sage"
+                      >
+                        Email
+                      </p>
+                      <p
+                        class="mt-1 break-all text-lg text-ink transition-colors group-hover:text-moss"
+                      >
+                        hello@marlstonepropertygroup.com
+                      </p>
+                    </div>
+                  </a>
+                </li>
+
+                <li>
+                  <div class="flex items-start gap-4 p-6">
+                    <i
+                      class="fa-solid fa-location-dot mt-0.5 h-5 w-5 text-moss"
+                    ></i>
+                    <div>
+                      <p
+                        class="font-mono text-xs uppercase tracking-widest2 text-sage"
+                      >
+                        Office
+                      </p>
+                      <p class="mt-1 text-lg leading-snug text-ink">
+                        418 Kestrel Row, Suite 3<br />Riverton, CA 94105
+                      </p>
+                    </div>
+                  </div>
+                </li>
+
+                <li>
+                  <div class="flex items-start gap-4 p-6">
+                    <i class="fa-solid fa-clock mt-0.5 h-5 w-5 text-moss"></i>
+                    <div>
+                      <p
+                        class="font-mono text-xs uppercase tracking-widest2 text-sage"
+                      >
+                        Hours
+                      </p>
+                      <p class="mt-1 text-lg leading-snug text-ink">
+                        Mon&ndash;Fri: 9:00 AM&ndash;6:00 PM<br />Sat: 10:00
+                        AM&ndash;3:00 PM &middot; Sun: Closed
+                      </p>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <div class="lg:col-span-6">
+              <img
+                src="https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?auto=format&fit=crop&w=1200&q=80"
+                alt="Craftsman-style home entrance with a covered porch"
+                class="h-72 w-full rounded border border-stone object-cover sm:h-96 lg:h-full"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ============================= FOOTER ============================= -->
+    <footer class="bg-ink text-paper">
+      <div class="mx-auto max-w-7xl px-5 py-16 sm:px-8">
+        <div class="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-4">
+          <div class="lg:col-span-2">
+            <a href="#top" class="flex items-baseline gap-2.5">
+              <span class="font-display text-2xl font-semibold text-paper"
+                >Marlstone</span
+              >
+              <span
+                class="font-mono text-[11px] uppercase tracking-widest2 text-paper/60"
+                >Property Group</span
+              >
+            </a>
+            <p class="mt-4 max-w-sm text-[15px] leading-relaxed text-paper/70">
+              Full-service real estate for owners, buyers, and tenants — one
+              team, every stage of the property journey.
+            </p>
+            <div class="mt-6 flex flex-wrap gap-3">
+              <a
+                href="index.html"
+                class="inline-flex items-center justify-center rounded bg-paper px-6 py-3 text-sm font-medium text-ink transition-colors hover:bg-white"
+              >
+                Browse Properties
+              </a>
+              <a
+                href="signup.html"
+                class="inline-flex items-center justify-center rounded border border-paper/20 px-6 py-3 text-sm font-medium text-paper/80 transition-colors hover:bg-paper/10 hover:text-paper"
+              >
+                Sign Up
+              </a>
+            </div>
+          </div>
+
+          <div>
+            <p
+              class="font-mono text-xs uppercase tracking-widest2 text-paper/50"
+            >
+              Quick Links
+            </p>
+            <nav aria-label="Footer" class="mt-4 flex flex-col gap-3">
+              <a
+                href="#top"
+                class="text-[15px] text-paper/80 transition-colors hover:text-paper"
+                >Home</a
+              >
+              <a
+                href="#about"
+                class="text-[15px] text-paper/80 transition-colors hover:text-paper"
+                >About</a
+              >
+              <a
+                href="index.html"
+                class="text-[15px] text-paper/80 transition-colors hover:text-paper"
+                >Properties</a
+              >
+              <a
+                href="signup.html"
+                class="text-[15px] text-paper/80 transition-colors hover:text-paper"
+                >List Your Property</a
+              >
+              <a
+                href="#testimonials"
+                class="text-[15px] text-paper/80 transition-colors hover:text-paper"
+                >Testimonials</a
+              >
+              <a
+                href="#contact"
+                class="text-[15px] text-paper/80 transition-colors hover:text-paper"
+                >Contact</a
+              >
+            </nav>
+          </div>
+
+          <div>
+            <p
+              class="font-mono text-xs uppercase tracking-widest2 text-paper/50"
+            >
+              Contact
+            </p>
+            <div class="mt-4 flex flex-col gap-3 text-[15px] text-paper/80">
+              <a
+                href="tel:+14155550148"
+                class="transition-colors hover:text-paper"
+                >+1 (415) 555-0148</a
+              >
+              <a
+                href="mailto:hello@marlstonepropertygroup.com"
+                class="break-all transition-colors hover:text-paper"
+                >hello@marlstonepropertygroup.com</a
+              >
+              <p class="leading-relaxed">
+                418 Kestrel Row, Suite 3<br />Riverton, CA 94105
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="border-t border-paper/10">
+        <div class="mx-auto max-w-7xl px-5 py-6 sm:px-8">
+          <p class="text-sm text-paper/55">
+            &copy; 2026 Marlstone Property Group. All rights reserved.
+          </p>
+        </div>
+      </div>
+    </footer>
+
+    <script src="js/properties.js" defer></script>
+  </body>
+</html>

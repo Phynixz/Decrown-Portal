@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Property Details | Haven Properties</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+      @theme {
+        --color-ink: #1a1a18;
+        --color-paper: #ffffff;
+        --color-surface: #f6f5f2;
+        --color-border: #e7e5e0;
+        --color-muted: #78766f;
+        --color-accent: #a8482a;
+        --color-accent-dark: #8a3a21;
+        --font-display: "Fraunces", ui-serif, Georgia, serif;
+        --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+        --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+      }
+    </style>
+  </head>
+  <body class="bg-white font-sans text-ink antialiased">
+
+    <!-- ===================== HEADER ===================== -->
+    <header class="border-b border-border bg-white">
+      <div class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+        <a href="index.html" class="flex items-center gap-2.5">
+          <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-ink">
+            <span class="font-display text-[13px] font-semibold text-white">H</span>
+          </span>
+          <span class="font-display text-[17px] font-medium text-ink">Haven</span>
+        </a>
+
+        <nav class="hidden items-center gap-8 md:flex">
+          <a href="index.html" class="text-[14px] font-medium text-muted transition-colors hover:text-ink">Home</a>
+          <a href="index.html?listingType=sale" class="text-[14px] font-medium text-muted transition-colors hover:text-ink">Buy</a>
+          <a href="index.html?listingType=rent" class="text-[14px] font-medium text-muted transition-colors hover:text-ink">Rent</a>
+        </nav>
+
+        <div class="flex items-center gap-3">
+          <a href="list-property.html" class="hidden rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-white transition-colors hover:bg-ink/90 sm:inline-flex">List Your Property</a>
+          <button type="button" id="mobile-menu-btn" class="flex h-9 w-9 items-center justify-center rounded-lg text-ink md:hidden" aria-label="Open menu" aria-expanded="false">
+<i class="fa-solid fa-bars text-[18px] leading-none"></i>
+          </button>
+        </div>
+      </div>
+
+      <div id="mobile-menu" class="hidden border-t border-border px-4 py-3 md:hidden">
+        <a href="index.html" class="block py-2 text-[14px] font-medium text-ink">Home</a>
+        <a href="index.html?listingType=sale" class="block py-2 text-[14px] font-medium text-ink">Buy</a>
+        <a href="index.html?listingType=rent" class="block py-2 text-[14px] font-medium text-ink">Rent</a>
+        <a href="list-property.html" class="mt-2 block rounded-lg bg-ink px-4 py-2.5 text-center text-[13px] font-medium text-white">List Your Property</a>
+      </div>
+    </header>
+
+    <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <a href="index.html" class="inline-flex items-center gap-1.5 text-[13px] font-medium text-muted transition-colors hover:text-ink">
+<i class="fa-solid fa-arrow-left text-[13px]"></i>
+        Back to Properties
+      </a>
+
+      <!-- ===================== DETAILS CONTENT ===================== -->
+      <div id="details-content" class="mt-6">
+        <div class="grid grid-cols-1 gap-10 lg:grid-cols-3">
+
+          <!-- Main column -->
+          <div class="lg:col-span-2">
+            <!-- Gallery -->
+            <div class="overflow-hidden rounded-2xl border border-border bg-surface">
+              <img id="main-image" src="" alt="" class="aspect-[4/3] w-full object-cover sm:aspect-[16/10]" />
+            </div>
+            <div id="thumbnails" class="mt-3 grid grid-cols-4 gap-3"></div>
+
+            <!-- Title / key facts -->
+            <div class="mt-8 border-b border-border pb-8">
+              <span id="prop-type-badge" class="inline-flex rounded-full bg-surface px-2.5 py-1 text-[11px] font-semibold text-ink"></span>
+              <h1 id="prop-title" class="mt-3 font-display text-[26px] font-medium leading-tight text-ink sm:text-[32px]"></h1>
+              <p id="prop-location" class="mt-2 flex items-center gap-1.5 text-[14px] text-muted">
+<i class="fa-solid fa-location-dot shrink-0 text-muted"></i>
+                <span id="prop-location-text"></span>
+              </p>
+              <p id="prop-price" class="mt-4 font-mono text-[24px] font-semibold text-ink"></p>
+
+              <div class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <div class="rounded-xl border border-border p-4">
+                  <p class="text-[11px] text-muted">Bedrooms</p>
+                  <p id="prop-beds" class="mt-1 font-mono text-[18px] font-semibold text-ink"></p>
+                </div>
+                <div class="rounded-xl border border-border p-4">
+                  <p class="text-[11px] text-muted">Bathrooms</p>
+                  <p id="prop-baths" class="mt-1 font-mono text-[18px] font-semibold text-ink"></p>
+                </div>
+                <div class="rounded-xl border border-border p-4">
+                  <p class="text-[11px] text-muted">Type</p>
+                  <p id="prop-type" class="mt-1 text-[14px] font-medium text-ink"></p>
+                </div>
+                <div class="rounded-xl border border-border p-4">
+                  <p class="text-[11px] text-muted">Area</p>
+                  <p id="prop-area" class="mt-1 text-[14px] font-medium text-ink"></p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Description -->
+            <div class="border-b border-border py-8">
+              <h2 class="font-display text-[18px] font-medium text-ink">Description</h2>
+              <p id="prop-description" class="mt-3 text-[14px] leading-relaxed text-muted"></p>
+            </div>
+
+            <!-- Features -->
+            <div class="py-8">
+              <h2 class="font-display text-[18px] font-medium text-ink">Features</h2>
+              <ul id="prop-features" class="mt-4 grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2"></ul>
+            </div>
+          </div>
+
+          <!-- Sidebar -->
+          <aside class="lg:col-span-1">
+            <div class="sticky top-6 rounded-2xl border border-border bg-white p-6">
+              <h2 class="font-display text-[17px] font-medium text-ink">Listing Information</h2>
+              <dl class="mt-4 space-y-3 text-[13px]">
+                <div class="flex items-center justify-between">
+                  <dt class="text-muted">Reference</dt>
+                  <dd id="prop-ref" class="font-mono text-ink"></dd>
+                </div>
+                <div class="flex items-center justify-between">
+                  <dt class="text-muted">Status</dt>
+                  <dd id="prop-status" class="text-ink"></dd>
+                </div>
+                <div class="flex items-center justify-between">
+                  <dt class="text-muted">Listed on</dt>
+                  <dd id="prop-date" class="text-ink"></dd>
+                </div>
+              </dl>
+
+              <div class="mt-6 border-t border-border pt-6">
+                <p class="text-[13px] font-medium text-ink">Contact</p>
+                <p id="prop-contact-name" class="mt-1 text-[14px] text-ink"></p>
+                <p id="prop-contact-phone" class="text-[13px] text-muted"></p>
+              </div>
+
+              <form id="enquiry-form" class="mt-6 space-y-3 border-t border-border pt-6">
+                <p class="text-[13px] font-medium text-ink">Send an Enquiry</p>
+                <input type="text" name="name" required placeholder="Full name" class="w-full rounded-lg border border-border bg-white px-3.5 py-2.5 text-[13px] text-ink placeholder-muted/70 focus:border-ink/30 focus:outline-none focus:ring-[3px] focus:ring-ink/[0.06]" />
+                <input type="email" name="email" required placeholder="Email address" class="w-full rounded-lg border border-border bg-white px-3.5 py-2.5 text-[13px] text-ink placeholder-muted/70 focus:border-ink/30 focus:outline-none focus:ring-[3px] focus:ring-ink/[0.06]" />
+                <input type="tel" name="phone" placeholder="Phone number" class="w-full rounded-lg border border-border bg-white px-3.5 py-2.5 text-[13px] text-ink placeholder-muted/70 focus:border-ink/30 focus:outline-none focus:ring-[3px] focus:ring-ink/[0.06]" />
+                <textarea name="message" rows="3" placeholder="I'm interested in this property…" class="w-full resize-none rounded-lg border border-border bg-white px-3.5 py-2.5 text-[13px] text-ink placeholder-muted/70 focus:border-ink/30 focus:outline-none focus:ring-[3px] focus:ring-ink/[0.06]"></textarea>
+                <button type="submit" class="w-full rounded-lg bg-accent px-4 py-2.5 text-[13px] font-medium text-white transition-colors hover:bg-accent-dark">Send Enquiry</button>
+              </form>
+              <div id="enquiry-success" class="hidden mt-6 border-t border-border pt-6 text-[13px] text-ink">
+                Thanks — your enquiry has been sent. We'll get back to you shortly.
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+
+      <!-- ===================== NOT FOUND STATE ===================== -->
+      <div id="not-found-state" class="hidden py-24 text-center">
+        <p class="font-display text-[22px] text-ink">Property not found</p>
+        <p class="mt-2 text-[14px] text-muted">This listing may have been removed or the link is incorrect.</p>
+        <a href="index.html" class="mt-6 inline-flex rounded-lg bg-ink px-5 py-2.5 text-[13px] font-medium text-white transition-colors hover:bg-ink/90">Back to Properties</a>
+      </div>
+    </main>
+
+    <!-- ===================== FOOTER ===================== -->
+    <footer class="mt-10 bg-surface">
+      <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <div class="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <div class="flex items-center gap-2.5">
+              <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-ink"><span class="font-display text-[11px] font-semibold text-white">H</span></span>
+              <span class="font-display text-[16px] font-medium text-ink">Haven</span>
+            </div>
+            <p class="mt-2 max-w-xs text-[13px] text-muted">Verified homes for rent and sale across Lagos, curated for a straightforward search.</p>
+          </div>
+          <div class="grid grid-cols-2 gap-8 sm:flex sm:gap-16">
+            <div>
+              <p class="text-[12px] font-semibold uppercase tracking-wide text-muted">Explore</p>
+              <div class="mt-3 flex flex-col gap-2 text-[13px] text-ink">
+                <a href="index.html" class="hover:text-accent">All Properties</a>
+                <a href="index.html?listingType=sale" class="hover:text-accent">For Sale</a>
+                <a href="index.html?listingType=rent" class="hover:text-accent">For Rent</a>
+              </div>
+            </div>
+            <div>
+              <p class="text-[12px] font-semibold uppercase tracking-wide text-muted">Get Started</p>
+              <div class="mt-3 flex flex-col gap-2 text-[13px] text-ink">
+                <a href="list-property.html" class="hover:text-accent">List Your Property</a>
+                <a href="mailto:hello@haven.example" class="hover:text-accent">Contact Us</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mt-10 border-t border-border pt-6 text-[12px] text-muted">© 2026 Haven Properties. All rights reserved.</div>
+      </div>
+    </footer>
+
+    <script src="js/properties-data.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/nav.js"></script>
+    <script src="js/details.js"></script>
+  </body>
+</html>

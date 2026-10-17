@@ -387,6 +387,10 @@ test("owner/staff permissions and platform audit are enforced", async () => {
   const pendingLandlord = await Client.findById(signup.body.clientId);
   assert.equal(pendingLandlord.contactName, "Audit Tester");
   assert.equal(pendingLandlord.businessName, "Audit Tester's Portfolio");
+  assert.equal(pendingLandlord.status, "pending_verification");
+  assert.equal(pendingLandlord.verified, false);
+  assert.equal(pendingLandlord.dbName, undefined);
+  assert.ok(signup.body.developmentCode, "signup should provide a local test code");
   assert.deepEqual(
     pendingLandlord.locations,
     [],
@@ -404,12 +408,45 @@ test("owner/staff permissions and platform audit are enforced", async () => {
     `/platform/clients/${signup.body.clientId}/approve`,
     { method: "PUT", token: ownerToken },
   );
-  assert.equal(approval.status, 200);
+  assert.equal(approval.status, 400, "verified landlord accounts do not require platform approval");
   const approvedClient = await Client.findById(signup.body.clientId);
   const approvedModels = getTenantModels(approvedClient.dbName);
   assert.equal(approvedClient.status, "active");
+  assert.equal(approvedClient.verified, true);
+  assert.ok(approvedClient.dbName);
   assert.equal(await approvedModels.Property.countDocuments(), 0);
   assert.equal(await approvedModels.Admin.countDocuments(), 1);
+
+  const pendingHostel = await approvedModels.Property.create({
+    name: "Audit Review Hostel",
+    state: "Kwara",
+    lga: "Ilorin West",
+    address: "Review Street",
+    status: "pending_review",
+  });
+  const reviewQueue = await request("/platform/hostels/pending-review", {
+    token: ownerToken,
+  });
+  assert.equal(reviewQueue.status, 200);
+  assert.ok(reviewQueue.body.some((item) => String(item.property._id) === String(pendingHostel._id)));
+  const hostelApproval = await request(
+    `/platform/tenants/${approvedClient._id}/properties/${pendingHostel._id}`,
+    { method: "PUT", token: ownerToken, body: { status: "active" } },
+  );
+  assert.equal(hostelApproval.status, 200);
+  assert.equal(hostelApproval.body.status, "active");
+  assert.ok(hostelApproval.body.reviewedAt);
+  const queueAfterApproval = await request("/platform/hostels/pending-review", {
+    token: ownerToken,
+  });
+  assert.equal(queueAfterApproval.body.some((item) => String(item.property._id) === String(pendingHostel._id)), false);
+  const pendingAgain = await request(
+    `/platform/tenants/${approvedClient._id}/properties/${pendingHostel._id}`,
+    { method: "PUT", token: ownerToken, body: { status: "rejected", reviewNote: "Missing documentation" } },
+  );
+  assert.equal(pendingAgain.status, 200);
+  assert.equal(pendingAgain.body.status, "rejected");
+  assert.equal(pendingAgain.body.reviewNote, "Missing documentation");
   const auditWithSignup = await request("/platform/audit?limit=100", {
     token: ownerToken,
   });

@@ -293,9 +293,11 @@ router.post("/client/verify-email", verifyEmailLimiter, async (req, res) => {
       return res.status(400).json({ error: "Incorrect code" });
 
     client.verified = true;
-    client.status = "pending_approval";
+    client.status = "active";
     client.verificationCodeHash = undefined;
     client.verificationExpires = undefined;
+    const dbName = await provisionClient(client);
+    client.dbName = dbName;
     await client.save();
 
     await recordAudit(req, {
@@ -309,7 +311,7 @@ router.post("/client/verify-email", verifyEmailLimiter, async (req, res) => {
     });
 
     res.json({
-      message: "Email verified — your account is now pending approval",
+      message: "Email verified — your landlord account is ready to use. You can now sign in.",
     });
   } catch (e) {
     res.status(500).json({ error: serverError(e) });
@@ -446,20 +448,22 @@ router.get(
         Client.find({ status: "active", dbName: { $type: "string", $ne: "" } }, "_id dbName").lean(),
       ]);
 
-      const operations = { tenants: 0, activeTenants: 0, properties: 0, units: 0, unavailableWorkspaces: 0 };
+      const operations = { tenants: 0, activeTenants: 0, properties: 0, units: 0, pendingHostels: 0, unavailableWorkspaces: 0 };
       await Promise.all(tenantClients.map(async (client) => {
         try {
           const models = getTenantModels(client.dbName);
-          const [tenants, activeTenants, properties, units] = await Promise.all([
+          const [tenants, activeTenants, properties, units, pendingHostels] = await Promise.all([
             models.User.countDocuments({}),
             models.User.countDocuments({ status: "active" }),
             models.Property.countDocuments({}),
             models.Unit.countDocuments({}),
+            models.Property.countDocuments({ status: "pending_review" }),
           ]);
           operations.tenants += tenants;
           operations.activeTenants += activeTenants;
           operations.properties += properties;
           operations.units += units;
+          operations.pendingHostels += pendingHostels;
         } catch (error) {
           operations.unavailableWorkspaces += 1;
           console.error("Platform overview could not read a tenant workspace:", error.message);
@@ -959,7 +963,7 @@ router.put(
         property.propertyType = propertyType;
       }
       if (req.body.status !== undefined) {
-        if (!["active", "archived"].includes(req.body.status))
+        if (!["pending_review", "active", "rejected", "archived"].includes(req.body.status))
           return res.status(400).json({ error: "Invalid property status" });
         if (req.body.status === "archived") {
           const occupied = await ctx.models.User.exists({
@@ -974,11 +978,14 @@ router.put(
             return res.status(409).json({ error: "Property has current tenants" });
         }
         property.status = req.body.status;
+        property.reviewedAt = req.body.status === "active" || req.body.status === "rejected" ? new Date() : null;
       }
+      if (req.body.reviewNote !== undefined)
+        property.reviewNote = sanitizeString(req.body.reviewNote).slice(0, 500);
       await property.save();
       await recordDirectorChange(
         req,
-        "platform:update-tenant-property",
+        req.body.status === "active" ? "platform:approve-hostel" : req.body.status === "rejected" ? "platform:reject-hostel" : "platform:update-tenant-property",
         `tenant:${req.params.clientId}/property`,
         property._id,
       );
@@ -1001,7 +1008,7 @@ router.post(
         return res.status(400).json({ error: "Invalid property ID" });
       const property = await ctx.models.Property.findOne({
         _id: req.params.propertyId,
-        status: "active",
+        status: { $in: ["active", "pending_review"] },
       });
       if (!property) return res.status(404).json({ error: "Property not found" });
       const unitCode = sanitizeString(req.body.unitCode);
@@ -1363,6 +1370,35 @@ router.get(
       res.json(propMap);
     } catch (e) {
       res.status(500).json({ error: serverError(e) });
+    }
+  },
+);
+
+// CEO review queue: newly submitted landlord hostels stay private until approved.
+router.get(
+  "/platform/hostels/pending-review",
+  verifyPlatformAdmin,
+  requirePlatformOwner,
+  async (_req, res) => {
+    try {
+      const clients = await Client.find(
+        { status: "active", dbName: { $type: "string", $ne: "" } },
+        "businessName contactName email dbName",
+      ).lean();
+      const results = await Promise.all(clients.map(async (client) => {
+        const models = getTenantModels(client.dbName);
+        const properties = await models.Property.find({ status: "pending_review" }).lean();
+        return properties.map((property) => ({
+          clientId: String(client._id),
+          businessName: client.businessName,
+          contactName: client.contactName,
+          email: client.email,
+          property,
+        }));
+      }));
+      res.json(results.flat().sort((a, b) => new Date(a.property.createdAt) - new Date(b.property.createdAt)));
+    } catch (error) {
+      res.status(500).json({ error: serverError(error) });
     }
   },
 );

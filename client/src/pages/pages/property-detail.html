@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Property Detail | Marlstone Property Group</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+      @theme {
+        --color-ink: #171717;
+        --color-ink-light: #262626;
+        --color-paper: #fafaf9;
+        --color-moss: #2f4438;
+        --color-moss-dark: #22332a;
+        --color-moss-light: #3c5747;
+        --color-brass: #b8860b;
+        --color-brass-dark: #8f642f;
+        --color-stone: #e5e5e5;
+        --color-stone-dark: #d4d4d4;
+        --color-sage: #737373;
+        --font-display: "Fraunces", ui-serif, Georgia, serif;
+        --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+        --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+      }
+      ::-webkit-scrollbar { width: 4px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb { background: #d4d4d4; border-radius: 4px; }
+      .sidebar-scroll::-webkit-scrollbar { width: 0; }
+      @keyframes skeleton-pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+      .skeleton-pulse { animation: skeleton-pulse 1.8s ease-in-out infinite; }
+    </style>
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  </head>
+  <body class="overflow-x-hidden bg-[#f2f1ed] font-sans text-ink antialiased">
+
+    <div class="flex min-h-screen">
+
+      <!-- =================== SIDEBAR =================== -->
+      <aside id="sidebar" class="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 lg:flex lg:w-[240px] lg:flex-col">
+        <div class="flex h-full flex-col bg-[#1c1c1e]">
+          <div class="flex h-14 items-center gap-3 px-5">
+            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-[#2f4438]">
+              <span class="text-[11px] font-bold tracking-wide text-white">M</span>
+            </div>
+            <div>
+              <p class="text-[14px] font-semibold text-white/90 leading-none">Marlstone</p>
+              <p class="text-[10px] text-white/30 mt-0.5">Property Group</p>
+            </div>
+          </div>
+          <nav class="sidebar-scroll mt-3 flex-1 overflow-y-auto px-3">
+            <p class="mb-2 px-2 pt-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-white/20">Main</p>
+            <a href="dashboard.html" class="mb-[3px] flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium text-white/35 hover:bg-white/[0.05] hover:text-white/60">
+              <i class="fa-solid fa-grid-2 h-[18px] w-[18px]  text-white/20"></i>
+              Dashboard
+            </a>
+            <p class="mb-2 px-2 pt-5 text-[10px] font-semibold uppercase tracking-[0.1em] text-white/20">Management</p>
+            <a href="properties.html" class="mb-[3px] flex items-center gap-3 rounded-xl bg-white/[0.08] px-3 py-2 text-[13px] font-medium text-white/90">
+              <i class="fa-solid fa-house h-[18px] w-[18px]  text-[#b8860b]"></i>
+              Properties
+            </a>
+            <a href="owners.html" class="mb-[3px] flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium text-white/35 hover:bg-white/[0.05] hover:text-white/60">
+              <i class="fa-solid fa-user h-[18px] w-[18px]  text-white/20"></i>
+              Owners
+            </a>
+            <a href="agents.html" class="mb-[3px] flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium text-white/35 hover:bg-white/[0.05] hover:text-white/60">
+              <i class="fa-solid fa-user-group h-[18px] w-[18px]  text-white/20"></i>
+              Agents
+            </a>
+            <a href="listings.html" class="mb-[3px] flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium text-white/35 hover:bg-white/[0.05] hover:text-white/60">
+              <i class="fa-solid fa-file h-[18px] w-[18px]  text-white/20"></i>
+              Listings
+            </a>
+            <a href="applications.html" class="mb-[3px] flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium text-white/35 hover:bg-white/[0.05] hover:text-white/60">
+              <i class="fa-solid fa-clipboard-list h-[18px] w-[18px]  text-white/20"></i>
+              Applications
+            </a>
+            <a href="transactions.html" class="mb-[3px] flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium text-white/35 hover:bg-white/[0.05] hover:text-white/60">
+              <i class="fa-solid fa-naira-sign h-[18px] w-[18px]  text-white/20"></i>
+              Transactions
+            </a>
+            <p class="mb-2 px-2 pt-5 text-[10px] font-semibold uppercase tracking-[0.1em] text-white/20">Tools</p>
+            <a href="reports.html" class="mb-[3px] flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium text-white/35 hover:bg-white/[0.05] hover:text-white/60">
+              <i class="fa-solid fa-chart-line h-[18px] w-[18px]  text-white/20"></i>
+              Reports
+            </a>
+            <a href="notifications.html" class="mb-[3px] flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium text-white/35 hover:bg-white/[0.05] hover:text-white/60">
+              <i class="fa-solid fa-bell h-[18px] w-[18px]  text-white/20"></i>
+              Notifications
+            </a>
+            <a href="settings.html" class="mb-[3px] flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium text-white/35 hover:bg-white/[0.05] hover:text-white/60">
+              <i class="fa-solid fa-gear h-[18px] w-[18px]  text-white/20"></i>
+              Settings
+            </a>
+          </nav>
+          <div class="border-t border-white/[0.06] px-3 py-3">
+            <div class="flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-white/[0.04]">
+              <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=120&q=80" alt="" class="h-8 w-8 rounded-full object-cover ring-2 ring-white/10" />
+              <div class="min-w-0 flex-1">
+                <p class="truncate text-[13px] font-medium text-white/80">Marcus Webb</p>
+                <p class="truncate text-[11px] text-white/30">Administrator</p>
+              </div>
+              <a href="Landing.html" class="flex h-7 w-7 items-center justify-center rounded-lg text-white/20 hover:bg-white/[0.08] hover:text-white/50" aria-label="Sign out">
+                <i class="fa-solid fa-right-from-bracket h-4 w-4"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- =================== MAIN WORKSPACE =================== -->
+      <div class="flex flex-1 flex-col lg:pl-[240px]">
+
+        <!-- ===== HEADER ===== -->
+        <header class="sticky top-0 z-30 flex h-[56px] items-center gap-4 bg-[#f2f1ed]/80 backdrop-blur-md px-4 sm:px-6 lg:px-8">
+          <button type="button" class="flex h-9 w-9 items-center justify-center rounded-xl text-ink lg:hidden" aria-label="Open menu">
+            <i class="fa-solid fa-bars h-[18px] w-[18px]"></i>
+          </button>
+          <div class="flex flex-1 items-center justify-end gap-1">
+            <button type="button" class="relative flex h-9 w-9 items-center justify-center rounded-xl text-sage hover:bg-white hover:text-ink" aria-label="Notifications">
+              <i class="fa-solid fa-bell h-[18px] w-[18px]"></i>
+              <span class="absolute right-2 top-2 h-2 w-2 rounded-full bg-[#b8860b] ring-2 ring-[#f2f1ed]"></span>
+            </button>
+            <button type="button" class="flex items-center gap-2.5 rounded-xl py-1.5 pl-1.5 pr-3 hover:bg-white">
+              <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=120&q=80" alt="" class="h-8 w-8 rounded-full object-cover" />
+              <div class="hidden min-w-0 text-left sm:block">
+                <p class="truncate text-[13px] font-medium leading-tight text-ink">Marcus Webb</p>
+                <p class="truncate text-[11px] leading-tight text-sage">Administrator</p>
+              </div>
+            </button>
+          </div>
+        </header>
+
+        <!-- ===== PAGE CONTENT ===== -->
+        <main class="flex-1 px-4 py-6 sm:px-6 lg:px-8">
+
+          <!-- Breadcrumb -->
+          <nav class="mb-4 text-[12px] text-sage" aria-label="Breadcrumb">
+            <ol class="flex items-center gap-1.5">
+              <li><a href="dashboard.html" class="hover:text-ink">Dashboard</a></li>
+              <li><i class="fa-solid fa-chevron-right h-3 w-3"></i></li>
+              <li><a href="properties.html" class="hover:text-ink">Properties</a></li>
+              <li><i class="fa-solid fa-chevron-right h-3 w-3"></i></li>
+              <li class="font-medium text-ink">14 Elm Street</li>
+            </ol>
+          </nav>
+
+          <!-- Page Header -->
+          <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div class="flex items-center gap-4">
+              <a href="properties.html" class="flex h-9 w-9 items-center justify-center rounded-xl border border-stone bg-white text-sage transition-colors hover:bg-[#f5f5f3] hover:text-ink" aria-label="Back to properties">
+                <i class="fa-solid fa-chevron-left h-4 w-4"></i>
+              </a>
+              <div>
+                <div class="flex items-center gap-2.5">
+                  <h1 class="text-[20px] font-semibold tracking-tight text-ink sm:text-[22px]">14 Elm Street</h1>
+                  <span class="inline-flex rounded-full bg-[#16a34a]/10 px-2 py-0.5 text-[10px] font-semibold text-[#16a34a]">Occupied</span>
+                </div>
+                <p class="mt-1 text-[13px] text-sage">3 bed · 2 bath · Riverton</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button type="button" class="inline-flex items-center gap-1.5 rounded-xl border border-stone/80 bg-white px-3.5 py-2 text-[12px] font-medium text-ink hover:bg-[#f5f5f3]">
+                <i class="fa-solid fa-pen h-4 w-4 text-sage"></i>
+                Edit
+              </button>
+              <button type="button" class="inline-flex items-center gap-1.5 rounded-xl border border-[#dc2626]/30 bg-white px-3.5 py-2 text-[12px] font-medium text-[#dc2626] hover:bg-[#dc2626]/5">
+                <i class="fa-solid fa-trash h-4 w-4"></i>
+                Delete
+              </button>
+            </div>
+          </div>
+
+          <!-- ===== PROPERTY IMAGES ===== -->
+          <div id="property-images" class="mb-6 grid grid-cols-4 gap-2 overflow-hidden rounded-2xl" data-section="images">
+            <div class="col-span-4 sm:col-span-2 sm:row-span-2">
+              <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80" alt="14 Elm Street exterior" class="h-48 w-full rounded-xl object-cover sm:h-full" />
+            </div>
+            <img src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=400&q=80" alt="Living room" class="h-24 w-full rounded-xl object-cover sm:h-auto" />
+            <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=400&q=80" alt="Kitchen" class="h-24 w-full rounded-xl object-cover sm:h-auto" />
+            <img src="https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?auto=format&fit=crop&w=400&q=80" alt="Bedroom" class="h-24 w-full rounded-xl object-cover sm:h-auto" />
+            <img src="https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?auto=format&fit=crop&w=400&q=80" alt="Bathroom" class="h-24 w-full rounded-xl object-cover sm:h-auto" />
+          </div>
+
+          <!-- ===== PROPERTY KPIs ===== -->
+          <div class="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4" data-section="property-kpis">
+            <div class="rounded-2xl bg-white p-4">
+              <p class="text-[11px] font-medium text-sage">Monthly Rent</p>
+              <p class="mt-1.5 font-mono text-[22px] font-semibold tracking-tight text-ink">₦850k</p>
+            </div>
+            <div class="rounded-2xl bg-white p-4">
+              <p class="text-[11px] font-medium text-sage">Property Value</p>
+              <p class="mt-1.5 font-mono text-[22px] font-semibold tracking-tight text-ink">₦38M</p>
+            </div>
+            <div class="rounded-2xl bg-white p-4">
+              <p class="text-[11px] font-medium text-sage">Occupancy Rate</p>
+              <p class="mt-1.5 font-mono text-[22px] font-semibold tracking-tight text-[#16a34a]">96%</p>
+            </div>
+            <div class="rounded-2xl bg-white p-4">
+              <p class="text-[11px] font-medium text-sage">Lease Expires</p>
+              <p class="mt-1.5 text-[18px] font-semibold tracking-tight text-ink">Mar 2026</p>
+            </div>
+          </div>
+
+          <!-- ===== TABS ===== -->
+          <div id="detail-tabs" class="rounded-2xl bg-white">
+            <!-- Tab Nav -->
+            <div class="overflow-x-auto border-b border-[#f2f1ed]">
+              <nav class="flex gap-0 px-5" role="tablist" aria-label="Property details">
+                <button type="button" role="tab" id="tab-overview" aria-selected="true" aria-controls="panel-overview" class="border-b-2 border-ink px-4 py-3 text-[12px] font-semibold text-ink whitespace-nowrap">Overview</button>
+                <button type="button" role="tab" id="tab-tenants" aria-selected="false" aria-controls="panel-tenants" class="border-b-2 border-transparent px-4 py-3 text-[12px] font-medium text-sage hover:text-ink whitespace-nowrap transition-colors">Tenants</button>
+                <button type="button" role="tab" id="tab-financials" aria-selected="false" aria-controls="panel-financials" class="border-b-2 border-transparent px-4 py-3 text-[12px] font-medium text-sage hover:text-ink whitespace-nowrap transition-colors">Financials</button>
+                <button type="button" role="tab" id="tab-maintenance" aria-selected="false" aria-controls="panel-maintenance" class="border-b-2 border-transparent px-4 py-3 text-[12px] font-medium text-sage hover:text-ink whitespace-nowrap transition-colors">Maintenance</button>
+                <button type="button" role="tab" id="tab-activity" aria-selected="false" aria-controls="panel-activity" class="border-b-2 border-transparent px-4 py-3 text-[12px] font-medium text-sage hover:text-ink whitespace-nowrap transition-colors">Activity</button>
+              </nav>
+            </div>
+
+            <!-- Tab Panels -->
+            <div class="p-5">
+
+              <!-- ===== OVERVIEW PANEL ===== -->
+              <div id="panel-overview" role="tabpanel" aria-labelledby="tab-overview">
+                <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
+                  <!-- Property Info -->
+                  <div class="lg:col-span-7">
+                    <h3 class="text-[13px] font-semibold text-ink">Property Information</h3>
+                    <div class="mt-4 grid grid-cols-2 gap-x-6 gap-y-4">
+                      <div>
+                        <p class="text-[11px] font-medium text-sage">Address</p>
+                        <p class="mt-0.5 text-[13px] text-ink">14 Elm Street, Riverton</p>
+                      </div>
+                      <div>
+                        <p class="text-[11px] font-medium text-sage">Type</p>
+                        <p class="mt-0.5 text-[13px] text-ink">Rental</p>
+                      </div>
+                      <div>
+                        <p class="text-[11px] font-medium text-sage">Bedrooms</p>
+                        <p class="mt-0.5 text-[13px] text-ink">3</p>
+                      </div>
+                      <div>
+                        <p class="text-[11px] font-medium text-sage">Bathrooms</p>
+                        <p class="mt-0.5 text-[13px] text-ink">2</p>
+                      </div>
+                      <div>
+                        <p class="text-[11px] font-medium text-sage">Year Built</p>
+                        <p class="mt-0.5 text-[13px] text-ink">2018</p>
+                      </div>
+                      <div>
+                        <p class="text-[11px] font-medium text-sage">Square Footage</p>
+                        <p class="mt-0.5 text-[13px] text-ink">1,450 sq ft</p>
+                      </div>
+                      <div class="col-span-2">
+                        <p class="text-[11px] font-medium text-sage">Description</p>
+                        <p class="mt-0.5 text-[13px] leading-relaxed text-ink">Modern 3-bedroom property in the heart of Riverton with open-plan living, updated kitchen, and private garden. Close to schools, transport, and local amenities.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Owner / Agent Info -->
+                  <div class="lg:col-span-5">
+                    <h3 class="text-[13px] font-semibold text-ink">Assigned To</h3>
+                    <div class="mt-4 space-y-4">
+                      <!-- Owner -->
+                      <div class="flex items-center gap-3 rounded-xl bg-[#f8f7f4] p-3">
+                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=80&q=80" alt="" class="h-10 w-10 rounded-full object-cover" />
+                        <div class="min-w-0 flex-1">
+                          <p class="text-[11px] font-medium text-sage">Owner</p>
+                          <p class="text-[13px] font-medium text-ink">Amina Bello</p>
+                        </div>
+                        <a href="owners.html?id=1" class="text-[11px] font-medium text-sage hover:text-ink">View</a>
+                      </div>
+                      <!-- Agent -->
+                      <div class="flex items-center gap-3 rounded-xl bg-[#f8f7f4] p-3">
+                        <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80" alt="" class="h-10 w-10 rounded-full object-cover" />
+                        <div class="min-w-0 flex-1">
+                          <p class="text-[11px] font-medium text-sage">Agent</p>
+                          <p class="text-[13px] font-medium text-ink">Tunde Adesanya</p>
+                        </div>
+                        <a href="agents.html?id=1" class="text-[11px] font-medium text-sage hover:text-ink">View</a>
+                      </div>
+                      <!-- Listing -->
+                      <div class="flex items-center gap-3 rounded-xl bg-[#f8f7f4] p-3">
+                        <div class="flex h-10 w-10 items-center justify-center rounded-full bg-[#b8860b]/10">
+                          <i class="fa-solid fa-file h-5 w-5 text-[#b8860b]"></i>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                          <p class="text-[11px] font-medium text-sage">Listing</p>
+                          <p class="text-[13px] font-medium text-ink">Active — Listed Aug 12</p>
+                        </div>
+                        <a href="listings.html?property=1" class="text-[11px] font-medium text-sage hover:text-ink">View</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ===== TENANTS PANEL ===== -->
+              <div id="panel-tenants" role="tabpanel" aria-labelledby="tab-tenants" class="hidden">
+                <div class="flex items-center justify-between">
+                  <h3 class="text-[13px] font-semibold text-ink">Current Tenants</h3>
+                  <button type="button" class="inline-flex items-center gap-1.5 rounded-xl border border-stone bg-white px-3 py-2 text-[12px] font-medium text-ink hover:bg-[#f5f5f3]">
+                    <i class="fa-solid fa-plus h-4 w-4 text-sage"></i>
+                    Add Tenant
+                  </button>
+                </div>
+
+                <!-- Tenant list -->
+                <div id="tenants-list" class="mt-4 space-y-3">
+                  <div class="flex items-center gap-4 rounded-xl bg-[#f8f7f4] p-4">
+                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=80&q=80" alt="" class="h-11 w-11 rounded-full object-cover" />
+                    <div class="min-w-0 flex-1">
+                      <div class="flex items-center gap-2">
+                        <p class="text-[13px] font-medium text-ink">Daniel Osei</p>
+                        <span class="inline-flex rounded-full bg-[#16a34a]/10 px-1.5 py-0.5 text-[9px] font-semibold text-[#16a34a]">Active</span>
+                      </div>
+                      <p class="text-[12px] text-sage">Moved in Sep 2024 · Lease until Mar 2026</p>
+                    </div>
+                    <div class="text-right">
+                      <p class="font-mono text-[13px] font-medium text-ink">₦850k/mo</p>
+                      <p class="text-[11px] text-[#16a34a]">Paid</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Empty state for no tenants -->
+                <div id="tenants-empty" class="hidden py-10 text-center">
+                  <i class="fa-solid fa-user mx-auto h-10 w-10 text-stone"></i>
+                  <p class="mt-3 text-[13px] font-medium text-ink">No tenants</p>
+                  <p class="mt-1 text-[12px] text-sage">This property currently has no tenants.</p>
+                </div>
+              </div>
+
+              <!-- ===== FINANCIALS PANEL ===== -->
+              <div id="panel-financials" role="tabpanel" aria-labelledby="tab-financials" class="hidden">
+                <div class="flex items-center justify-between">
+                  <h3 class="text-[13px] font-semibold text-ink">Financial Summary</h3>
+                  <button type="button" class="inline-flex items-center gap-1.5 rounded-xl border border-stone bg-white px-3 py-2 text-[12px] font-medium text-ink hover:bg-[#f5f5f3]">
+                    <i class="fa-solid fa-download h-4 w-4 text-sage"></i>
+                    Export
+                  </button>
+                </div>
+
+                <div class="mt-4 grid grid-cols-3 gap-3">
+                  <div class="rounded-xl bg-[#f8f7f4] p-4">
+                    <p class="text-[11px] font-medium text-sage">Total Collected</p>
+                    <p class="mt-1 font-mono text-[18px] font-semibold text-ink">₦8.5M</p>
+                  </div>
+                  <div class="rounded-xl bg-[#f8f7f4] p-4">
+                    <p class="text-[11px] font-medium text-sage">Outstanding</p>
+                    <p class="mt-1 font-mono text-[18px] font-semibold text-[#b8860b]">₦0</p>
+                  </div>
+                  <div class="rounded-xl bg-[#f8f7f4] p-4">
+                    <p class="text-[11px] font-medium text-sage">Yield</p>
+                    <p class="mt-1 font-mono text-[18px] font-semibold text-[#16a34a]">8.2%</p>
+                  </div>
+                </div>
+
+                <!-- Transaction History -->
+                <h4 class="mt-6 text-[12px] font-semibold text-ink">Recent Transactions</h4>
+                <div class="mt-3 overflow-x-auto">
+                  <table class="w-full min-w-[400px]">
+                    <thead>
+                      <tr class="border-y border-[#f2f1ed]">
+                        <th class="px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-[0.06em] text-sage">Date</th>
+                        <th class="px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-[0.06em] text-sage">Type</th>
+                        <th class="px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-[0.06em] text-sage">Status</th>
+                        <th class="px-3 py-2 text-right text-[10px] font-semibold uppercase tracking-[0.06em] text-sage">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-[#f2f1ed]">
+                      <tr class="hover:bg-[#f8f7f4]">
+                        <td class="px-3 py-2.5 text-[12px] text-ink">Aug 1, 2025</td>
+                        <td class="px-3 py-2.5 text-[12px] text-sage">Rent</td>
+                        <td class="px-3 py-2.5"><span class="inline-flex rounded-full bg-[#16a34a]/10 px-2 py-0.5 text-[10px] font-semibold text-[#16a34a]">Paid</span></td>
+                        <td class="px-3 py-2.5 text-right font-mono text-[12px] font-medium text-ink">₦850,000</td>
+                      </tr>
+                      <tr class="hover:bg-[#f8f7f4]">
+                        <td class="px-3 py-2.5 text-[12px] text-ink">Jul 1, 2025</td>
+                        <td class="px-3 py-2.5 text-[12px] text-sage">Rent</td>
+                        <td class="px-3 py-2.5"><span class="inline-flex rounded-full bg-[#16a34a]/10 px-2 py-0.5 text-[10px] font-semibold text-[#16a34a]">Paid</span></td>
+                        <td class="px-3 py-2.5 text-right font-mono text-[12px] font-medium text-ink">₦850,000</td>
+                      </tr>
+                      <tr class="hover:bg-[#f8f7f4]">
+                        <td class="px-3 py-2.5 text-[12px] text-ink">Jun 1, 2025</td>
+                        <td class="px-3 py-2.5 text-[12px] text-sage">Rent</td>
+                        <td class="px-3 py-2.5"><span class="inline-flex rounded-full bg-[#16a34a]/10 px-2 py-0.5 text-[10px] font-semibold text-[#16a34a]">Paid</span></td>
+                        <td class="px-3 py-2.5 text-right font-mono text-[12px] font-medium text-ink">₦850,000</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- ===== MAINTENANCE PANEL ===== -->
+              <div id="panel-maintenance" role="tabpanel" aria-labelledby="tab-maintenance" class="hidden">
+                <div class="flex items-center justify-between">
+                  <h3 class="text-[13px] font-semibold text-ink">Maintenance Requests</h3>
+                  <button type="button" class="inline-flex items-center gap-1.5 rounded-xl bg-ink px-3.5 py-2 text-[12px] font-medium text-white hover:bg-ink-light">
+                    <i class="fa-solid fa-plus h-4 w-4"></i>
+                    New Request
+                  </button>
+                </div>
+
+                <div id="maintenance-list" class="mt-4 space-y-3">
+                  <!-- Request 1 -->
+                  <div class="rounded-xl border border-[#f2f1ed] bg-white p-4">
+                    <div class="flex items-start justify-between">
+                      <div>
+                        <div class="flex items-center gap-2">
+                          <p class="text-[13px] font-medium text-ink">Leaking kitchen faucet</p>
+                          <span class="inline-flex rounded-full bg-[#b8860b]/10 px-2 py-0.5 text-[10px] font-semibold text-[#b8860b]">Pending</span>
+                        </div>
+                        <p class="mt-1 text-[12px] text-sage">Reported Aug 18, 2025 · Kitchen</p>
+                      </div>
+                    </div>
+                    <p class="mt-2.5 text-[12px] leading-relaxed text-ink/80">The kitchen faucet has been dripping consistently for the past week. Water pressure is low and the handle is loose.</p>
+                  </div>
+                  <!-- Request 2 -->
+                  <div class="rounded-xl border border-[#f2f1ed] bg-white p-4">
+                    <div class="flex items-start justify-between">
+                      <div>
+                        <div class="flex items-center gap-2">
+                          <p class="text-[13px] font-medium text-ink">AC unit serviced</p>
+                          <span class="inline-flex rounded-full bg-[#16a34a]/10 px-2 py-0.5 text-[10px] font-semibold text-[#16a34a]">Completed</span>
+                        </div>
+                        <p class="mt-1 text-[12px] text-sage">Completed Aug 5, 2025 · Living Room</p>
+                      </div>
+                    </div>
+                    <p class="mt-2.5 text-[12px] leading-relaxed text-ink/80">Annual AC servicing completed. Filter replaced, refrigerant topped up. No issues found.</p>
+                  </div>
+                </div>
+
+                <!-- Empty state -->
+                <div id="maintenance-empty" class="hidden py-10 text-center">
+                  <i class="fa-solid fa-wrench mx-auto h-10 w-10 text-stone"></i>
+                  <p class="mt-3 text-[13px] font-medium text-ink">No maintenance requests</p>
+                  <p class="mt-1 text-[12px] text-sage">This property has no open maintenance requests.</p>
+                </div>
+              </div>
+
+              <!-- ===== ACTIVITY PANEL ===== -->
+              <div id="panel-activity" role="tabpanel" aria-labelledby="tab-activity" class="hidden">
+                <h3 class="text-[13px] font-semibold text-ink">Property Activity</h3>
+                <div id="activity-list" class="mt-4 space-y-0">
+                  <div class="flex items-start gap-3 py-3">
+                    <span class="mt-[5px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#16a34a]"></span>
+                    <div class="min-w-0 flex-1">
+                      <p class="text-[12px] text-ink">Rent payment received from <span class="font-medium">Daniel Osei</span> — ₦850,000</p>
+                      <p class="mt-0.5 text-[11px] text-sage">Aug 1, 2025</p>
+                    </div>
+                  </div>
+                  <div class="flex items-start gap-3 py-3 border-t border-[#f2f1ed]">
+                    <span class="mt-[5px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#b8860b]"></span>
+                    <div class="min-w-0 flex-1">
+                      <p class="text-[12px] text-ink">Maintenance request: <span class="font-medium">Leaking kitchen faucet</span></p>
+                      <p class="mt-0.5 text-[11px] text-sage">Aug 18, 2025</p>
+                    </div>
+                  </div>
+                  <div class="flex items-start gap-3 py-3 border-t border-[#f2f1ed]">
+                    <span class="mt-[5px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#16a34a]"></span>
+                    <div class="min-w-0 flex-1">
+                      <p class="text-[12px] text-ink">Maintenance completed: <span class="font-medium">AC unit serviced</span></p>
+                      <p class="mt-0.5 text-[11px] text-sage">Aug 5, 2025</p>
+                    </div>
+                  </div>
+                  <div class="flex items-start gap-3 py-3 border-t border-[#f2f1ed]">
+                    <span class="mt-[5px] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-dark"></span>
+                    <div class="min-w-0 flex-1">
+                      <p class="text-[12px] text-ink">Lease renewed by <span class="font-medium">Daniel Osei</span> until Mar 2026</p>
+                      <p class="mt-0.5 text-[11px] text-sage">Jul 15, 2025</p>
+                    </div>
+                  </div>
+                  <div class="flex items-start gap-3 py-3 border-t border-[#f2f1ed]">
+                    <span class="mt-[5px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#16a34a]"></span>
+                    <div class="min-w-0 flex-1">
+                      <p class="text-[12px] text-ink">Property listed by <span class="font-medium">Tunde Adesanya</span></p>
+                      <p class="mt-0.5 text-[11px] text-sage">Jun 20, 2025</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="activity-empty" class="hidden py-10 text-center">
+                  <i class="fa-solid fa-chart-line mx-auto h-10 w-10 text-stone"></i>
+                  <p class="mt-3 text-[13px] font-medium text-ink">No activity yet</p>
+                  <p class="mt-1 text-[12px] text-sage">Activity for this property will appear here.</p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </main>
+      </div>
+    </div>
+
+  </body>
+</html>
