@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, MapPin, Search, SlidersHorizontal, BedDouble } from "lucide-react";
+import { getJSON } from "../api.js";
 import { getLocalGovernments, NIGERIAN_STATES } from "../utils/nigeriaLocationData.js";
 
 const availableUnits = (property) =>
@@ -20,12 +21,7 @@ export default function RoomSearchPage() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/tenant-config")
-      .then(async (response) => {
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(data.error || "Could not load available hostels.");
-        return data;
-      })
+    getJSON("/tenant-config")
       .then((data) => {
         if (!cancelled) setProperties(data.locations || []);
       })
@@ -50,6 +46,7 @@ export default function RoomSearchPage() {
     if (maxRent) {
       const ceiling = Number(maxRent);
       const hasRoomWithinBudget = availableUnits(property).some((unit) =>
+        Number(unit.rentAmount ?? property.rentAmount ?? 0) > 0 &&
         Number(unit.rentAmount ?? property.rentAmount ?? 0) <= ceiling
       );
       if (!hasRoomWithinBudget) return false;

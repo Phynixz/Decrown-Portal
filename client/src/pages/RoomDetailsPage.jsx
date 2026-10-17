@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, ArrowRight, BedDouble, MapPin } from "lucide-react";
+import { getJSON } from "../api.js";
 
 const naira = (amount) =>
   Number(amount) > 0 ? `₦${Number(amount).toLocaleString("en-NG")}` : "Contact agency";
@@ -13,15 +14,10 @@ export default function RoomDetailsPage() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/tenant-config")
-      .then(async (response) => {
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(data.error || "Could not load hostel details.");
-        return data;
-      })
+    getJSON("/tenant-config")
       .then((data) => {
         const found = (data.locations || []).find((item) =>
-          String(item.id || item.name) === decodeURIComponent(propertyId)
+          String(item.id || item.name) === propertyId
         );
         if (!cancelled) setProperty(found || null);
       })
