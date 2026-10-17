@@ -47,7 +47,7 @@ export default function PlatformLogin() {
       <div className="login-grid">
         <div className="login-columns" style={{ gridTemplateColumns: "1fr" }}>
           <div className="panel-right" style={{ maxWidth: 440, margin: "0 auto" }}>
-            <button className="theme-btn" onClick={toggleTheme} title="Toggle dark mode">
+            <button className="theme-btn" onClick={toggleTheme} title="Toggle dark mode" aria-label="Toggle dark mode">
               {dark ? <Sun size={16} /> : <Moon size={16} />}
             </button>
             <div className="login-inner">

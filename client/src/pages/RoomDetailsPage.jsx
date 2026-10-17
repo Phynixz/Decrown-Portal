@@ -33,21 +33,21 @@ export default function RoomDetailsPage() {
   return (
     <div className="dc-public-site min-h-screen bg-paper font-landing-sans text-ink">
       <header className="border-b border-stone bg-white">
-        <div className="mx-auto flex min-h-[72px] max-w-5xl items-center justify-between gap-4 px-5 sm:px-8">
-          <Link to="/" className="font-landing-display text-2xl font-semibold tracking-tight">De-Crown Cottage</Link>
-          <Link to="/rooms" className="text-sm font-semibold text-moss underline underline-offset-4">Browse hostels</Link>
+        <div className="mx-auto flex min-h-[72px] max-w-5xl items-center justify-between gap-3 px-4 sm:gap-4 sm:px-8">
+          <Link to="/" className="font-landing-display text-lg font-semibold tracking-tight sm:text-2xl">De-Crown Cottage</Link>
+          <Link to="/rooms" className="shrink-0 text-xs font-semibold text-moss underline underline-offset-4 sm:text-sm">Browse hostels</Link>
         </div>
       </header>
       <main className="mx-auto max-w-5xl px-5 py-10 sm:px-8 sm:py-14">
         <Link to="/rooms" className="inline-flex items-center gap-2 text-sm font-medium text-sage hover:text-ink"><ArrowLeft size={16} /> Back to search</Link>
         {loading && <p className="py-20 text-center text-sage" role="status">Loading hostel details…</p>}
-        {!loading && error && <div className="mt-8 rounded border border-red-200 bg-red-50 p-5 text-sm text-red-800">{error}</div>}
+        {!loading && error && <div role="alert" className="mt-8 rounded border border-red-200 bg-red-50 p-5 text-sm text-red-800"><p>{error}</p><Link to="/rooms" className="mt-3 inline-flex font-semibold underline underline-offset-4">Return to hostel search</Link></div>}
         {!loading && !error && !property && <div className="py-20 text-center"><h1 className="font-landing-display text-2xl font-semibold">Hostel not found</h1><p className="mt-2 text-sm text-sage">It may have been removed or is no longer listed.</p><Link to="/rooms" className="mt-5 inline-flex rounded bg-moss px-5 py-3 text-sm font-semibold text-white">Browse available hostels</Link></div>}
         {!loading && !error && property && (
           <>
             <section className="mt-7 border border-stone bg-white p-6 sm:p-9">
               <span className="inline-flex rounded-full bg-moss/10 px-3 py-1 text-[11px] font-semibold text-moss">{units.length} {units.length === 1 ? "room" : "rooms"} currently available</span>
-              <h1 className="mt-4 font-landing-display text-3xl font-semibold tracking-tight sm:text-5xl">{property.name}</h1>
+              <h1 className="mt-4 break-words font-landing-display text-3xl font-semibold tracking-tight sm:text-5xl">{property.name}</h1>
               <p className="mt-4 flex items-start gap-2 leading-relaxed text-sage"><MapPin size={18} className="mt-0.5 shrink-0" />{[property.address, property.lga, property.state].filter(Boolean).join(", ") || "Please contact the agency for location details."}</p>
               <p className="mt-5 max-w-3xl text-sm leading-relaxed text-sage">Review the rooms below and their listed rent. You do not need to register to browse. When you are ready, choose a room to continue to the application form.</p>
             </section>

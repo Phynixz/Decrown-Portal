@@ -10,6 +10,7 @@ import {
   Plus,
   Sun,
   Users,
+  X,
 } from "lucide-react";
 import { clearAdminAuth, getAdminName, getJSON, getToken } from "../api.js";
 import { useTenant } from "../tenantContext.jsx";
@@ -73,13 +74,13 @@ export default function LandlordDashboard() {
     <div className="min-h-screen bg-bg font-sans text-text">
       <header className="border-b border-border bg-card">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-          <Link to="/admin" className="flex items-center gap-2.5 no-underline">
+          <Link to="/admin" className="flex min-w-0 items-center gap-2.5 no-underline">
             {branding?.logoUrl ? (
               <img src={branding.logoUrl} alt="" className="h-9 w-9 rounded-lg object-cover" />
             ) : (
-              <span className="font-display text-2xl font-semibold tracking-tight text-text">{businessName || "Property Portal"}</span>
+              <span className="max-w-[42vw] truncate font-display text-xl font-semibold tracking-tight text-text sm:max-w-none sm:text-2xl">{businessName || "Property Portal"}</span>
             )}
-            {branding?.logoUrl && <span className="font-display text-xl font-semibold text-text">{businessName || "Property Portal"}</span>}
+            {branding?.logoUrl && <span className="max-w-[42vw] truncate font-display text-lg font-semibold text-text sm:max-w-none sm:text-xl">{businessName || "Property Portal"}</span>}
           </Link>
 
           <nav className="hidden items-center gap-7 text-sm md:flex">
@@ -89,23 +90,24 @@ export default function LandlordDashboard() {
           </nav>
 
           <div className="flex items-center gap-2">
-            <button onClick={toggleTheme} className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted transition-colors hover:text-text" title="Toggle theme">
+            <button onClick={toggleTheme} className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted transition-colors hover:text-text" title="Toggle theme" aria-label="Toggle theme">
               {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
             <button onClick={logout} className="hidden items-center gap-2 rounded-lg border border-border px-3 py-2 text-xs font-semibold text-muted transition-colors hover:text-text sm:flex">
               <LogOut className="h-3.5 w-3.5" /> Sign out
             </button>
-            <button onClick={() => setMobileNav((open) => !open)} className="flex h-9 w-9 items-center justify-center rounded-lg text-text md:hidden" title="Open menu">
-              <Menu className="h-5 w-5" />
+            <button onClick={() => setMobileNav((open) => !open)} className="flex h-9 w-9 items-center justify-center rounded-lg text-text md:hidden" title={mobileNav ? "Close menu" : "Open menu"} aria-label={mobileNav ? "Close menu" : "Open menu"} aria-expanded={mobileNav} aria-controls="landlord-mobile-navigation">
+              {mobileNav ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
           </div>
         </div>
         {mobileNav && (
-          <div className="border-t border-border px-4 py-3 md:hidden">
-            <Link to="/admin/properties/new" className="block py-2 text-sm">Properties</Link>
-            <Link to="/admin/operations" className="block py-2 text-sm">Operations</Link>
+          <nav id="landlord-mobile-navigation" aria-label="Landlord navigation" className="border-t border-border px-4 py-3 md:hidden">
+            <Link to="/admin" onClick={() => setMobileNav(false)} className="block py-2 text-sm">Dashboard</Link>
+            <Link to="/admin/properties/new" onClick={() => setMobileNav(false)} className="block py-2 text-sm">Properties</Link>
+            <Link to="/admin/operations" onClick={() => setMobileNav(false)} className="block py-2 text-sm">Operations</Link>
             <button onClick={logout} className="block py-2 text-sm text-danger">Sign out</button>
-          </div>
+          </nav>
         )}
       </header>
 

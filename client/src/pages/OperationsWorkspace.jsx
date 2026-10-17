@@ -508,7 +508,7 @@ export default function OperationsWorkspace({ readOnly = false, directorAccess =
           <div><p className="font-display text-lg leading-none text-text">Operations</p><p className="mt-1 text-[10px] uppercase tracking-[0.14em] text-muted">{displayName || "Hostel workspace"}</p></div>
           </Link>
           <div className="flex items-center gap-2">
-            <button onClick={toggleTheme} className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted hover:text-text" title="Toggle theme">{dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}</button>
+            <button onClick={toggleTheme} className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted hover:text-text" title="Toggle theme" aria-label="Toggle theme">{dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}</button>
             {!platformView && <button onClick={logout} className="hidden items-center gap-2 rounded-lg border border-border px-3 py-2 text-xs font-semibold text-muted hover:text-text sm:flex"><LogOut className="h-3.5 w-3.5" /> Sign out</button>}
           </div>
         </div>

@@ -34,6 +34,12 @@ export default function LandingPage() {
             <a href="/rooms" className="inline-flex items-center justify-center rounded bg-moss px-4 py-2.5 text-sm font-medium text-paper transition-colors hover:bg-ink sm:px-5">Find a Room</a>
           </div>
         </div>
+        <nav aria-label="Mobile navigation" className="flex gap-5 overflow-x-auto border-t border-stone/70 px-5 py-2.5 text-xs font-medium md:hidden">
+          <a href="#about" className="shrink-0 text-sage hover:text-moss">About</a>
+          <a href="#how-it-works" className="shrink-0 text-sage hover:text-moss">How it works</a>
+          <a href="#find-a-room" className="shrink-0 text-sage hover:text-moss">Find a room</a>
+          <a href="#platform-access" className="shrink-0 text-sage hover:text-moss">Portals</a>
+        </nav>
       </header>
 
       <main id="main">

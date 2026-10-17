@@ -70,8 +70,8 @@ export default function RoomSearchPage() {
             <span className="hidden font-landing-mono text-[11px] uppercase tracking-[0.22em] text-sage sm:inline">Cottage</span>
           </Link>
           <nav className="flex items-center gap-3 text-sm">
-            <Link to="/portal" className="rounded border border-ink/15 px-4 py-2.5 font-medium hover:bg-ink/5">Tenant sign in</Link>
-            <Link to="/" className="font-medium text-sage hover:text-ink">Home</Link>
+            <Link to="/portal" className="rounded border border-ink/15 px-3 py-2 text-xs font-medium hover:bg-ink/5 sm:px-4 sm:py-2.5 sm:text-sm">Tenant sign in</Link>
+            <Link to="/" className="hidden font-medium text-sage hover:text-ink sm:inline">Home</Link>
           </nav>
         </div>
       </header>

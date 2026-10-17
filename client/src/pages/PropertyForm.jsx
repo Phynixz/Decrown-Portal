@@ -13,6 +13,7 @@ export default function PropertyForm() {
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
   const [partialSave, setPartialSave] = useState(false);
+  const [createdRooms, setCreatedRooms] = useState(0);
 
   function updateProperty(event) {
     const { name, value } = event.target;
@@ -36,6 +37,7 @@ export default function PropertyForm() {
 
     setBusy(true);
     let propertyCreated = false;
+    let roomsCreated = 0;
     let created;
     try {
       created = await sendJSON("POST", "/admin/properties", {
@@ -49,12 +51,14 @@ export default function PropertyForm() {
         await sendJSON("POST", `/admin/properties/${created._id}/units`, {
           unitCode: `room-${index}`, label: `Room ${index}`, unitType: "room", rentAmount: null,
         }, getToken());
+        roomsCreated = index;
       }
       setSaved(true);
     } catch (err) {
       if (propertyCreated) {
         setPartialSave(true);
-        setError(`The hostel was created, but room setup stopped early: ${err.message}. Open Operations to finish adding the remaining rooms.`);
+        setCreatedRooms(roomsCreated);
+        setError(`The hostel was created, but room setup stopped after ${roomsCreated} of ${roomCount} rooms. ${roomCount - roomsCreated} room(s) remain. Open Operations to finish setup. Details: ${err.message}`);
       } else {
         setError(err.message);
       }
@@ -65,10 +69,10 @@ export default function PropertyForm() {
 
   const inputClass = "mt-1.5 w-full rounded-lg border border-border bg-input px-3.5 py-2.5 text-sm text-text outline-none focus:border-navy focus:ring-2 focus:ring-navy/10";
   if (saved) return (
-    <div className="min-h-screen bg-bg px-4 py-12 font-sans text-text sm:px-6"><div className="mx-auto max-w-2xl rounded-2xl border border-border bg-card p-8 text-center shadow-sm">
+    <div className="min-h-screen bg-bg px-4 py-12 font-sans text-text sm:px-6"><div className="mx-auto max-w-2xl rounded-2xl border border-border bg-card p-5 text-center shadow-sm sm:p-8">
       <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-terra">Hostel saved</p><h1 className="mt-3 font-display text-3xl">Your hostel is ready.</h1>
       <p className="mx-auto mt-3 max-w-md text-sm text-muted">{property.name} has been added to {businessName || "your portfolio"}, with {property.roomCount} individual rooms.</p>
-      <div className="mt-6 flex justify-center gap-3"><Link to="/admin" className="rounded-lg bg-navy px-4 py-2.5 text-sm font-semibold text-white">View dashboard</Link><button onClick={() => { setSaved(false); setProperty({ name: "", address: "", state: "", lga: "", rentAmount: "", roomCount: "" }); }} className="rounded-lg border border-border px-4 py-2.5 text-sm font-semibold">Add another hostel</button></div>
+      <div className="mt-6 flex flex-wrap justify-center gap-3"><Link to="/admin" className="rounded-lg bg-navy px-4 py-2.5 text-sm font-semibold text-white">View dashboard</Link><button onClick={() => { setSaved(false); setProperty({ name: "", address: "", state: "", lga: "", rentAmount: "", roomCount: "" }); }} className="rounded-lg border border-border px-4 py-2.5 text-sm font-semibold">Add another hostel</button></div>
     </div></div>
   );
 
@@ -78,8 +82,8 @@ export default function PropertyForm() {
       <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-terra">Hostel setup</p><h1 className="mt-2 font-display text-3xl sm:text-4xl">Add your hostel and rooms.</h1>
         <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted">For now, this platform supports hostels with separate rooms. Enter the total room count once; we’ll create Room 1, Room 2, Room 3, and so on. No need to invent unit codes.</p>
-        {error && <div className="mt-6 rounded-lg border-l-4 border-danger bg-danger-faint px-4 py-3 text-sm text-danger">{error}</div>}
-        {partialSave && <Link to="/admin/operations" className="mt-3 inline-flex text-sm font-semibold text-navy underline underline-offset-4">Open Operations to finish room setup</Link>}
+        {error && <div role="alert" aria-live="assertive" className="mt-6 rounded-lg border-l-4 border-danger bg-danger-faint px-4 py-3 text-sm leading-relaxed text-danger">{error}</div>}
+        {partialSave && <div className="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950"><p className="font-semibold">Partial setup: {createdRooms} room(s) created.</p><p className="mt-1">Do not submit the form again, because the hostel already exists.</p><Link to="/admin/operations" className="mt-3 inline-flex font-semibold underline underline-offset-4">Open Operations to finish room setup</Link></div>}
         <form onSubmit={submit} className="mt-8 space-y-6">
           <section className="space-y-5 rounded-2xl border border-border bg-card p-5 sm:p-7">
             <div><label className="block text-sm font-semibold" htmlFor="property-name">Hostel name</label><input id="property-name" name="name" required maxLength={100} value={property.name} onChange={updateProperty} placeholder="e.g. Sunrise Hostel" className={inputClass} /></div>

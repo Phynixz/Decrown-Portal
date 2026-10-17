@@ -110,9 +110,66 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+    -webkit-text-size-adjust: 100%;
   }
   body {
     @apply font-sans bg-bg text-text min-h-screen;
+    margin: 0;
+    min-width: 320px;
+  }
+  #root {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+  button:disabled,
+  input:disabled,
+  select:disabled,
+  textarea:disabled {
+    cursor: not-allowed;
+  }
+  input,
+  select,
+  textarea {
+    max-width: 100%;
+  }
+  img,
+  video,
+  canvas {
+    max-width: 100%;
+  }
+  a {
+    text-underline-offset: 0.18em;
+  }
+  :focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--color-accent, #16786b) 72%, white);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: color-mix(in srgb, var(--color-accent, #16786b) 22%, transparent);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
 

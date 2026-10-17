@@ -36,8 +36,8 @@
     @apply text-sm font-semibold text-white;
   }
   .brand-role {
-    @apply text-[10px] mt-0.5;
-    color: rgba(255, 255, 255, 0.4);
+    @apply text-[11px] mt-0.5;
+    color: rgba(255, 255, 255, 0.68);
   }
   .close-btn {
     @apply hidden bg-transparent border-none p-1 text-[17px] cursor-pointer;
@@ -48,12 +48,12 @@
     color: rgba(255, 255, 255, 0.4);
   }
   .nav-label {
-    @apply text-[9px] font-semibold uppercase tracking-[1.8px] px-4 pt-2 pb-1;
-    color: rgba(255, 255, 255, 0.28);
+    @apply text-[10px] font-semibold uppercase tracking-[1.5px] px-4 pt-2.5 pb-1;
+    color: rgba(255, 255, 255, 0.56);
   }
   .loc-btn {
     @apply w-full flex items-center gap-2.25 px-4 py-2.5 bg-transparent border-none text-[13px] font-normal cursor-pointer text-left transition-all;
-    color: rgba(255, 255, 255, 0.55);
+    color: rgba(255, 255, 255, 0.76);
   }
   .loc-btn:hover {
     background: rgba(255, 255, 255, 0.06);
@@ -76,7 +76,7 @@
 
   .side-action {
     @apply block w-full px-4 py-2.25 bg-transparent border-none text-[13px] cursor-pointer text-left no-underline transition-all;
-    color: rgba(255, 255, 255, 0.52);
+    color: rgba(255, 255, 255, 0.74);
   }
   .side-action:hover {
     background: rgba(255, 255, 255, 0.06);
@@ -106,7 +106,7 @@
     background: var(--color-card2);
   }
   .topbar-title-area {
-    @apply flex-1;
+    @apply min-w-0 flex-1;
   }
   .page-title {
     @apply font-display text-[19px] font-bold;
@@ -182,10 +182,12 @@
 
   /* ── Tabs ────────────────────────────────────────── */
   .tab-row {
-    @apply flex gap-1 px-6 pt-4.5;
+    @apply flex gap-1 overflow-x-auto px-6 pt-4.5;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
   }
   .tab {
-    @apply px-4.5 py-2 border-[1.5px] border-border2 rounded-lg font-sans text-[13px] font-medium cursor-pointer transition-all;
+    @apply shrink-0 px-4.5 py-2 border-[1.5px] border-border2 rounded-lg font-sans text-[13px] font-medium cursor-pointer transition-all;
     background: var(--color-card);
     color: var(--color-muted);
   }

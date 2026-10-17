@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import {
   CheckCircle2,
   XCircle,
@@ -354,12 +354,56 @@ function LegacyTenantDrawer({ client, onClose }) {
 }
 
 function TenantDrawer({ client, onClose }) {
+  const dialogRef = useRef(null);
+  const closeButtonRef = useRef(null);
+
+  useEffect(() => {
+    const previouslyFocused = document.activeElement;
+    closeButtonRef.current?.focus();
+
+    function handleKeyDown(event) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
+        return;
+      }
+      if (event.key !== "Tab" || !dialogRef.current) return;
+      const focusable = dialogRef.current.querySelectorAll(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      );
+      if (!focusable.length) {
+        event.preventDefault();
+        dialogRef.current.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      previouslyFocused?.focus?.();
+    };
+  }, []);
+
   return (
     <div
       className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-sm"
       onClick={(event) => event.target === event.currentTarget && onClose()}
     >
-      <div className="h-full w-full max-w-5xl overflow-y-auto bg-bg shadow-2xl">
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="workspace-drawer-title" tabIndex={-1} className="h-full w-full max-w-5xl overflow-y-auto bg-bg shadow-2xl">
+        <div className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-border bg-card px-4 py-2.5 dark:border-border-dark dark:bg-card-dark">
+          <h2 id="workspace-drawer-title" className="min-w-0 truncate text-sm font-semibold text-ink dark:text-ink-dark">{client.businessName} workspace</h2>
+          <button ref={closeButtonRef} type="button" onClick={onClose} className="shrink-0 rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-ink hover:bg-surface dark:border-border-dark dark:text-ink-dark dark:hover:bg-white/5">Close workspace <span aria-hidden="true">×</span></button>
+        </div>
         <OperationsWorkspace
           directorAccess
           clientId={client._id}

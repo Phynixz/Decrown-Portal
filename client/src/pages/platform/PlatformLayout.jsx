@@ -88,35 +88,39 @@ export default function PlatformLayout() {
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-16 shrink-0 flex items-center justify-between px-6 sm:px-8 border-b border-border dark:border-border-dark bg-card dark:bg-card-dark">
-          <div>
+        <header className="min-h-16 shrink-0 flex items-center justify-between gap-3 px-4 py-3 sm:px-8 border-b border-border dark:border-border-dark bg-card dark:bg-card-dark">
+          <div className="min-w-0 flex-1">
             <p className="text-xs text-muted dark:text-muted-dark">
               Signed in as
             </p>
-            <p className="text-sm font-semibold text-ink dark:text-ink-dark">
+            <p className="truncate text-sm font-semibold text-ink dark:text-ink-dark">
               {name} · {role === "owner" ? "Overall Admin" : role}
             </p>
           </div>
-          <button
-            onClick={toggleTheme}
-            className="w-9 h-9 rounded-full border border-border dark:border-border-dark flex items-center justify-center text-muted dark:text-muted-dark hover:text-ink dark:hover:text-ink-dark transition-colors"
-            title="Toggle dark mode"
-          >
-            {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-          </button>
-          <button
-            onClick={() => setMobileNavOpen((open) => !open)}
-            className="md:hidden w-9 h-9 rounded-lg border border-border dark:border-border-dark flex items-center justify-center text-muted dark:text-muted-dark hover:text-ink dark:hover:text-ink-dark transition-colors"
-            title={mobileNavOpen ? "Close navigation" : "Open navigation"}
-            aria-label={mobileNavOpen ? "Close navigation" : "Open navigation"}
-            aria-expanded={mobileNavOpen}
-          >
-            {mobileNavOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
-          </button>
+          <div className="flex shrink-0 items-center gap-2">
+            <button
+              onClick={toggleTheme}
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted transition-colors hover:text-ink dark:border-border-dark dark:text-muted-dark dark:hover:text-ink-dark"
+              title="Toggle dark mode"
+              aria-label="Toggle dark mode"
+            >
+              {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
+            <button
+              onClick={() => setMobileNavOpen((open) => !open)}
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted transition-colors hover:text-ink dark:border-border-dark dark:text-muted-dark dark:hover:text-ink-dark md:hidden"
+              title={mobileNavOpen ? "Close navigation" : "Open navigation"}
+              aria-label={mobileNavOpen ? "Close navigation" : "Open navigation"}
+              aria-expanded={mobileNavOpen}
+              aria-controls="platform-mobile-navigation"
+            >
+              {mobileNavOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            </button>
+          </div>
         </header>
 
         {mobileNavOpen && (
-          <nav className="md:hidden border-b border-border dark:border-border-dark bg-card dark:bg-card-dark px-4 py-3">
+          <nav id="platform-mobile-navigation" aria-label="Platform navigation" className="md:hidden border-b border-border dark:border-border-dark bg-card dark:bg-card-dark px-4 py-3">
             <div className="space-y-1">
               {visibleNavItems.map(({ to, label, icon: Icon, end }) => (
                 <NavLink

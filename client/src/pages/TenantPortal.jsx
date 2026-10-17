@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Moon,
@@ -87,6 +87,46 @@ export default function TenantPortal() {
   // Profile modal
   const [profileOpen, setProfileOpen] = useState(false);
   const [revoked, setRevoked] = useState(null);
+  const profileDialogRef = useRef(null);
+  const profileCloseRef = useRef(null);
+
+  useEffect(() => {
+    if (!profileOpen) return;
+    const previouslyFocused = document.activeElement;
+    profileCloseRef.current?.focus();
+
+    function handleKeyDown(event) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setProfileOpen(false);
+        return;
+      }
+      if (event.key !== "Tab" || !profileDialogRef.current) return;
+      const focusable = profileDialogRef.current.querySelectorAll(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      );
+      if (!focusable.length) {
+        event.preventDefault();
+        profileDialogRef.current.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      previouslyFocused?.focus?.();
+    };
+  }, [profileOpen]);
 
   const loadHistory = useCallback(async (tok) => {
     try {
@@ -452,6 +492,7 @@ export default function TenantPortal() {
                 className="theme-btn"
                 onClick={toggleTheme}
                 title="Toggle dark mode"
+                aria-label="Toggle dark mode"
               >
                 {dark ? <Sun size={16} /> : <Moon size={16} />}
               </button>
@@ -628,6 +669,7 @@ export default function TenantPortal() {
               className="theme-btn"
               onClick={toggleTheme}
               title="Toggle dark mode"
+              aria-label="Toggle dark mode"
             >
               {dark ? <Sun size={16} /> : <Moon size={16} />}
             </button>
@@ -774,13 +816,13 @@ export default function TenantPortal() {
               {retainStep === 2 && (
                 <div id="retainStep2">
                   <p className="step-label">Step 2 — Upload Payment Receipt</p>
-                  <label className="upload-box" htmlFor="retainFile">
+                  <label className="upload-box focus-within:ring-2 focus-within:ring-navy/30" htmlFor="retainFile">
                     <span id="uploadLabel">{retainLabel}</span>
                     <input
                       type="file"
                       id="retainFile"
                       accept="image/*,application/pdf"
-                      style={{ display: "none" }}
+                      className="sr-only"
                       onChange={(e) =>
                         previewReupload("paymentProof", e.target.files[0], true)
                       }
@@ -852,7 +894,7 @@ export default function TenantPortal() {
                     <div className="reupload-item" key={field}>
                       <div className="reupload-label">{label}</div>
                       <label
-                        className="upload-box"
+                        className="upload-box focus-within:ring-2 focus-within:ring-navy/30"
                         htmlFor={"new" + cap(field) + "File"}
                       >
                         <span>{reupLabels[field] || hint}</span>
@@ -860,7 +902,7 @@ export default function TenantPortal() {
                           type="file"
                           id={"new" + cap(field) + "File"}
                           accept={accept}
-                          style={{ display: "none" }}
+                          className="sr-only"
                           onChange={(e) =>
                             previewReupload(field, e.target.files[0])
                           }
@@ -1020,12 +1062,12 @@ export default function TenantPortal() {
                       return (
                         <div
                           key={i}
-                          className="flex items-center justify-between py-2 border-b border-border2 text-xs"
+                        className="flex flex-col justify-between gap-1 border-b border-border2 py-2 text-xs sm:flex-row sm:items-center sm:gap-3"
                         >
-                          <span className="text-text font-medium">
+                          <span className="min-w-0 break-words font-medium text-text [overflow-wrap:anywhere]">
                             {labelMap[entry.field] || entry.field}
                           </span>
-                          <span className="text-muted">
+                          <span className="min-w-0 break-words text-muted sm:text-right [overflow-wrap:anywhere]">
                             {entry.note} ·{" "}
                             {new Date(entry.changedAt).toLocaleDateString(
                               "en-NG",
@@ -1056,10 +1098,11 @@ export default function TenantPortal() {
             className="profile-backdrop"
             style={{ display: "block" }}
             onClick={() => setProfileOpen(false)}
+            aria-hidden="true"
           ></div>
-          <div className="profile-modal" style={{ display: "flex" }}>
+          <div ref={profileDialogRef} className="profile-modal" style={{ display: "flex" }} role="dialog" aria-modal="true" aria-labelledby="tenant-profile-modal-title" tabIndex={-1}>
             <div className="profile-modal-head">
-              <h3>
+              <h3 id="tenant-profile-modal-title">
                 <User
                   size={18}
                   style={{
@@ -1070,7 +1113,7 @@ export default function TenantPortal() {
                 />
                 My Profile
               </h3>
-              <button onClick={() => setProfileOpen(false)}>✕</button>
+              <button ref={profileCloseRef} type="button" aria-label="Close profile dialog" onClick={() => setProfileOpen(false)}>✕</button>
             </div>
             <div className="profile-modal-body">
               <div className="profile-avatar-wrap">

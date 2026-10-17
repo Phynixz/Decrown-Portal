@@ -546,8 +546,9 @@ export default function RegistrationForm() {
                   {location && availableUnits.length === 0 && <small className="hint">This hostel currently has no available rooms. Please choose another hostel.</small>}
                 </div>
                 <div className="field">
-                  <label>Amount Due</label>
+                  <label htmlFor="amount-due">Amount Due</label>
                   <input
+                    id="amount-due"
                     type="text"
                     readOnly
                     className="readonly-field"

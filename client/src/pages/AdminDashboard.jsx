@@ -838,7 +838,7 @@ export default function AdminDashboard() {
       ></div>
 
       {/* Sidebar */}
-      <aside className={"sidebar" + (sidebarOpen ? " open" : "")} id="sidebar">
+      <aside className={"sidebar" + (sidebarOpen ? " open" : "")} id="sidebar" aria-label="Admin navigation">
         <div className="sidebar-top">
           <div className="brand">
             <img
@@ -852,7 +852,7 @@ export default function AdminDashboard() {
               </div>
             </div>
           </div>
-          <button className="close-btn" onClick={() => setSidebarOpen(false)}>
+          <button className="close-btn" onClick={() => setSidebarOpen(false)} aria-label="Close admin navigation">
             ✕
           </button>
         </div>
@@ -912,7 +912,7 @@ export default function AdminDashboard() {
       {/* Main */}
       <div className="main">
         <header className="topbar">
-          <button className="menu-btn" onClick={() => setSidebarOpen(true)}>
+          <button className="menu-btn" onClick={() => setSidebarOpen(true)} aria-label="Open admin navigation" aria-expanded={sidebarOpen} aria-controls="sidebar">
             ☰
           </button>
           <div className="topbar-title-area">
@@ -921,7 +921,8 @@ export default function AdminDashboard() {
           </div>
           <div className="topbar-right">
             <select
-              className="session-sel"
+              className="session-sel min-w-0 max-w-[34vw] sm:max-w-none"
+              aria-label="Filter records by session"
               value={sessionFilter}
               onChange={(e) => setSessionFilter(e.target.value)}
             >
@@ -938,7 +939,7 @@ export default function AdminDashboard() {
                 </option>
               )}
             </select>
-            <button className="theme-btn" onClick={toggleTheme}>
+            <button className="theme-btn" onClick={toggleTheme} aria-label="Toggle dark mode" title="Toggle dark mode">
               {dark ? <Sun size={16} /> : <Moon size={16} />}
             </button>
             <button className="logout-btn" onClick={logout}>

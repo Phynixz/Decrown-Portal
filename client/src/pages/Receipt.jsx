@@ -149,7 +149,8 @@ export default function Receipt() {
           </div>
 
           {/* Table */}
-          <table className="mb-2 w-full border-collapse [&_td]:border-b [&_td]:border-border [&_td]:px-3.5 [&_td]:py-3.25 [&_td]:text-[13px] [&_th]:bg-card2 [&_th]:px-3.5 [&_th]:py-3 [&_th]:text-left [&_th]:text-xs [&_th]:font-bold [&_th]:uppercase [&_th]:tracking-[0.5px] [&_th]:text-navy">
+          <div className="mb-2 w-full overflow-x-auto print:overflow-visible">
+          <table className="w-full min-w-[520px] border-collapse [&_td]:border-b [&_td]:border-border [&_td]:px-3.5 [&_td]:py-3.25 [&_td]:text-[13px] [&_th]:bg-card2 [&_th]:px-3.5 [&_th]:py-3 [&_th]:text-left [&_th]:text-xs [&_th]:font-bold [&_th]:uppercase [&_th]:tracking-[0.5px] [&_th]:text-navy">
             <thead>
               <tr>
                 <th className="w-9 bg-navy text-center text-card">#</th>
@@ -171,6 +172,7 @@ export default function Receipt() {
               </tr>
             </tbody>
           </table>
+          </div>
 
           {/* Totals */}
           <div className="float-right flex min-w-[240px] flex-col gap-1 pt-4 max-[740px]:float-none max-[740px]:min-w-0">

@@ -132,10 +132,7 @@
     @apply text-[11px] font-semibold uppercase tracking-[0.6px];
     color: var(--color-text2);
   }
-  .field input[type="text"],
-  .field input[type="email"],
-  .field input[type="tel"],
-  .field input[type="date"],
+  .field input:not([type="file"]):not([type="checkbox"]):not([type="radio"]),
   .field select {
     @apply px-3.25 py-2.75 border-[1.5px] rounded-lg text-sm font-sans text-text bg-card outline-none transition-all;
     border-color: var(--color-border);
@@ -145,6 +142,10 @@
   .field select:focus {
     border-color: var(--color-navy);
     box-shadow: 0 0 0 3px rgba(26, 60, 94, 0.08);
+  }
+  .field input:focus-visible,
+  .field select:focus-visible {
+    outline: none;
   }
   .readonly-field {
     @apply font-bold cursor-not-allowed;
@@ -274,6 +275,18 @@
     }
     .field.full {
       grid-column: 1;
+    }
+  }
+
+  @media (max-width: 360px) {
+    .form-main {
+      @apply px-3;
+    }
+    .form-section {
+      @apply px-3.5 py-4;
+    }
+    .section-label {
+      @apply text-xs;
     }
   }
 }
