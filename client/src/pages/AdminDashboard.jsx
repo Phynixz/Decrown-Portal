@@ -62,7 +62,7 @@ export default function AdminDashboard() {
 
   const [allUsers, setAllUsers] = useState([]);
   const [locations, setLocations] = useState([]);
-  const [currentLocation, setCurrentLocation] = useState("Malete");
+  const [currentLocation, setCurrentLocation] = useState("");
   const [currentTab, setCurrentTab] = useState("all");
   const [currentSession, setCurrentSession] = useState(null);
   const [registrationOpen, setRegistrationOpen] = useState(true);
@@ -348,7 +348,7 @@ export default function AdminDashboard() {
       phone: latest.phone || "",
       guardianName: latest.guardianName || "",
       guardianPhone: latest.guardianPhone || "",
-      location: latest.location || "Malete",
+      location: latest.location || "",
       type: latest.type || "tenant",
       roomNo: latest.roomNo || "",
       level: latest.level || "",

@@ -110,9 +110,9 @@ function registrationForm({
   email,
   phone,
   roomNo,
-  location = "Malete",
-  state = "Kwara",
-  lga = "Moro",
+  location = "Test Hostel",
+  state = "Test State",
+  lga = "Test LGA",
 }) {
   const form = new FormData();
   form.append("location", location);
@@ -138,13 +138,28 @@ function registrationForm({
 }
 
 test("registration issues monotonic receipt numbers", async () => {
-  // Legacy De-Crown campuses must remain selectable without an in-place data
-  // migration. Their known geography is supplied by the compatibility layer.
+  const property = await Property.create({
+    name: "Test Hostel",
+    propertyType: "hostel",
+    status: "active",
+    state: "Test State",
+    lga: "Test LGA",
+  });
+  await Settings.create({ location: property.name, rentAmount: 100000, roomCount: 2 });
+  await Unit.insertMany([
+    { propertyId: property._id, location: property.name, unitCode: "room-5", label: "Room 5", unitType: "room" },
+    { propertyId: property._id, location: property.name, unitCode: "room-6", label: "Room 6", unitType: "room" },
+  ]);
+
+  // Property choices come from persisted property records; no campus defaults
+  // are seeded for a fresh database.
   const configResponse = await fetch(`${baseUrl}/tenant-config`);
   const config = await configResponse.json();
-  const malete = config.locations.find((location) => location.name === "Malete");
-  assert.equal(malete.state, "Kwara");
-  assert.equal(malete.lga, "Moro");
+  assert.equal(
+    config.locations.some((location) => ["Malete", "Ila-Orangun"].includes(location.name)),
+    false,
+    "fresh test database should not contain hardcoded campus properties",
+  );
 
   const year = new Date().getFullYear();
 
@@ -173,8 +188,8 @@ test("registration issues monotonic receipt numbers", async () => {
   const User = require("../models/User");
   const one = await User.findOne({ email: "receipt-one@example.test" }).lean();
   const two = await User.findOne({ email: "receipt-two@example.test" }).lean();
-  assert.equal(one.receiptNumber, `DCM-${year}-0001`);
-  assert.equal(two.receiptNumber, `DCM-${year}-0002`);
+  assert.equal(one.receiptNumber, `TES-${year}-0001`);
+  assert.equal(two.receiptNumber, `TES-${year}-0002`);
 });
 
 test("new hostels expose available rooms and accept tenant applications", async () => {

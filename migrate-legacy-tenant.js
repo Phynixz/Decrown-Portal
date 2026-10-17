@@ -116,7 +116,6 @@ async function createLegacyInventory(models) {
     models.User.distinct("location"),
   ]);
   const locations = [...new Set([...settingLocations, ...userLocations])];
-  if (!locations.length) locations.push("Malete", "Ila-Orangun");
 
   for (const location of locations) {
     let property = await properties.findOne({ name: location });
@@ -131,8 +130,7 @@ async function createLegacyInventory(models) {
     }
 
     if ((await units.countDocuments({ propertyId: property._id })) === 0) {
-      const roomCount =
-        setting.roomCount || (location === "Ila-Orangun" ? 22 : 10);
+      const roomCount = setting.roomCount || 0;
       await units.insertMany(
         Array.from({ length: roomCount }, (_, index) => ({
           propertyId: property._id,

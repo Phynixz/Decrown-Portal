@@ -594,6 +594,64 @@ router.put(
   },
 );
 
+// Permanent client removal is reserved for the verified overall admin.
+// Require the exact business name as a deliberate confirmation. Only drop a
+// database whose name matches the tenant naming convention; never guess at a
+// legacy database name (for example, a shared database named "test").
+router.delete(
+  "/platform/clients/:id",
+  verifyPlatformAdmin,
+  requirePlatformOwner,
+  async (req, res) => {
+    try {
+      if (!mongoose.isValidObjectId(req.params.id))
+        return res.status(400).json({ error: "Invalid client ID" });
+      const client = await Client.findById(req.params.id);
+      if (!client) return res.status(404).json({ error: "Client not found" });
+      if (sanitizeString(req.body.confirmBusinessName) !== client.businessName)
+        return res.status(400).json({
+          error: "Type the exact business name to confirm client deletion",
+        });
+      const expectedDbName = `tenant_${client.subdomain}`;
+      if (client.dbName && client.dbName !== expectedDbName)
+        return res.status(409).json({
+          error: "This client uses a legacy/nonstandard database name. Review and back up that database before removing the client.",
+        });
+
+      await recordAudit(req, {
+        actorId: req.platformAdmin.id,
+        actorName: req.platformAdmin.name,
+        actorEmail: req.platformAdmin.email,
+        actorRole: "owner",
+        action: "client.delete.started",
+        resource: "client",
+        resourceId: client._id,
+      });
+      if (client.dbName) {
+        const tenantModels = getTenantModels(client.dbName);
+        await tenantModels.Admin.db.dropDatabase();
+      }
+      await Client.deleteOne({ _id: client._id });
+      await recordAudit(req, {
+        actorId: req.platformAdmin.id,
+        actorName: req.platformAdmin.name,
+        actorEmail: req.platformAdmin.email,
+        actorRole: "owner",
+        action: "client.deleted",
+        resource: "client",
+        resourceId: client._id,
+      });
+      res.json({
+        message: "Client and its provisioned tenant database were deleted.",
+        deletedClientId: String(client._id),
+        deletedDatabase: client.dbName || null,
+      });
+    } catch (error) {
+      res.status(500).json({ error: serverError(error) });
+    }
+  },
+);
+
 router.get(
   "/platform/staff",
   verifyPlatformAdmin,

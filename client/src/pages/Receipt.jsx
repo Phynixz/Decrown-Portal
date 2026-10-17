@@ -6,11 +6,6 @@ const fmt = (n) =>
   "₦" +
   Number(n || 0).toLocaleString("en-NG", { minimumFractionDigits: 2 });
 
-const ADDRESSES = {
-  Malete: "Adjacent Victory Lodge, AGT2 Area Westend, Malete",
-  "Ila-Orangun": "Behind Central Mosque, College Road, Ila-Orangun",
-};
-
 export default function Receipt() {
   const { businessName, branding, locations, phone, email } = useTenant();
   const [params] = useSearchParams();
@@ -76,12 +71,7 @@ export default function Receipt() {
         month: "long",
         day: "numeric",
       });
-  const campusLabel =
-    data.location === "Malete"
-      ? "Malete Campus"
-      : data.location === "Ila-Orangun"
-        ? "Ila-Orangun Campus"
-        : data.location || "—";
+  const campusLabel = data.location || "—";
   const amount = Number(data.amount || 0);
 
   return (
@@ -99,8 +89,8 @@ export default function Receipt() {
               <h1 className="mb-2 font-display text-[26px] font-bold text-navy">{businessName || "De-Crown Cottage"}</h1>
               <p className="text-xs text-muted" id="r-address">
                 {locations?.find((l) => l.name === data.location)?.address ||
-                  ADDRESSES[data.location] ||
-                  "Kwara State, Nigeria"}
+                  data.address ||
+                  "Address not configured"}
               </p>
               <p className="text-xs text-muted" id="r-state">Nigeria</p>
               <p className="text-xs text-muted">

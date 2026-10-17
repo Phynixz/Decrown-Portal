@@ -18,6 +18,7 @@ import {
   UserCheck,
   UserX,
   BarChart3,
+  Trash2,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getJSON, sendJSON } from "../../api.js";
@@ -463,6 +464,33 @@ export default function PlatformClients() {
     }
   }
 
+  async function deleteClient(client) {
+    const confirmBusinessName = prompt(
+      `WARNING: This permanently deletes ${client.businessName} and its provisioned tenant database, including the client's data. This cannot be undone.\n\nType the exact business name to continue:`,
+    );
+    if (confirmBusinessName !== client.businessName) return;
+    setBusyId(client._id);
+    try {
+      await fetch(`/platform/clients/${client._id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${getPlatformToken()}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ confirmBusinessName }),
+      }).then(async (response) => {
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || "Could not delete client");
+        return data;
+      });
+      await load();
+    } catch (e) {
+      alert("Error: " + e.message);
+    } finally {
+      setBusyId("");
+    }
+  }
+
   return (
     <div>
       <div className="mb-6">
@@ -628,6 +656,15 @@ export default function PlatformClients() {
                       className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-ink dark:bg-accent text-white dark:text-ink text-xs font-semibold transition-colors disabled:opacity-50"
                     >
                       <PlayCircle className="w-3.5 h-3.5" /> Reactivate
+                    </button>
+                  )}
+                  {isOwner && (
+                    <button
+                      disabled={busyId === c._id}
+                      onClick={() => deleteClient(c)}
+                      className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-red-300 text-red-700 hover:bg-red-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/30 text-xs font-semibold transition-colors disabled:opacity-50"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" /> Delete client
                     </button>
                   )}
                 </div>

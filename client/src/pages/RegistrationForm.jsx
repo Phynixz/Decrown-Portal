@@ -51,12 +51,7 @@ export default function RegistrationForm() {
   const [busy, setBusy] = useState(false);
   const [locations, setLocations] = useState([]);
 
-  const displayLocation =
-    location === "Malete"
-      ? "Malete Campus"
-      : location
-        ? `${location} Campus`
-        : "Choose Location";
+  const displayLocation = location || "Choose Location";
 
   // Load session metadata on mount
   useEffect(() => {

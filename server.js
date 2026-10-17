@@ -199,25 +199,22 @@ function sanitizePhone(value) {
 
 function sanitizeLocation(value, client) {
   const loc = sanitizeString(value);
-  const allowedLocations = client?.locations?.length
-    ? client.locations
-    : ["Malete", "Ila-Orangun"];
+  const allowedLocations = client ? client.locations || [] : null;
+  if (!loc) return "";
+  // A client with no configured locations must not inherit another business's
+  // old campus list. The root/legacy workspace uses property records as its
+  // source of truth; its forms submit locations loaded from /tenant-config.
+  if (!allowedLocations) return loc;
   return allowedLocations.includes(loc) ? loc : "";
 }
 
 // Older De-Crown records predate state/LGA fields. Keep those records usable
 // without rewriting production data during application startup; new properties
 // always use the explicit geography saved by the operations workspace.
-const LEGACY_PROPERTY_GEOGRAPHY = {
-  Malete: { state: "Kwara", lga: "Moro" },
-  "Ila-Orangun": { state: "Osun", lga: "Ila" },
-};
-
 function getPropertyGeography(property) {
-  const legacy = LEGACY_PROPERTY_GEOGRAPHY[property?.name] || {};
   return {
-    state: property?.state || legacy.state || "",
-    lga: property?.lga || legacy.lga || "",
+    state: property?.state || "",
+    lga: property?.lga || "",
   };
 }
 
@@ -908,16 +905,6 @@ app.get("/tenant-config", async (req, res) => {
     let properties = storedProperties.filter(
       (property) => property.status === "active",
     );
-    if (!storedProperties.length && !req.tenantClient) {
-      const locations = ["Malete", "Ila-Orangun"];
-      properties = locations.map((name) => ({
-        _id: null,
-        name,
-        propertyType: "hostel",
-        status: "active",
-        address: "",
-      }));
-    }
     const locations = await Promise.all(
       properties.map(async (property) => {
         const units = property._id
@@ -1060,14 +1047,10 @@ app.get("/user/:id", async (req, res) => {
 
 async function generateReceiptNumber(location) {
   const prefix =
-    location === "Malete"
-      ? "DCM"
-      : location === "Ila-Orangun"
-        ? "DCI"
-        : String(location || "")
-            .replace(/[^a-zA-Z0-9]/g, "")
-            .slice(0, 3)
-            .toUpperCase() || "RCP";
+    String(location || "")
+      .replace(/[^a-zA-Z0-9]/g, "")
+      .slice(0, 3)
+      .toUpperCase() || "RCP";
   const year = new Date().getFullYear();
   // Monotonic sequence per location+year. The old countDocuments() approach
   // regressed after record deletions and collided under concurrency; take
@@ -1293,8 +1276,6 @@ app.get("/admin/get-amounts", verifyAdmin, async (req, res) => {
     const settings = await Settings.find();
     const state = await getRegistrationState();
     const r = {
-      malete: null,
-      ila: null,
       // Default must match isRegistrationOpen()/current-session (open unless
       // explicitly closed) — this used to report "closed" while the public
       // registration form accepted submissions.
@@ -1302,14 +1283,9 @@ app.get("/admin/get-amounts", verifyAdmin, async (req, res) => {
       locations: settings.map((setting) => ({
         name: setting.location,
         rentAmount: setting.rentAmount,
-        roomCount:
-          setting.roomCount ?? (setting.location === "Ila-Orangun" ? 22 : 10),
+      roomCount: setting.roomCount ?? 0,
       })),
     };
-    settings.forEach((s) => {
-      if (s.location === "Malete") r.malete = s.rentAmount;
-      if (s.location === "Ila-Orangun") r.ila = s.rentAmount;
-    });
     res.json(r);
   } catch (e) {
     res.status(500).json({ error: serverError(e) });
@@ -1563,7 +1539,6 @@ app.put("/admin/set-registration", verifyAdmin, async (req, res) => {
 
 app.put("/admin/set-amount", verifyAdmin, async (req, res) => {
   try {
-    const { malete, ila } = req.body;
     if (Array.isArray(req.body.locations)) {
       for (const item of req.body.locations) {
         const location = sanitizeLocation(item.name, req.tenantClient);
@@ -1589,18 +1564,6 @@ app.put("/admin/set-amount", verifyAdmin, async (req, res) => {
         });
       }
     }
-    if (malete != null)
-      await Settings.findOneAndUpdate(
-        { location: "Malete" },
-        { rentAmount: +malete },
-        { upsert: true, runValidators: true },
-      );
-    if (ila != null)
-      await Settings.findOneAndUpdate(
-        { location: "Ila-Orangun" },
-        { rentAmount: +ila },
-        { upsert: true, runValidators: true },
-      );
     res.json({ message: "Updated" });
   } catch (e) {
     res.status(500).json({ error: serverError(e) });
@@ -1904,53 +1867,6 @@ app.use((error, req, res, next) => {
 
 async function seed() {
   await ensurePlatformOwner();
-  for (const { name: loc, unitCount } of [
-    { name: "Malete", unitCount: 10 },
-    { name: "Ila-Orangun", unitCount: 22 },
-  ]) {
-    let property = await Property.findOne({ name: loc });
-    if (!property) property = await Property.create({ name: loc });
-    if (!(await Settings.findOne({ location: loc }))) {
-      await Settings.create({
-        location: loc,
-        rentAmount: 150000,
-        registrationOpen: true,
-        roomCount: unitCount,
-      });
-    } else {
-      await Settings.updateOne(
-        { location: loc, registrationOpen: { $exists: false } },
-        { $set: { registrationOpen: true } },
-      );
-    }
-    for (let index = 1; index <= unitCount; index += 1) {
-      await Unit.updateOne(
-        { propertyId: property._id, unitCode: `room-${index}` },
-        {
-          $setOnInsert: {
-            propertyId: property._id,
-            location: loc,
-            unitCode: `room-${index}`,
-            label: `Room ${index}`,
-            unitType: "room",
-          },
-        },
-        { upsert: true },
-      );
-      const unit = await Unit.findOne({
-        propertyId: property._id,
-        unitCode: `room-${index}`,
-      });
-      await User.updateMany(
-        {
-          location: loc,
-          roomNo: unit.label,
-          $or: [{ propertyId: null }, { propertyId: { $exists: false } }],
-        },
-        { $set: { propertyId: property._id, unitId: unit._id } },
-      );
-    }
-  }
 }
 
 // ── SPA fallback ─────────────────────────────────────────────────────────────

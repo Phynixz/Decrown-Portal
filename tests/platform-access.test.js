@@ -139,6 +139,16 @@ test("owner/staff permissions and platform audit are enforced", async () => {
     403,
   );
   assert.equal(
+    (
+      await request("/platform/clients/000000000000000000000001", {
+        method: "DELETE",
+        token: reviewerToken,
+        body: { confirmBusinessName: "Director Access Property" },
+      })
+    ).status,
+    403,
+  );
+  assert.equal(
     (await request("/platform/staff", { token: reviewerToken })).status,
     403,
   );
@@ -162,6 +172,15 @@ test("owner/staff permissions and platform audit are enforced", async () => {
   );
   assert.equal(listedClient.workspaceReady, true);
   assert.equal("dbName" in listedClient, false);
+  assert.equal(
+    (await request(`/platform/clients/${client._id}`, {
+      method: "DELETE",
+      token: ownerToken,
+      body: { confirmBusinessName: "wrong name" },
+    })).status,
+    400,
+    "client deletion must require exact business-name confirmation",
+  );
   const tenantModels = getTenantModels(client.dbName);
   const property = await tenantModels.Property.create({
     name: "Director House",
@@ -451,4 +470,22 @@ test("owner/staff permissions and platform audit are enforced", async () => {
     ).status,
     403,
   );
+
+  const deletionTarget = await Client.create({
+    businessName: "Disposable Test Client",
+    contactName: "Test Contact",
+    email: "disposable-client@example.test",
+    passwordHash: "unused-test-hash",
+    subdomain: "disposable-test-client",
+    status: "pending_verification",
+    dbName: "tenant_disposable-test-client",
+  });
+  const deletion = await request(`/platform/clients/${deletionTarget._id}`, {
+    method: "DELETE",
+    token: ownerToken,
+    body: { confirmBusinessName: "Disposable Test Client" },
+  });
+  assert.equal(deletion.status, 200, JSON.stringify(deletion.body));
+  assert.equal(await Client.findById(deletionTarget._id), null);
+  assert.equal(deletion.body.deletedDatabase, "tenant_disposable-test-client");
 });

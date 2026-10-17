@@ -83,8 +83,8 @@ export default function Terms() {
               </p>
               <p>
                 These terms apply to all tenants, guardians, and visitors of
-                De-Crown Cottage hostels located at Malete and Ila-Orangun
-                campuses in Kwara State, Nigeria.
+                accommodation properties made available through the De-Crown
+                platform in Nigeria.
               </p>
             </Section>
             <Section num="02" title="Eligibility">
@@ -328,8 +328,7 @@ export default function Terms() {
           <div className="mb-2.5 flex items-center gap-3 text-sm text-white/80">
             <span className="text-lg">📍</span>
             <span>
-              Adjacent Victory Lodge, AGT2 Area Westend, Malete, Kwara State,
-              Nigeria
+              the address configured for the relevant property in the platform
             </span>
           </div>
           <div className="mb-2.5 flex items-center gap-3 text-sm text-white/80">
@@ -348,7 +347,7 @@ export default function Terms() {
       </div>
 
       <footer className="bg-navy2 px-10 py-6 text-center text-xs text-white/40">
-        <p>© 2025 De-Crown Cottage. All rights reserved. Kwara State, Nigeria.</p>
+        <p>© 2025 De-Crown Cottage. All rights reserved. Nigeria.</p>
       </footer>
     </div>
   );

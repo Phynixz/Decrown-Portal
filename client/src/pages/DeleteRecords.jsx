@@ -12,6 +12,7 @@ export default function DeleteRecords() {
   const [fSess, setFSess] = useState("");
   const [fSearch, setFSearch] = useState("");
   const [sessions, setSessions] = useState([]);
+  const [locations, setLocations] = useState([]);
   const [allRecords, setAllRecords] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [selected, setSelected] = useState(new Set());
@@ -23,6 +24,10 @@ export default function DeleteRecords() {
 
   useEffect(() => {
     if (!getToken()) navigate("/login", { replace: true });
+    fetch("/tenant-config")
+      .then((response) => (response.ok ? response.json() : { locations: [] }))
+      .then((data) => setLocations(data.locations || []))
+      .catch(() => setLocations([]));
   }, [navigate]);
 
   async function loadRecords() {
@@ -170,8 +175,11 @@ export default function DeleteRecords() {
             onChange={(e) => setFLoc(e.target.value)}
           >
             <option value="">All Locations</option>
-            <option value="Malete">Malete</option>
-            <option value="Ila-Orangun">Ila-Orangun</option>
+            {locations.map((location) => (
+              <option key={location.id || location.name} value={location.name}>
+                {location.name}
+              </option>
+            ))}
           </select>
           <select
             className="min-w-[140px] flex-1 rounded-lg border-[1.5px] border-border bg-input px-3 py-2 font-sans text-[13px] text-text outline-none transition-colors focus:border-navy"
