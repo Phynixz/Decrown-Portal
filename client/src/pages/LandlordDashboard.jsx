@@ -113,19 +113,19 @@ export default function LandlordDashboard() {
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-terra">Landlord dashboard</p>
             <h1 className="mt-2 font-display text-3xl font-medium leading-tight text-text sm:text-4xl">Welcome back{businessName ? ` to ${businessName}` : ""}.</h1>
-            <p className="mt-2 max-w-xl text-sm text-muted">A clear view of your properties, units, and tenant activity.</p>
+            <p className="mt-2 max-w-xl text-sm text-muted">A clear view of your hostels, individual rooms, and tenant activity.</p>
           </div>
           <Link to="/admin/properties/new" className="inline-flex items-center justify-center gap-2 rounded-lg bg-navy px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-navy2">
-            <Plus className="h-4 w-4" /> Add property
+            <Plus className="h-4 w-4" /> Add hostel
           </Link>
         </section>
 
         {error && <div className="mb-6 rounded-lg border-l-4 border-danger bg-danger-faint px-4 py-3 text-sm text-danger">{error}</div>}
 
         <section className="overflow-hidden rounded-2xl border border-border bg-card sm:grid sm:grid-cols-4">
-          <Stat label="Properties" value={loading ? "—" : properties.length} detail="In your portfolio" icon={Building2} />
-          <Stat label="Active listings" value={loading ? "—" : properties.filter((p) => p.status === "active").length} detail="Ready for management" icon={CheckCircle2} />
-          <Stat label="Units" value={loading ? "—" : units.length} detail={`${occupied} currently occupied`} icon={Building2} />
+          <Stat label="Hostels" value={loading ? "—" : properties.length} detail="In your portfolio" icon={Building2} />
+          <Stat label="Active hostels" value={loading ? "—" : properties.filter((p) => p.status === "active").length} detail="Open for management" icon={CheckCircle2} />
+          <Stat label="Rooms" value={loading ? "—" : units.length} detail={`${occupied} currently occupied`} icon={Building2} />
           <Stat label="Tenants" value={loading ? "—" : users.length} detail="Tenant records" icon={Users} />
         </section>
 
@@ -144,7 +144,7 @@ export default function LandlordDashboard() {
                 <p className="mt-1 text-sm text-muted">{latest.address || "Address not added"} · {latest.propertyType}</p>
               </div>
               <div className="mt-5 flex gap-6 text-sm sm:mt-0">
-                <div><p className="font-mono text-xl font-semibold text-text">{(latest.units || []).length}</p><p className="text-xs text-muted">Units</p></div>
+                <div><p className="font-mono text-xl font-semibold text-text">{(latest.units || []).length}</p><p className="text-xs text-muted">Rooms</p></div>
                 <div><p className="font-mono text-xl font-semibold text-text">{(latest.units || []).filter((unit) => unit.status === "available").length}</p><p className="text-xs text-muted">Available</p></div>
               </div>
             </div>
@@ -152,8 +152,8 @@ export default function LandlordDashboard() {
             <div className="mt-4 rounded-2xl border border-dashed border-border bg-card px-6 py-12 text-center">
               <Building2 className="mx-auto h-8 w-8 text-muted" />
               <h3 className="mt-4 font-display text-xl text-text">Your portfolio starts here</h3>
-              <p className="mx-auto mt-2 max-w-md text-sm text-muted">Add your first property and define its units so your tenant portal is ready for registrations.</p>
-              <Link to="/admin/properties/new" className="mt-5 inline-flex items-center gap-2 rounded-lg bg-navy px-4 py-2.5 text-sm font-semibold text-white"><Plus className="h-4 w-4" /> Add your first property</Link>
+              <p className="mx-auto mt-2 max-w-md text-sm text-muted">Add your first hostel and enter its room count. We’ll number the rooms automatically so tenants can choose an available room.</p>
+              <Link to="/admin/properties/new" className="mt-5 inline-flex items-center gap-2 rounded-lg bg-navy px-4 py-2.5 text-sm font-semibold text-white"><Plus className="h-4 w-4" /> Add your first hostel</Link>
             </div>
           )}
         </section>
@@ -164,7 +164,7 @@ export default function LandlordDashboard() {
             {properties.map((property) => (
               <article key={property._id} className="rounded-2xl border border-border bg-card p-5">
                 <div className="flex items-start justify-between gap-3"><div><h3 className="font-display text-lg text-text">{property.name}</h3><p className="mt-1 text-xs text-muted">{property.address || "Address not added"}</p></div><span className="rounded-full bg-surface px-2.5 py-1 text-[11px] font-semibold text-muted">{property.status}</span></div>
-                <div className="mt-5 flex items-center justify-between border-t border-border pt-4 text-xs text-muted"><span>{(property.units || []).length} units</span><span>{(property.units || []).filter((unit) => unit.status === "available").length} available</span></div>
+                <div className="mt-5 flex items-center justify-between border-t border-border pt-4 text-xs text-muted"><span>{(property.units || []).length} rooms</span><span>{(property.units || []).filter((unit) => unit.status === "available").length} available</span></div>
               </article>
             ))}
             {!loading && properties.length === 0 && <p className="text-sm text-muted">No properties yet. Add one above to begin.</p>}

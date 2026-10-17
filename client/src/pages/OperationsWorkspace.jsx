@@ -23,7 +23,7 @@ import { getLocalGovernments, NIGERIAN_STATES } from "../utils/nigeriaLocationDa
 const tabs = [
   { id: "overview", label: "Overview", icon: Home },
   { id: "properties", label: "Properties", icon: Building2 },
-  { id: "units", label: "Units", icon: ClipboardList },
+  { id: "units", label: "Rooms", icon: ClipboardList },
   { id: "tenants", label: "Tenants", icon: Users },
   { id: "settings", label: "Settings", icon: Settings2 },
 ];
@@ -376,25 +376,38 @@ export default function OperationsWorkspace({ readOnly = false, directorAccess =
   async function createDirectorUnit(event) {
     event.preventDefault();
     if (!unitDraft) return;
+    const roomCount = Number(unitDraft.roomCount);
+    if (!Number.isInteger(roomCount) || roomCount < 1 || roomCount > 500) {
+      setError("Enter a number of rooms between 1 and 500.");
+      return;
+    }
     setUnitSaving(true);
     setError("");
     try {
-      const created = await sendJSON(
-        "POST",
-        `${base}/properties/${unitDraft.propertyId}/units`,
-        {
-          unitCode: unitDraft.unitCode,
-          label: unitDraft.label,
-          unitType: unitDraft.unitType,
-          rentAmount:
-            unitDraft.rentAmount === "" ? null : Number(unitDraft.rentAmount),
-        },
-        token,
+      const property = properties.find((item) => String(item._id) === unitDraft.propertyId);
+      if (!property) throw new Error("Select a valid hostel first.");
+      const endpoint = directorAccess
+        ? `${base}/properties/${unitDraft.propertyId}/units`
+        : `/admin/properties/${unitDraft.propertyId}/units`;
+      const existingRoomNumbers = (property.units || []).map((unit) =>
+        Number(String(unit.unitCode || "").match(/^room-(\d+)$/i)?.[1] || 0),
       );
+      const startAt = Math.max(0, ...existingRoomNumbers) + 1;
+      const createdRooms = [];
+      for (let offset = 0; offset < roomCount; offset += 1) {
+        const roomNumber = startAt + offset;
+        const created = await sendJSON("POST", endpoint, {
+          unitCode: `room-${roomNumber}`,
+          label: `Room ${roomNumber}`,
+          unitType: "room",
+          rentAmount: null,
+        }, token);
+        createdRooms.push(created);
+      }
       setProperties((current) =>
         current.map((property) =>
           String(property._id) === unitDraft.propertyId
-            ? { ...property, units: [...(property.units || []), created] }
+            ? { ...property, units: [...(property.units || []), ...createdRooms] }
             : property,
         ),
       );
@@ -412,7 +425,9 @@ export default function OperationsWorkspace({ readOnly = false, directorAccess =
     try {
       const updated = await sendJSON(
         "PUT",
-        `${base}/properties/${property._id}/units/${unit._id}`,
+        directorAccess
+          ? `${base}/properties/${property._id}/units/${unit._id}`
+          : `/admin/properties/${property._id}/units/${unit._id}`,
         { status: unit.status, rentAmount: unit.rentAmount },
         token,
       );
@@ -490,7 +505,7 @@ export default function OperationsWorkspace({ readOnly = false, directorAccess =
         <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
           <Link to={platformView ? "/platform/clients" : "/admin"} className="flex items-center gap-2.5 no-underline">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-navy text-white"><Building2 className="h-4 w-4" /></div>
-            <div><p className="font-display text-lg leading-none text-text">Operations</p><p className="mt-1 text-[10px] uppercase tracking-[0.14em] text-muted">{displayName || "Property workspace"}</p></div>
+          <div><p className="font-display text-lg leading-none text-text">Operations</p><p className="mt-1 text-[10px] uppercase tracking-[0.14em] text-muted">{displayName || "Hostel workspace"}</p></div>
           </Link>
           <div className="flex items-center gap-2">
             <button onClick={toggleTheme} className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted hover:text-text" title="Toggle theme">{dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}</button>
@@ -504,7 +519,7 @@ export default function OperationsWorkspace({ readOnly = false, directorAccess =
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-7 flex flex-col justify-between gap-5 md:flex-row md:items-end">
-          <div><p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-terra">{readOnly ? "Client inspection" : "Business operations"}</p><h1 className="mt-2 font-display text-3xl text-text sm:text-4xl">Run the property, clearly.</h1><p className="mt-2 max-w-xl text-sm text-muted">Properties, units, tenants, and settings in one working view.</p></div>
+          <div><p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-terra">{readOnly ? "Client inspection" : "Business operations"}</p><h1 className="mt-2 font-display text-3xl text-text sm:text-4xl">Run your hostels, clearly.</h1><p className="mt-2 max-w-xl text-sm text-muted">Hostel listings, individual rooms, tenants, and settings in one working view.</p></div>
           {!platformView && <Link to="/admin/properties/new" className="inline-flex items-center gap-2 rounded-lg bg-navy px-4 py-2.5 text-sm font-semibold text-white hover:bg-navy2">Add property <ChevronRight className="h-4 w-4" /></Link>}
         </div>
 
@@ -515,7 +530,7 @@ export default function OperationsWorkspace({ readOnly = false, directorAccess =
 
         {loading ? <div className="grid gap-4 md:grid-cols-3"><div className="h-32 animate-pulse rounded-2xl bg-card2" /><div className="h-32 animate-pulse rounded-2xl bg-card2" /><div className="h-32 animate-pulse rounded-2xl bg-card2" /></div> : tab === "overview" ? (
           <div className="space-y-6">
-            <section className="grid overflow-hidden rounded-2xl border border-border bg-card sm:grid-cols-2 lg:grid-cols-4"><Metric label="Properties" value={stats?.properties ?? properties.length} detail="In this workspace" icon={Building2} /><Metric label="Units" value={stats?.units ?? units.length} detail={`${units.filter((unit) => unit.status === "available").length} available`} icon={ClipboardList} /><Metric label="Tenants" value={stats?.totalUsers ?? tenants.length} detail="Tenant records" icon={Users} /><Metric label="Occupied" value={occupiedUnitIds.size} detail="Assigned units" icon={CheckCircle2} /></section>
+            <section className="grid overflow-hidden rounded-2xl border border-border bg-card sm:grid-cols-2 lg:grid-cols-4"><Metric label="Hostels" value={stats?.properties ?? properties.length} detail="In your portfolio" icon={Building2} /><Metric label="Rooms" value={stats?.units ?? units.length} detail={`${units.filter((unit) => unit.status === "available").length} available`} icon={ClipboardList} /><Metric label="Tenants" value={stats?.totalUsers ?? tenants.length} detail="Tenant records" icon={Users} /><Metric label="Occupied rooms" value={occupiedUnitIds.size} detail="Assigned rooms" icon={CheckCircle2} /></section>
             <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
               <Panel title="Portfolio pulse" eyebrow="At a glance"><div className="space-y-4">{properties.slice(0, 4).map((property) => <div key={property._id} className="flex items-center justify-between border-b border-border pb-3 last:border-0 last:pb-0"><div><p className="text-sm font-semibold text-text">{property.name}</p><p className="mt-1 text-xs text-muted">{property.address || "Address not added"}</p></div><span className="text-xs text-muted">{(property.units || []).length} units</span></div>)}{properties.length === 0 && <EmptyState icon={Building2} title="No properties yet" text="Add your first property to start managing units and tenants." action={!platformView && <Link to="/admin/properties/new" className="mt-5 inline-flex rounded-lg bg-navy px-4 py-2 text-sm font-semibold text-white">Add property</Link>} />}</div></Panel>
               <Panel title="Next actions" eyebrow="Keep moving"><div className="space-y-3 text-sm">{properties.length === 0 && <p className="rounded-lg bg-surface px-3 py-3 text-muted">Create a property before adding units.</p>}{properties.length > 0 && units.length === 0 && <p className="rounded-lg bg-surface px-3 py-3 text-muted">Add units to make spaces available for tenants.</p>}{tenants.length === 0 && <p className="rounded-lg bg-surface px-3 py-3 text-muted">No tenant records yet.</p>}{properties.length > 0 && units.length > 0 && tenants.length > 0 && <p className="rounded-lg bg-success-faint px-3 py-3 text-success">Your core workspace is active.</p>}</div></Panel>
@@ -532,9 +547,7 @@ export default function OperationsWorkspace({ readOnly = false, directorAccess =
                   </label>
                   <label className="text-xs font-medium text-muted">
                     Property type
-                    <select value={propertyForm.propertyType} onChange={(event) => setPropertyForm((current) => ({ ...current, propertyType: event.target.value }))} className="mt-1 w-full rounded-lg border border-border bg-input px-3 py-2.5 text-sm text-text">
-                      {["hostel", "apartment", "house", "commercial", "mixed", "other"].map((type) => <option key={type} value={type}>{type}</option>)}
-                    </select>
+                    <p className="mt-1 rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-text">Hostel with individual rooms</p>
                   </label>
                   <label className="text-xs font-medium text-muted">
                     State
@@ -584,23 +597,23 @@ export default function OperationsWorkspace({ readOnly = false, directorAccess =
             </Panel>
           </div>
         ) : tab === "units" ? (
-          <Panel title="Units" eyebrow="Grouped by property">
+          <Panel title="Rooms" eyebrow="Grouped by hostel">
             {properties.length === 0 ? (
-              <EmptyState icon={ClipboardList} title="No properties yet" text="Create a property before adding rooms or units." />
+              <EmptyState icon={ClipboardList} title="No hostels yet" text="Create a hostel before adding rooms." />
             ) : (
               <div className="space-y-6">
                 {properties.map((property) => (
                   <section key={property._id} className="border-b border-border pb-6 last:border-0 last:pb-0">
                     <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-                      <h3 className="font-display text-lg">{property.name}</h3>
-                      {directorAccess && property.status === "active" && <button onClick={() => setUnitDraft({ propertyId: String(property._id), unitCode: "", label: "", unitType: "room", rentAmount: "" })} className="rounded-lg border border-border px-3 py-2 text-xs font-semibold text-text">Add unit</button>}
+                      <div><h3 className="font-display text-lg">{property.name}</h3><p className="mt-1 text-xs text-muted">{(property.units || []).length} rooms</p></div>
+                      {!readOnly && property.status === "active" && <button onClick={() => setUnitDraft({ propertyId: String(property._id), roomCount: "1" })} className="rounded-lg border border-border px-3 py-2 text-xs font-semibold text-text">Add rooms</button>}
                     </div>
                     {(property.units || []).length === 0 ? <p className="text-sm text-muted">No units configured.</p> : (
                       <div className="space-y-2">
                         {(property.units || []).map((unit) => (
                           <div key={unit._id} className="grid items-center gap-3 rounded-lg border border-border px-3 py-3 sm:grid-cols-[1fr_9rem_9rem_auto]">
-                            <div><p className="text-sm font-semibold">{unit.label}</p><p className="mt-1 text-[11px] text-muted">{unit.unitCode} · {unit.unitType}</p></div>
-                            {directorAccess ? (
+                            <div><p className="text-sm font-semibold">{unit.label}</p><p className="mt-1 text-[11px] text-muted">Room · {unit.unitCode}</p></div>
+                            {!readOnly ? (
                               <>
                                 <select aria-label={`Status for ${unit.label}`} value={unit.status} onChange={(event) => updateDirectorUnit(property._id, unit._id, "status", event.target.value)} className="rounded-lg border border-border bg-input px-2 py-2 text-xs text-text">
                                   {["available", "maintenance", "inactive"].map((status) => <option key={status} value={status}>{status}</option>)}
@@ -615,13 +628,11 @@ export default function OperationsWorkspace({ readOnly = false, directorAccess =
                         ))}
                       </div>
                     )}
-                    {directorAccess && unitDraft?.propertyId === String(property._id) && (
+                    {!readOnly && unitDraft?.propertyId === String(property._id) && (
                       <form onSubmit={createDirectorUnit} className="mt-4 grid gap-3 rounded-lg bg-surface p-4 sm:grid-cols-2">
-                        <label className="text-xs text-muted">Unit code<input required maxLength={60} value={unitDraft.unitCode} onChange={(event) => setUnitDraft((current) => ({ ...current, unitCode: event.target.value }))} className="mt-1 w-full rounded-lg border border-border bg-input px-3 py-2 text-sm text-text" /></label>
-                        <label className="text-xs text-muted">Display label<input required maxLength={100} value={unitDraft.label} onChange={(event) => setUnitDraft((current) => ({ ...current, label: event.target.value }))} className="mt-1 w-full rounded-lg border border-border bg-input px-3 py-2 text-sm text-text" /></label>
-                        <label className="text-xs text-muted">Unit type<select value={unitDraft.unitType} onChange={(event) => setUnitDraft((current) => ({ ...current, unitType: event.target.value }))} className="mt-1 w-full rounded-lg border border-border bg-input px-3 py-2 text-sm text-text">{["room", "apartment", "house", "shop", "office", "other"].map((type) => <option key={type} value={type}>{type}</option>)}</select></label>
-                        <label className="text-xs text-muted">Rent override<input type="number" min="0" step="1" value={unitDraft.rentAmount} onChange={(event) => setUnitDraft((current) => ({ ...current, rentAmount: event.target.value }))} className="mt-1 w-full rounded-lg border border-border bg-input px-3 py-2 text-sm text-text" /></label>
-                        <div className="flex gap-2 sm:col-span-2"><button type="submit" disabled={unitSaving} className="rounded-lg bg-navy px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">{unitSaving ? "Creating…" : "Create unit"}</button><button type="button" onClick={() => setUnitDraft(null)} className="rounded-lg border border-border px-3 py-2 text-xs font-semibold">Cancel</button></div>
+                        <p className="text-xs text-muted sm:col-span-2">Rooms are numbered automatically. Existing rooms will not be renamed.</p>
+                        <label className="text-xs text-muted">How many rooms to add?<input required type="number" min="1" max="500" step="1" value={unitDraft.roomCount} onChange={(event) => setUnitDraft((current) => ({ ...current, roomCount: event.target.value }))} className="mt-1 w-full rounded-lg border border-border bg-input px-3 py-2 text-sm text-text" /></label>
+                        <div className="flex items-end gap-2"><button type="submit" disabled={unitSaving} className="rounded-lg bg-navy px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">{unitSaving ? "Adding rooms…" : "Create rooms"}</button><button type="button" onClick={() => setUnitDraft(null)} className="rounded-lg border border-border px-3 py-2 text-xs font-semibold">Cancel</button></div>
                       </form>
                     )}
                   </section>
