@@ -396,6 +396,88 @@ router.post("/platform/login", platformLoginLimiter, async (req, res) => {
 });
 
 // ─── Approval queue ──────────────────────────────────────────────────────
+// Executive summary: aggregate platform metadata and tenant counts without
+// returning tenant records or database names to the browser.
+router.get(
+  "/platform/overview",
+  verifyPlatformAdmin,
+  async (req, res) => {
+    try {
+      // Staff can see the same high-level client queue they are permitted to
+      // review, but tenant-wide operational totals and system checks are CEO-only.
+      if (req.platformAdmin?.role !== "owner") {
+        if (!hasPlatformPermission(req.platformAdmin?.role, ["clients:read"]))
+          return res.status(403).json({ error: "Insufficient platform permissions" });
+        const visibleClients = await Client.find(
+          {},
+          "businessName contactName email status verified approvedAt createdAt",
+        ).sort({ createdAt: -1 }).limit(100).lean();
+        return res.json({
+          clients: {
+            total: visibleClients.length,
+            pendingVerification: visibleClients.filter((client) => client.status === "pending_verification").length,
+            pendingApproval: visibleClients.filter((client) => client.status === "pending_approval").length,
+            active: visibleClients.filter((client) => client.status === "active").length,
+            suspended: visibleClients.filter((client) => client.status === "suspended").length,
+            rejected: visibleClients.filter((client) => client.status === "rejected").length,
+          },
+          recentClients: visibleClients.slice(0, 6),
+          recentActivity: [],
+        });
+      }
+
+      const [totalClients, pendingVerification, pendingApproval, activeClients, suspendedClients, rejectedClients, staffCount, recentClients, recentActivity, tenantClients] = await Promise.all([
+        Client.countDocuments({}),
+        Client.countDocuments({ status: "pending_verification" }),
+        Client.countDocuments({ status: "pending_approval" }),
+        Client.countDocuments({ status: "active" }),
+        Client.countDocuments({ status: "suspended" }),
+        Client.countDocuments({ status: "rejected" }),
+        PlatformStaff.countDocuments({ active: true }),
+        Client.find({}, "businessName contactName email status verified approvedAt createdAt").sort({ createdAt: -1 }).limit(6).lean(),
+        PlatformAudit.find().sort({ createdAt: -1 }).limit(8).lean(),
+        Client.find({ status: "active", dbName: { $type: "string", $ne: "" } }, "_id dbName").lean(),
+      ]);
+
+      const operations = { tenants: 0, activeTenants: 0, properties: 0, units: 0, unavailableWorkspaces: 0 };
+      await Promise.all(tenantClients.map(async (client) => {
+        try {
+          const models = getTenantModels(client.dbName);
+          const [tenants, activeTenants, properties, units] = await Promise.all([
+            models.User.countDocuments({}),
+            models.User.countDocuments({ status: "active" }),
+            models.Property.countDocuments({}),
+            models.Unit.countDocuments({}),
+          ]);
+          operations.tenants += tenants;
+          operations.activeTenants += activeTenants;
+          operations.properties += properties;
+          operations.units += units;
+        } catch (error) {
+          operations.unavailableWorkspaces += 1;
+          console.error("Platform overview could not read a tenant workspace:", error.message);
+        }
+      }));
+
+      res.json({
+        clients: { total: totalClients, pendingVerification, pendingApproval, active: activeClients, suspended: suspendedClients, rejected: rejectedClients },
+        operations,
+        staff: { active: staffCount },
+        recentClients,
+        recentActivity,
+        system: {
+          databaseConnected: mongoose.connection.readyState === 1,
+          jwtConfigured: Boolean(JWT_SECRET && JWT_SECRET.length >= 32),
+          emailConfigured: Boolean(process.env.RESEND_API_KEY && process.env.PLATFORM_EMAIL_FROM),
+          cloudStorageConfigured: Boolean(process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET),
+        },
+      });
+    } catch (error) {
+      res.status(500).json({ error: serverError(error) });
+    }
+  },
+);
+
 router.get(
   "/platform/clients",
   verifyPlatformAdmin,

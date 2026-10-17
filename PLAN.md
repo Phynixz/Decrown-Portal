@@ -141,6 +141,11 @@ deliberately, once Phase 1 is proven and once the full existing codebase
   automatic production-data rewrite
 - Login/signup rate limits, production-safe error messages, and receipt access
   checks for unapproved applications
+- CEO Control Center first slice: executive client lifecycle metrics, aggregated
+  tenant/property/unit counts across active client databases, active staff count,
+  recent platform activity, and safe environment-configuration readiness checks
+- CEO-only aggregate data boundary; platform staff receive a reduced client
+  overview without tenant-wide operational metrics or system configuration flags
 
 **Still required before live production:**
 
@@ -155,6 +160,16 @@ deliberately, once Phase 1 is proven and once the full existing codebase
 - Automated recurring invoices and payment processing (Paystack/Stripe)
 - Maintenance requests and issue tracking
 - Tiered subscription and billing plans
+
+**CEO Control Center roadmap:**
+
+- Company-wide settings with enforced behavior (platform identity, support
+  contact, client signup controls, and maintenance/incident controls)
+- Client lifecycle notifications, searchable audit history, and safe exports
+- System health checks that verify provider reachability, not only environment
+  variable presence
+- Business reports based on verified leases, invoices, and recorded payments;
+  rent settings and expected rent must never be presented as collected revenue
 
 ---
 

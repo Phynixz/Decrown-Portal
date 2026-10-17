@@ -120,6 +120,11 @@ test("owner/staff permissions and platform audit are enforced", async () => {
   assert.equal(reviewerLogin.body.role, "reviewer");
   reviewerToken = reviewerLogin.body.token;
 
+  const reviewerOverview = await request("/platform/overview", { token: reviewerToken });
+  assert.equal(reviewerOverview.status, 200);
+  assert.equal("operations" in reviewerOverview.body, false, "staff must not receive tenant-wide operational totals");
+  assert.equal("system" in reviewerOverview.body, false, "staff must not receive CEO system-readiness details");
+
   assert.equal(
     (await request("/platform/clients", { token: reviewerToken })).status,
     200,
@@ -161,6 +166,11 @@ test("owner/staff permissions and platform audit are enforced", async () => {
   const property = await tenantModels.Property.create({
     name: "Director House",
   });
+  const overview = await request("/platform/overview", { token: ownerToken });
+  assert.equal(overview.status, 200);
+  assert.ok(overview.body.clients.active >= 1);
+  assert.ok(overview.body.operations.properties >= 1);
+  assert.equal(overview.body.system.databaseConnected, true);
   const settings = await request(`/platform/tenants/${client._id}/settings`, {
     token: ownerToken,
   });

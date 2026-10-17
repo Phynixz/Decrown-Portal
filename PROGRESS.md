@@ -81,3 +81,18 @@ not yet been performed.
 - [ ] Verify Resend delivery and full onboarding on staging with production-like
   environment variables; do not apply the legacy migration without a reviewed
   backup and explicit approval.
+
+## CEO control center — first implementation slice
+
+- [x] CEO overview endpoint aggregates client lifecycle counts, tenant/property/unit
+  totals across active provisioned client databases, active platform staff, recent
+  client signups, recent audit activity, and safe configuration-readiness flags.
+- [x] CEO dashboard presents executive metrics, onboarding attention items,
+  operations totals, recent clients, recent activity, and system setup checks.
+- [x] Executive tenant-wide metrics and system readiness are restricted to the
+  platform owner; staff receive only the client overview they are permitted to see.
+- [x] Automated tests verify owner-only data boundaries and the overview endpoint.
+- [ ] Add company-wide settings with explicit operational behavior, client lifecycle
+  notifications, richer searchable audit exports, and verified system-health checks.
+- [ ] Add business performance reporting after lease, invoice, and payment records
+  are implemented; do not present rent totals as revenue until payments are verified.

@@ -20,7 +20,7 @@ function getPlatformToken() {
 const NAV_ITEMS = [
   { to: "/platform", label: "Overview", icon: LayoutGrid, end: true },
   { to: "/platform/clients", label: "Clients", icon: Users },
-  { to: "/platform/settings", label: "Settings", icon: Settings },
+  { to: "/platform/settings", label: "Team & Audit", icon: Settings },
 ];
 
 export default function PlatformLayout() {
