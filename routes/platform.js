@@ -1393,13 +1393,14 @@ router.get(
       const results = await Promise.all(clients.map(async (client) => {
         const models = getTenantModels(client.dbName);
         const properties = await models.Property.find({ status: "pending_review" }).lean();
-        return properties.map((property) => ({
+        return Promise.all(properties.map(async (property) => ({
           clientId: String(client._id),
           businessName: client.businessName,
           contactName: client.contactName,
           email: client.email,
           property,
-        }));
+          units: await models.Unit.find({ propertyId: property._id }).sort({ unitCode: 1 }).lean(),
+        })));
       }));
       res.json(results.flat().sort((a, b) => new Date(a.property.createdAt) - new Date(b.property.createdAt)));
     } catch (error) {

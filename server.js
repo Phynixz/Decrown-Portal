@@ -58,10 +58,14 @@ const parsedPort = parseInt(process.env.PORT, 10);
 // Port 0 is allowed (tests bind a random port); invalid/empty falls back.
 const PORT = Number.isInteger(parsedPort) && parsedPort >= 0 ? parsedPort : 3000;
 
-const { createTenantModelProxies } = require("./utils/tenantModels");
+const { createTenantModelProxies, getTenantModels } = require("./utils/tenantModels");
 const tenantModels = createTenantModelProxies();
 const { User, Admin, Settings, Registration, Property, Unit, TenantAccount, TenantApplication } = tenantModels;
 const Client = require("./models/Client");
+const SharedProperty = require("./models/Property");
+const SharedUnit = require("./models/Unit");
+const SharedSettings = require("./models/Settings");
+const CentralTenantApplication = require("./models/TenantApplication");
 const ensurePlatformOwner = require("./utils/ensurePlatformOwner");
 const platformRoutes = require("./routes/platform");
 const resolveTenant = require("./utils/tenantContext");
@@ -423,11 +427,18 @@ app.get("/tenant/account/me", verifyTenantAccount, async (req, res) => {
   try {
     const account = await TenantAccount.findById(req.tenantAccount.id).select("name email createdAt");
     if (!account) return res.status(404).json({ error: "Tenant account not found" });
-    res.json({ account, applications: await TenantApplication.find({ tenantAccountId: account._id }).sort({ createdAt: -1 }).select("name email phone location roomNo session status managementNote agreementCopy paymentProof paymentVerifiedAt allocatedAt createdAt") });
+    res.json({ account, applications: await CentralTenantApplication.find({ tenantAccountId: account._id }).sort({ createdAt: -1 }).select("name email phone location roomNo session status managementNote agreementCopy paymentProof paymentVerifiedAt allocatedAt createdAt") });
   } catch (e) {
     res.status(500).json({ error: serverError(e) });
   }
 });
+
+async function getApplicationAccommodationModels(application) {
+  if (!application.sourceClientId) return { Property: SharedProperty, Unit: SharedUnit, Settings: SharedSettings };
+  const client = await Client.findById(application.sourceClientId).select("dbName");
+  if (!client?.dbName) return null;
+  return getTenantModels(client.dbName);
+}
 
 app.post("/tenant/account/applications", verifyTenantAccount, upload.fields([{ name: "passport", maxCount: 1 }, { name: "idCard", maxCount: 1 }]), async (req, res) => {
   try {
@@ -440,19 +451,27 @@ app.post("/tenant/account/applications", verifyTenantAccount, upload.fields([{ n
     if (!(termsAccepted === "true" || termsAccepted === "on" || termsAccepted === "1")) return res.status(400).json({ error: "Please accept the application terms." });
     if (!req.files?.passport?.[0] || !req.files?.idCard?.[0]) return res.status(400).json({ error: "Passport photograph and ID card are required." });
     if (!isValidObjectId(propertyId) || !isValidObjectId(unitId)) return res.status(400).json({ error: "Choose a valid available room." });
-    const property = await Property.findOne({ _id: propertyId, status: "active", propertyType: "hostel" });
-    const unit = property ? await Unit.findOne({ _id: unitId, propertyId: property._id, status: "available", applicationHoldId: null }) : null;
+    const sourceClientId = sanitizeString(req.body.clientId);
+    let accommodationModels = { Property: SharedProperty, Unit: SharedUnit, Settings: SharedSettings };
+    if (sourceClientId) {
+      if (!isValidObjectId(sourceClientId)) return res.status(400).json({ error: "Invalid property source." });
+      const sourceClient = await Client.findOne({ _id: sourceClientId, status: "active", dbName: { $type: "string", $ne: "" } }).select("dbName");
+      if (!sourceClient) return res.status(409).json({ error: "This property is no longer available." });
+      accommodationModels = getTenantModels(sourceClient.dbName);
+    }
+    const property = await accommodationModels.Property.findOne({ _id: propertyId, status: "active", propertyType: "hostel" });
+    const unit = property ? await accommodationModels.Unit.findOne({ _id: unitId, propertyId: property._id, status: "available", applicationHoldId: null }) : null;
     if (!property || !unit) return res.status(409).json({ error: "This room is no longer available. Please choose another room." });
     const geography = getPropertyGeography(property);
     if (geography.state !== sanitizeString(state) || geography.lga !== sanitizeString(lga)) return res.status(400).json({ error: "The selected room does not match the chosen location." });
     const passportUrl = uploadedFileUrl(req.files?.passport?.[0], "passport");
     const idCardUrl = uploadedFileUrl(req.files?.idCard?.[0], "id-card");
     if (!passportUrl || !idCardUrl) return res.status(503).json({ error: "Document storage is not configured. Please contact De-Crown management." });
-    const application = await new TenantApplication({
+    const application = await new CentralTenantApplication({
       tenantAccountId: account._id, name: account.name, email: account.email,
       phone: sanitizePhone(phone), guardianName: sanitizeString(guardianName), guardianPhone: sanitizePhone(guardianPhone),
       matricNumber: sanitizeString(matricNumber), level: sanitizeString(level), state: geography.state, lga: geography.lga,
-      location: property.name, propertyId: property._id, unitId: unit._id, roomNo: unit.label, session: getSession(),
+      location: property.name, propertyId: property._id, unitId: unit._id, sourceClientId: sourceClientId || null, roomNo: unit.label, session: getSession(),
       rentAmount: unit.rentAmount ?? 0,
       passport: passportUrl,
       idCard: idCardUrl,
@@ -465,7 +484,7 @@ app.post("/tenant/account/applications", verifyTenantAccount, upload.fields([{ n
 
 app.post("/tenant/account/applications/:id/agreement", verifyTenantAccount, upload.single("file"), async (req, res) => {
   try {
-    const application = await TenantApplication.findOne({ _id: req.params.id, tenantAccountId: req.tenantAccount.id });
+    const application = await CentralTenantApplication.findOne({ _id: req.params.id, tenantAccountId: req.tenantAccount.id });
     if (!application) return res.status(404).json({ error: "Application not found" });
     if (application.status !== "agreement_requested") return res.status(403).json({ error: "Management has not requested the signed agreement yet." });
     if (!req.file) return res.status(400).json({ error: "Upload the signed agreement file." });
@@ -479,7 +498,7 @@ app.post("/tenant/account/applications/:id/agreement", verifyTenantAccount, uplo
 
 app.post("/tenant/account/applications/:id/payment", verifyTenantAccount, upload.single("file"), async (req, res) => {
   try {
-    const application = await TenantApplication.findOne({ _id: req.params.id, tenantAccountId: req.tenantAccount.id });
+    const application = await CentralTenantApplication.findOne({ _id: req.params.id, tenantAccountId: req.tenantAccount.id });
     if (!application) return res.status(404).json({ error: "Application not found" });
     if (application.status !== "payment_unlocked") return res.status(403).json({ error: "Payment is not available until management accepts your signed agreement." });
     if (!req.file) return res.status(400).json({ error: "Upload your payment receipt." });
@@ -494,7 +513,8 @@ app.post("/tenant/account/applications/:id/payment", verifyTenantAccount, upload
 
 app.get("/admin/tenant-applications", verifyAdmin, async (_req, res) => {
   try {
-    const applications = await TenantApplication.find().sort({ createdAt: -1 }).limit(250).lean();
+    const filter = req.tenantClient ? { sourceClientId: req.tenantClient._id } : { sourceClientId: null };
+    const applications = await CentralTenantApplication.find(filter).sort({ createdAt: -1 }).limit(250).lean();
     res.json(applications);
   } catch (e) { res.status(500).json({ error: serverError(e) }); }
 });
@@ -509,16 +529,19 @@ app.put("/admin/tenant-applications/:id/status", verifyAdmin, async (req, res) =
       rejected: ["under_review"],
       payment_unlocked: ["rejected"],
     };
-    const application = await TenantApplication.findById(req.params.id);
+    const application = await CentralTenantApplication.findById(req.params.id);
     if (!application) return res.status(404).json({ error: "Application not found" });
+    if (String(application.sourceClientId || "") !== String(req.tenantClient?._id || "")) return res.status(403).json({ error: "This application belongs to another workspace." });
+    const accommodationModels = await getApplicationAccommodationModels(application);
+    if (!accommodationModels) return res.status(409).json({ error: "The property's landlord workspace is no longer available. Contact the platform owner." });
     if (!(allowed[application.status] || []).includes(nextStatus)) return res.status(409).json({ error: `Cannot move application from ${application.status} to ${nextStatus}.` });
     if (nextStatus === "agreement_requested") {
-      const unitAvailable = await Unit.findOne({ _id: application.unitId, propertyId: application.propertyId, status: "available", applicationHoldId: null });
+      const unitAvailable = await accommodationModels.Unit.findOne({ _id: application.unitId, propertyId: application.propertyId, status: "available", applicationHoldId: null });
       const roomTaken = await User.findOne({ location: application.location, roomNo: application.roomNo, session: application.session });
       if (!unitAvailable || roomTaken) return res.status(409).json({ error: "The requested room is no longer available. Contact the applicant to choose another room." });
     }
     if (nextStatus === "payment_unlocked") {
-      const unit = await Unit.findOneAndUpdate(
+      const unit = await accommodationModels.Unit.findOneAndUpdate(
         { _id: application.unitId, propertyId: application.propertyId, status: "available", $or: [{ applicationHoldId: null }, { applicationHoldId: { $exists: false } }] },
         { $set: { applicationHoldId: application._id } },
         { returnDocument: "after" },
@@ -526,7 +549,7 @@ app.put("/admin/tenant-applications/:id/status", verifyAdmin, async (req, res) =
       if (!unit) return res.status(409).json({ error: "This room is no longer available to hold. Contact the applicant before accepting payment." });
     }
     if (nextStatus === "rejected" && application.status === "payment_unlocked") {
-      await Unit.updateOne({ _id: application.unitId, applicationHoldId: application._id }, { $set: { applicationHoldId: null } });
+      await accommodationModels.Unit.updateOne({ _id: application.unitId, applicationHoldId: application._id }, { $set: { applicationHoldId: null } });
     }
     application.status = nextStatus;
     application.managementNote = note;
@@ -537,14 +560,17 @@ app.put("/admin/tenant-applications/:id/status", verifyAdmin, async (req, res) =
 
 app.put("/admin/tenant-applications/:id/verify-payment", verifyAdmin, async (req, res) => {
   try {
-    const application = await TenantApplication.findById(req.params.id);
+    const application = await CentralTenantApplication.findById(req.params.id);
     if (!application) return res.status(404).json({ error: "Application not found" });
+    if (String(application.sourceClientId || "") !== String(req.tenantClient?._id || "")) return res.status(403).json({ error: "This application belongs to another workspace." });
+    const accommodationModels = await getApplicationAccommodationModels(application);
+    if (!accommodationModels) return res.status(409).json({ error: "The property's landlord workspace is no longer available. Contact the platform owner." });
     if (application.status !== "payment_submitted" || !application.paymentProof || !application.agreementCopy) return res.status(409).json({ error: "A signed agreement and submitted payment proof are required." });
-    const unit = await Unit.findOne({ _id: application.unitId, propertyId: application.propertyId, status: "available", applicationHoldId: application._id });
+    const unit = await accommodationModels.Unit.findOne({ _id: application.unitId, propertyId: application.propertyId, status: "available", applicationHoldId: application._id });
     if (!unit) return res.status(409).json({ error: "The held room could not be verified. Resolve room availability before allocating." });
     const duplicate = await User.findOne({ location: application.location, roomNo: application.roomNo, session: application.session });
     if (duplicate) return res.status(409).json({ error: "This room is already allocated for the selected session." });
-    const setting = await Settings.findOne({ location: application.location });
+    const setting = await accommodationModels.Settings.findOne({ location: application.location });
     const occupant = await new User({
       location: application.location, propertyId: application.propertyId, unitId: application.unitId,
       name: application.name, email: application.email, phone: application.phone,
@@ -901,18 +927,31 @@ app.get("/current-session", async (req, res) => {
 
 app.get("/tenant-config", async (req, res) => {
   try {
-    const storedProperties = await Property.find().sort({ name: 1 });
-    let properties = storedProperties.filter(
-      (property) => property.status === "active",
-    );
+    const activeClients = await Client.find(
+      { status: "active", dbName: { $type: "string", $ne: "" } },
+      "businessName dbName",
+    ).lean();
+    const sources = [{ models: { Property: SharedProperty, Unit: SharedUnit, Settings: SharedSettings }, clientId: null }];
+    for (const client of activeClients) {
+      sources.push({ models: getTenantModels(client.dbName), clientId: String(client._id) });
+    }
+    const sourceProperties = await Promise.all(sources.map(async (source) => {
+      const properties = await source.models.Property.find({ status: "active" }).sort({ name: 1 });
+      return properties.map((property) => ({ property, ...source }));
+    }));
+    const seenProperties = new Set();
+    const catalogProperties = sourceProperties.flat().filter(({ property, clientId }) => {
+      const key = `${clientId || "shared"}:${String(property._id)}`;
+      if (seenProperties.has(key)) return false;
+      seenProperties.add(key);
+      return true;
+    });
     const locations = await Promise.all(
-      properties.map(async (property) => {
-        const units = property._id
-          ? await Unit.find({
-              propertyId: property._id,
-              status: { $ne: "inactive" },
-            }).sort({ unitCode: 1 })
-          : [];
+      catalogProperties.map(async ({ property, models, clientId }) => {
+        const units = await models.Unit.find({
+          propertyId: property._id,
+          status: { $ne: "inactive" },
+        }).sort({ unitCode: 1 });
         const occupied = await User.find({
           location: property.name,
           session: getSession(),
@@ -921,9 +960,10 @@ app.get("/tenant-config", async (req, res) => {
           occupied.map((user) => String(user.unitId || "")),
         );
         const occupiedLabels = new Set(occupied.map((user) => user.roomNo));
-        const settings = await Settings.findOne({ location: property.name });
+        const settings = await models.Settings.findOne({ location: property.name });
         return {
           id: property._id,
+          clientId,
           name: property.name,
           ...getPropertyGeography(property),
           propertyType: property.propertyType,

@@ -15,6 +15,7 @@ const tenantApplicationSchema = new mongoose.Schema(
     location: { type: String, required: true, trim: true },
     propertyId: { type: mongoose.Schema.Types.ObjectId, ref: "Property", required: true },
     unitId: { type: mongoose.Schema.Types.ObjectId, ref: "Unit", required: true },
+    sourceClientId: { type: mongoose.Schema.Types.ObjectId, ref: "Client", default: null, index: true },
     roomNo: { type: String, required: true, trim: true },
     session: { type: String, required: true },
     rentAmount: { type: Number, min: 0, default: 0 },

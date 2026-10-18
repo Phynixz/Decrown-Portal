@@ -31,6 +31,8 @@ let Property;
 let Settings;
 let Unit;
 let Admin;
+let Client;
+let getTenantModels;
 
 before(async () => {
   mongo = await MongoMemoryServer.create();
@@ -44,6 +46,8 @@ before(async () => {
   Settings = require("../models/Settings");
   Unit = require("../models/Unit");
   Admin = require("../models/Admin");
+  Client = require("../models/Client");
+  ({ getTenantModels } = require("../utils/tenantModels"));
 });
 
 after(async () => {
@@ -344,4 +348,77 @@ test("landlord can sign in after email verification", async () => {
   const result = await login.json();
   assert.equal(login.status, 200, JSON.stringify(result));
   assert.equal(result.role, "owner");
+});
+
+test("approved landlord rooms appear in public search and applications use the landlord workspace", async () => {
+  const suffix = Date.now().toString();
+  const client = await Client.create({
+    businessName: `Catalogue Landlord ${suffix}`,
+    contactName: "Catalogue Landlord",
+    email: `catalogue-${suffix}@example.test`,
+    passwordHash: "unused-test-hash",
+    subdomain: `catalogue-${suffix}`,
+    status: "active",
+    verified: true,
+    dbName: `tenant_catalogue_${suffix}`,
+  });
+  const models = getTenantModels(client.dbName);
+  const property = await models.Property.create({
+    name: `Catalogue Hostel ${suffix}`,
+    state: "Kwara",
+    lga: "Ilorin West",
+    propertyType: "hostel",
+    status: "pending_review",
+  });
+  const unit = await models.Unit.create({
+    propertyId: property._id,
+    location: property.name,
+    unitCode: `catalogue-room-${suffix}`,
+    label: "Room C1",
+    rentAmount: 150000,
+    status: "available",
+  });
+
+  const pendingConfig = await (await fetch(`${baseUrl}/tenant-config`)).json();
+  assert.equal(pendingConfig.locations.some((item) => item.name === property.name), false, "unapproved properties stay hidden");
+
+  property.status = "active";
+  property.reviewedAt = new Date();
+  await property.save();
+  const publicConfig = await (await fetch(`${baseUrl}/tenant-config`)).json();
+  const listed = publicConfig.locations.find((item) => item.name === property.name);
+  assert.ok(listed, "approved property should be included in public catalogue");
+  assert.equal(String(listed.clientId), String(client._id));
+  assert.equal(listed.units[0].label, "Room C1");
+
+  const signup = await fetch(`${baseUrl}/tenant/account/signup`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name: "Catalogue Tenant", email: `tenant-${suffix}@example.test`, password: "catalogue-tenant-password" }),
+  });
+  const tenant = await signup.json();
+  assert.equal(signup.status, 201, JSON.stringify(tenant));
+  const application = await fetch(`${baseUrl}/tenant/account/applications`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${tenant.token}` },
+    body: documentUpload({
+      phone: "08012345678", guardianName: "Catalogue Guardian", guardianPhone: "08098765432",
+      matricNumber: "KWASU/CSC/CATALOGUE", level: "300", state: "Kwara", lga: "Ilorin West",
+      propertyId: String(property._id), unitId: String(unit._id), clientId: String(client._id), termsAccepted: "true",
+    }, ["passport", "idCard"]),
+  });
+  const applicationBody = await application.json();
+  assert.equal(application.status, 201, JSON.stringify(applicationBody));
+  const savedApplication = await require("../models/TenantApplication").findById(applicationBody.application.id);
+  assert.equal(String(savedApplication.sourceClientId), String(client._id));
+
+  const admin = await new Admin({ name: "Catalogue Admin", email: `catalogue-admin-${suffix}@example.test`, password: "admin-password-123", role: "admin" }).save();
+  const adminToken = `Bearer ${jwt.sign({ id: admin._id, email: admin.email, role: admin.role, type: "admin", clientId: String(client._id) }, process.env.JWT_SECRET, { expiresIn: "1h" })}`;
+  const review = await fetch(`${baseUrl}/admin/tenant-applications/${savedApplication._id}/status?client=${client.subdomain}`, {
+    method: "PUT",
+    headers: { Authorization: adminToken, "Content-Type": "application/json" },
+    body: JSON.stringify({ status: "agreement_requested" }),
+  });
+  assert.equal(review.status, 200, await review.text());
+  assert.equal((await models.Unit.findById(unit._id)).applicationHoldId, null, "requesting an agreement must not hold the room yet");
 });

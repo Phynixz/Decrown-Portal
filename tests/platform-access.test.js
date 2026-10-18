@@ -424,11 +424,19 @@ test("owner/staff permissions and platform audit are enforced", async () => {
     address: "Review Street",
     status: "pending_review",
   });
+  await approvedModels.Unit.create({
+    propertyId: pendingHostel._id,
+    location: pendingHostel.name,
+    unitCode: "audit-room-1",
+    label: "Room Audit 1",
+    rentAmount: 120000,
+  });
   const reviewQueue = await request("/platform/hostels/pending-review", {
     token: ownerToken,
   });
   assert.equal(reviewQueue.status, 200);
   assert.ok(reviewQueue.body.some((item) => String(item.property._id) === String(pendingHostel._id)));
+  assert.equal(reviewQueue.body.find((item) => String(item.property._id) === String(pendingHostel._id)).units[0].label, "Room Audit 1");
   const hostelApproval = await request(
     `/platform/tenants/${approvedClient._id}/properties/${pendingHostel._id}`,
     { method: "PUT", token: ownerToken, body: { status: "active" } },

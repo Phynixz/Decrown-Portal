@@ -69,7 +69,7 @@ export default function RoomDetailsPage() {
                       {unit.unitType && <p className="mt-3 text-sm text-sage">{unit.unitType}</p>}
                       <p className="mt-5 font-landing-mono text-xl font-semibold">{naira(rent)}</p>
                       <p className="mt-1 text-xs text-sage">{Number(rent) > 0 ? "Rent amount set by the agency" : "Confirm rent with the agency before applying"}</p>
-                      <Link to={`/tenant/account?${new URLSearchParams({ room: unit.label || "", location: property.name, state: property.state || "", lga: property.lga || "" }).toString()}`} className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded bg-moss px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-ink">Apply for this room <ArrowRight size={16} /></Link>
+                      <Link to={`/tenant/account?${new URLSearchParams({ room: unit.label || "", location: property.name, state: property.state || "", lga: property.lga || "", ...(property.clientId ? { clientId: property.clientId } : {}) }).toString()}`} className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded bg-moss px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-ink">Apply for this room <ArrowRight size={16} /></Link>
                     </article>
                   );
                 })}

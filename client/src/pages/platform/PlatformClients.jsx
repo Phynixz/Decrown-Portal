@@ -588,6 +588,9 @@ export default function PlatformClients() {
                     <h3 className="text-sm font-semibold text-ink dark:text-ink-dark">{item.property.name}</h3>
                     <p className="mt-1 text-xs text-muted dark:text-muted-dark">Submitted by {item.businessName} · {item.contactName}</p>
                     <p className="mt-1 text-xs text-muted dark:text-muted-dark">{[item.property.address, item.property.lga, item.property.state].filter(Boolean).join(", ")}</p>
+                    <p className="mt-2 text-xs font-medium text-ink dark:text-ink-dark">{item.units?.length || 0} room{item.units?.length === 1 ? "" : "s"} submitted</p>
+                    {item.units?.length > 0 && <ul className="mt-2 space-y-1 text-xs text-muted dark:text-muted-dark">{item.units.slice(0, 5).map((unit) => <li key={unit._id} className="flex justify-between gap-3"><span>{unit.label} ({unit.unitType || "room"})</span><span>{Number(unit.rentAmount) > 0 ? `₦${Number(unit.rentAmount).toLocaleString("en-NG")}` : "Rent not set"}</span></li>)}</ul>}
+                    {(item.units?.length || 0) > 5 && <p className="mt-1 text-xs text-muted dark:text-muted-dark">and {item.units.length - 5} more room{item.units.length - 5 === 1 ? "" : "s"}</p>}
                   </div>
                   <span className="shrink-0 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">Pending</span>
                 </div>

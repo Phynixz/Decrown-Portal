@@ -47,12 +47,13 @@ export default function TenantAccountPortal() {
     const query = new URLSearchParams(location.search);
     const requestedRoom = query.get("room");
     const requestedLocation = query.get("location");
+    const requestedClientId = query.get("clientId") || "";
     if (requestedRoom && requestedLocation) {
-      const found = available.find(({ property, unit }) => property.name === requestedLocation && unit.label === requestedRoom);
+      const found = available.find(({ property, unit }) => property.name === requestedLocation && unit.label === requestedRoom && String(property.clientId || "") === requestedClientId);
       if (found) {
         setSelectedRoom(found);
         const remaining = new URLSearchParams(location.search);
-        ["room", "location", "state", "lga"].forEach((key) => remaining.delete(key));
+        ["room", "location", "state", "lga", "clientId"].forEach((key) => remaining.delete(key));
         navigate(`${location.pathname}${remaining.toString() ? `?${remaining.toString()}` : ""}`, { replace: true });
       }
     }
@@ -92,6 +93,7 @@ export default function TenantAccountPortal() {
     Object.entries(details).forEach(([key, value]) => form.append(key, value));
     form.append("propertyId", selectedRoom.property.id || selectedRoom.property._id);
     form.append("unitId", selectedRoom.unit.id || selectedRoom.unit._id);
+    if (selectedRoom.property.clientId) form.append("clientId", selectedRoom.property.clientId);
     form.append("termsAccepted", "true"); form.append("passport", passport); form.append("idCard", idCard);
     setBusy(true); setError("");
     try {
