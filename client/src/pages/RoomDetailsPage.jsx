@@ -54,22 +54,23 @@ export default function RoomDetailsPage() {
             <section className="mt-10">
               <h2 className="font-landing-display text-2xl font-semibold">Available rooms</h2>
               {units.length === 0 && <p className="mt-4 rounded border border-stone bg-white p-6 text-sm text-sage">There are no rooms currently available in this hostel. Please return to search to explore other options.</p>}
-              <div className="mt-5 grid gap-4 sm:grid-cols-2">
+              <div className="mt-5 overflow-hidden rounded border border-stone bg-white">
                 {units.map((unit) => {
                   const rent = unit.rentAmount ?? property.rentAmount ?? 0;
                   return (
-                    <article key={unit.id || unit.label} className="rounded border border-stone bg-white p-5 sm:p-6">
-                      <div className="flex items-start justify-between gap-4">
-                        <div>
-                          <p className="text-xs font-semibold uppercase tracking-wider text-sage">Room</p>
-                          <h3 className="mt-1 font-landing-display text-xl font-semibold">{unit.label || "Available room"}</h3>
+                    <article key={unit.id || unit.label} className="grid gap-3 border-b border-stone p-4 last:border-b-0 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center sm:gap-6 sm:px-6">
+                      <div className="flex min-w-0 items-start gap-3">
+                        <span className="mt-0.5 rounded bg-stone/50 p-2 text-moss"><BedDouble size={19} /></span>
+                        <div className="min-w-0">
+                          <h3 className="font-semibold">{unit.label || "Available room"}</h3>
+                          <p className="mt-1 text-xs text-sage">{unit.unitType || "Hostel room"} · Available</p>
                         </div>
-                        <BedDouble size={23} className="text-moss" />
                       </div>
-                      {unit.unitType && <p className="mt-3 text-sm text-sage">{unit.unitType}</p>}
-                      <p className="mt-5 font-landing-mono text-xl font-semibold">{naira(rent)}</p>
-                      <p className="mt-1 text-xs text-sage">{Number(rent) > 0 ? "Rent amount set by the agency" : "Confirm rent with the agency before applying"}</p>
-                      <Link to={`/tenant/account?${new URLSearchParams({ room: unit.label || "", location: property.name, state: property.state || "", lga: property.lga || "", ...(property.clientId ? { clientId: property.clientId } : {}) }).toString()}`} className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded bg-moss px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-ink">Apply for this room <ArrowRight size={16} /></Link>
+                      <div className="sm:text-right">
+                        <p className="font-landing-mono text-lg font-semibold">{naira(rent)}</p>
+                        <p className="mt-0.5 text-xs text-sage">{Number(rent) > 0 ? "Rent for this room" : "Confirm rent with agency"}</p>
+                      </div>
+                      <Link to={`/tenant/account?${new URLSearchParams({ propertyId: String(property.id || property._id), unitId: String(unit.id || unit._id), ...(property.clientId ? { clientId: String(property.clientId) } : {}) }).toString()}`} className="inline-flex items-center justify-center gap-2 rounded bg-moss px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-ink">Apply <ArrowRight size={16} /></Link>
                     </article>
                   );
                 })}

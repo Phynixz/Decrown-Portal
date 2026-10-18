@@ -428,4 +428,26 @@ test("approved landlord rooms appear in public search and applications use the l
   });
   assert.equal(review.status, 200, await review.text());
   assert.equal((await models.Unit.findById(unit._id)).applicationHoldId, null, "requesting an agreement must not hold the room yet");
+
+  const tenantToken = `Bearer ${tenant.token}`;
+  const agreement = await fetch(`${baseUrl}/tenant/account/applications/${savedApplication._id}/agreement`, {
+    method: "POST", headers: { Authorization: tenantToken }, body: documentUpload({}, ["file"]),
+  });
+  assert.equal(agreement.status, 200, await agreement.text());
+  const unlock = await fetch(`${baseUrl}/admin/tenant-applications/${savedApplication._id}/status?client=${client.subdomain}`, {
+    method: "PUT", headers: { Authorization: adminToken, "Content-Type": "application/json" },
+    body: JSON.stringify({ status: "payment_unlocked" }),
+  });
+  assert.equal(unlock.status, 200, await unlock.text());
+  const payment = await fetch(`${baseUrl}/tenant/account/applications/${savedApplication._id}/payment`, {
+    method: "POST", headers: { Authorization: tenantToken }, body: documentUpload({ paymentDate: "2026-10-18" }, ["file"]),
+  });
+  assert.equal(payment.status, 200, await payment.text());
+  const allocation = await fetch(`${baseUrl}/admin/tenant-applications/${savedApplication._id}/verify-payment?client=${client.subdomain}`, {
+    method: "PUT", headers: { Authorization: adminToken },
+  });
+  assert.equal(allocation.status, 200, await allocation.text());
+  assert.ok(await models.User.findOne({ email: `tenant-${suffix}@example.test` }), "allocated tenant record belongs in that landlord's database");
+  assert.equal(await User.findOne({ email: `tenant-${suffix}@example.test` }), null, "a client tenant must not leak into the shared legacy database");
+  assert.equal((await models.Unit.findById(unit._id)).status, "inactive", "the allocated room is removed from the landlord's available inventory");
 });

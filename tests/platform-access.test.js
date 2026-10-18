@@ -82,6 +82,19 @@ test("owner/staff permissions and platform audit are enforced", async () => {
   assert.equal(ownerLogin.body.role, "owner");
   ownerToken = ownerLogin.body.token;
 
+  const CentralTenantApplication = require("../models/TenantApplication");
+  await new CentralTenantApplication({
+    tenantAccountId: new mongoose.Types.ObjectId(),
+    name: "Private Application Test", email: "private-tenant@example.test", phone: "08012345678",
+    guardianName: "Test Guardian", guardianPhone: "08087654321", matricNumber: "TEST/123", level: "300",
+    state: "Kwara", lga: "Ilorin West", location: "Private Test Hostel",
+    propertyId: new mongoose.Types.ObjectId(), unitId: new mongoose.Types.ObjectId(), roomNo: "Room 1",
+    session: "2026/2027", passport: "https://files.example.test/passport.jpg", idCard: "https://files.example.test/id.pdf",
+  }).save();
+  const ownerApplications = await request("/platform/tenant-applications", { token: ownerToken });
+  assert.equal(ownerApplications.status, 200);
+  assert.equal(ownerApplications.body[0].passport, "https://files.example.test/passport.jpg", "the platform owner can inspect uploaded application documents");
+
   const staleOwnerToken = jwt.sign(
     {
       id: new mongoose.Types.ObjectId(),
@@ -119,6 +132,8 @@ test("owner/staff permissions and platform audit are enforced", async () => {
   assert.equal(reviewerLogin.status, 200);
   assert.equal(reviewerLogin.body.role, "reviewer");
   reviewerToken = reviewerLogin.body.token;
+
+  assert.equal((await request("/platform/tenant-applications", { token: reviewerToken })).status, 403, "platform staff cannot access tenant personal data and document URLs");
 
   const reviewerOverview = await request("/platform/overview", { token: reviewerToken });
   assert.equal(reviewerOverview.status, 200);

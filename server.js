@@ -461,7 +461,7 @@ app.get("/tenant/account/me", verifyTenantAccount, async (req, res) => {
 });
 
 async function getApplicationAccommodationModels(application) {
-  if (!application.sourceClientId) return { Property: SharedProperty, Unit: SharedUnit, Settings: SharedSettings };
+  if (!application.sourceClientId) return { User, Property: SharedProperty, Unit: SharedUnit, Settings: SharedSettings };
   const client = await Client.findById(application.sourceClientId).select("dbName");
   if (!client?.dbName) return null;
   return getTenantModels(client.dbName);
@@ -564,7 +564,7 @@ app.put("/admin/tenant-applications/:id/status", verifyAdmin, async (req, res) =
     if (!(allowed[application.status] || []).includes(nextStatus)) return res.status(409).json({ error: `Cannot move application from ${application.status} to ${nextStatus}.` });
     if (nextStatus === "agreement_requested") {
       const unitAvailable = await accommodationModels.Unit.findOne({ _id: application.unitId, propertyId: application.propertyId, status: "available", applicationHoldId: null });
-      const roomTaken = await User.findOne({ location: application.location, roomNo: application.roomNo, session: application.session });
+      const roomTaken = await accommodationModels.User.findOne({ location: application.location, roomNo: application.roomNo, session: application.session });
       if (!unitAvailable || roomTaken) return res.status(409).json({ error: "The requested room is no longer available. Contact the applicant to choose another room." });
     }
     if (nextStatus === "payment_unlocked") {
@@ -595,17 +595,17 @@ app.put("/admin/tenant-applications/:id/verify-payment", verifyAdmin, async (req
     if (application.status !== "payment_submitted" || !application.paymentProof || !application.agreementCopy) return res.status(409).json({ error: "A signed agreement and submitted payment proof are required." });
     const unit = await accommodationModels.Unit.findOne({ _id: application.unitId, propertyId: application.propertyId, status: "available", applicationHoldId: application._id });
     if (!unit) return res.status(409).json({ error: "The held room could not be verified. Resolve room availability before allocating." });
-    const duplicate = await User.findOne({ location: application.location, roomNo: application.roomNo, session: application.session });
+    const duplicate = await accommodationModels.User.findOne({ location: application.location, roomNo: application.roomNo, session: application.session });
     if (duplicate) return res.status(409).json({ error: "This room is already allocated for the selected session." });
     const setting = await accommodationModels.Settings.findOne({ location: application.location });
-    const occupant = await new User({
+    const occupant = await new accommodationModels.User({
       location: application.location, propertyId: application.propertyId, unitId: application.unitId,
       name: application.name, email: application.email, phone: application.phone,
       guardianName: application.guardianName, guardianPhone: application.guardianPhone,
       session: application.session, level: application.level, roomNo: application.roomNo,
       amount: application.rentAmount || setting?.rentAmount || 0, paymentDate: application.paymentDate,
       passport: application.passport, idCard: application.idCard, agreementCopy: application.agreementCopy,
-      paymentProof: application.paymentProof, retainPending: false, receiptNumber: await generateReceiptNumber(application.location),
+      paymentProof: application.paymentProof, retainPending: false, receiptNumber: await generateReceiptNumber(application.location, accommodationModels.User),
     }).save();
     application.status = "allocated";
     application.paymentVerifiedAt = new Date();
@@ -958,7 +958,7 @@ app.get("/tenant-config", async (req, res) => {
       { status: "active", dbName: { $type: "string", $ne: "" } },
       "businessName dbName",
     ).lean();
-    const sources = [{ models: { Property: SharedProperty, Unit: SharedUnit, Settings: SharedSettings }, clientId: null }];
+    const sources = [{ models: { User, Property: SharedProperty, Unit: SharedUnit, Settings: SharedSettings }, clientId: null }];
     for (const client of activeClients) {
       sources.push({ models: getTenantModels(client.dbName), clientId: String(client._id) });
     }
@@ -979,7 +979,7 @@ app.get("/tenant-config", async (req, res) => {
           propertyId: property._id,
           status: { $ne: "inactive" },
         }).sort({ unitCode: 1 });
-        const occupied = await User.find({
+        const occupied = await models.User.find({
           location: property.name,
           session: getSession(),
         }).select("unitId roomNo");
@@ -1112,7 +1112,7 @@ app.get("/user/:id", async (req, res) => {
   }
 });
 
-async function generateReceiptNumber(location) {
+async function generateReceiptNumber(location, UserModel = User) {
   const prefix =
     String(location || "")
       .replace(/[^a-zA-Z0-9]/g, "")
@@ -1125,7 +1125,7 @@ async function generateReceiptNumber(location) {
   // could still tie — a unique index on receiptNumber is the follow-up once
   // legacy data is verified clean.)
   const issuedPattern = new RegExp(`^${prefix}-${year}-(\\d+)$`);
-  const [latest] = await User.aggregate([
+  const [latest] = await UserModel.aggregate([
     { $match: { location, receiptNumber: { $regex: issuedPattern } } },
     // $regexFind: captures[0] is the first (only) group — the sequence digits
     { $project: { found: { $regexFind: { input: "$receiptNumber", regex: issuedPattern } } } },

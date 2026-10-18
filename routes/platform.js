@@ -8,6 +8,10 @@ const Client = require("../models/Client");
 const PlatformAdmin = require("../models/PlatformAdmin");
 const PlatformStaff = require("../models/PlatformStaff");
 const PlatformAudit = require("../models/PlatformAudit");
+const CentralTenantApplication = require("../models/TenantApplication");
+const SharedUser = require("../models/User");
+const SharedUnit = require("../models/Unit");
+const SharedSettings = require("../models/Settings");
 const { hasPlatformPermission } = require("../utils/platformPermissions");
 const { getTenantModels } = require("../utils/tenantModels");
 const { sendVerificationEmail } = require("../utils/email");
@@ -1438,5 +1442,119 @@ router.get(
     }
   },
 );
+
+async function getApplicationModels(application) {
+  if (!application.sourceClientId) {
+    return { User: SharedUser, Unit: SharedUnit, Settings: SharedSettings };
+  }
+  const client = await Client.findOne({ _id: application.sourceClientId, status: "active", dbName: { $type: "string", $ne: "" } }).select("dbName").lean();
+  return client?.dbName ? getTenantModels(client.dbName) : null;
+}
+
+async function nextApplicationReceiptNumber(location, UserModel) {
+  const prefix = String(location || "").replace(/[^a-zA-Z0-9]/g, "").slice(0, 3).toUpperCase() || "RCP";
+  const year = new Date().getFullYear();
+  const pattern = new RegExp(`^${prefix}-${year}-(\\d+)$`);
+  const [latest] = await UserModel.aggregate([
+    { $match: { location, receiptNumber: { $regex: pattern } } },
+    { $project: { found: { $regexFind: { input: "$receiptNumber", regex: pattern } } } },
+    { $project: { sequence: { $toInt: { $arrayElemAt: ["$found.captures", 0] } } } },
+    { $sort: { sequence: -1 } },
+    { $limit: 1 },
+  ]);
+  return `${prefix}-${year}-${String((latest?.sequence || 0) + 1).padStart(4, "0")}`;
+}
+
+// The agency owner can review applications from every active client workspace
+// without signing into each landlord account. Uploaded files remain linked to
+// the application record and are returned only to the authenticated owner.
+router.get("/platform/tenant-applications", verifyPlatformAdmin, requirePlatformOwner, async (_req, res) => {
+  try {
+    const applications = await CentralTenantApplication.find({}).sort({ createdAt: -1 }).limit(500).lean();
+    const clientIds = [...new Set(applications.map((application) => String(application.sourceClientId || "")).filter(Boolean))];
+    const clients = clientIds.length ? await Client.find({ _id: { $in: clientIds } }, "businessName status").lean() : [];
+    const clientNames = new Map(clients.map((client) => [String(client._id), client.businessName]));
+    res.json(applications.map((application) => ({ ...application, clientName: clientNames.get(String(application.sourceClientId || "")) || "De-Crown shared inventory" })));
+  } catch (error) {
+    res.status(500).json({ error: serverError(error) });
+  }
+});
+
+router.put("/platform/tenant-applications/:id/status", verifyPlatformAdmin, requirePlatformOwner, async (req, res) => {
+  try {
+    const application = await CentralTenantApplication.findById(req.params.id);
+    if (!application) return res.status(404).json({ error: "Application not found" });
+    const nextStatus = sanitizeString(req.body.status);
+    const managementNote = sanitizeString(req.body.managementNote).slice(0, 1000);
+    const allowed = {
+      under_review: ["agreement_requested", "rejected"],
+      agreement_submitted: ["payment_unlocked", "rejected"],
+      rejected: ["under_review"],
+      payment_unlocked: ["rejected"],
+    };
+    if (!(allowed[application.status] || []).includes(nextStatus)) return res.status(409).json({ error: `Cannot move application from ${application.status} to ${nextStatus}.` });
+    const models = await getApplicationModels(application);
+    if (!models) return res.status(409).json({ error: "The landlord workspace is no longer available." });
+    if (nextStatus === "agreement_requested") {
+      const [unit, duplicate] = await Promise.all([
+        models.Unit.findOne({ _id: application.unitId, propertyId: application.propertyId, status: "available", $or: [{ applicationHoldId: null }, { applicationHoldId: { $exists: false } }] }),
+        models.User.findOne({ location: application.location, roomNo: application.roomNo, session: application.session }),
+      ]);
+      if (!unit || duplicate) return res.status(409).json({ error: "The requested room is no longer available. Ask the applicant to choose another room." });
+    }
+    if (nextStatus === "payment_unlocked") {
+      const unit = await models.Unit.findOneAndUpdate(
+        { _id: application.unitId, propertyId: application.propertyId, status: "available", $or: [{ applicationHoldId: null }, { applicationHoldId: { $exists: false } }] },
+        { $set: { applicationHoldId: application._id } },
+        { returnDocument: "after" },
+      );
+      if (!unit) return res.status(409).json({ error: "This room is no longer available to hold. Contact the applicant before accepting payment." });
+    }
+    if (nextStatus === "rejected" && application.status === "payment_unlocked") {
+      await models.Unit.updateOne({ _id: application.unitId, applicationHoldId: application._id }, { $set: { applicationHoldId: null } });
+    }
+    application.status = nextStatus;
+    application.managementNote = managementNote;
+    await application.save();
+    res.json({ message: `Application updated to ${nextStatus}.`, application });
+  } catch (error) {
+    res.status(500).json({ error: serverError(error) });
+  }
+});
+
+router.put("/platform/tenant-applications/:id/verify-payment", verifyPlatformAdmin, requirePlatformOwner, async (req, res) => {
+  try {
+    const application = await CentralTenantApplication.findById(req.params.id);
+    if (!application) return res.status(404).json({ error: "Application not found" });
+    if (application.status !== "payment_submitted" || !application.paymentProof || !application.agreementCopy) return res.status(409).json({ error: "A signed agreement and submitted payment proof are required." });
+    const models = await getApplicationModels(application);
+    if (!models) return res.status(409).json({ error: "The landlord workspace is no longer available." });
+    const unit = await models.Unit.findOne({ _id: application.unitId, propertyId: application.propertyId, status: "available", applicationHoldId: application._id });
+    if (!unit) return res.status(409).json({ error: "The held room could not be verified. Resolve room availability before allocating." });
+    if (await models.User.findOne({ location: application.location, roomNo: application.roomNo, session: application.session })) return res.status(409).json({ error: "This room is already allocated for the selected session." });
+    const settings = await models.Settings.findOne({ location: application.location });
+    const occupant = await new models.User({
+      location: application.location, propertyId: application.propertyId, unitId: application.unitId,
+      name: application.name, email: application.email, phone: application.phone,
+      guardianName: application.guardianName, guardianPhone: application.guardianPhone,
+      session: application.session, level: application.level, roomNo: application.roomNo,
+      amount: application.rentAmount || settings?.rentAmount || 0, paymentDate: application.paymentDate,
+      passport: application.passport, idCard: application.idCard, agreementCopy: application.agreementCopy,
+      paymentProof: application.paymentProof, retainPending: false,
+      receiptNumber: await nextApplicationReceiptNumber(application.location, models.User),
+    }).save();
+    application.status = "allocated";
+    application.paymentVerifiedAt = new Date();
+    application.allocatedAt = new Date();
+    await application.save();
+    unit.status = "inactive";
+    unit.applicationHoldId = null;
+    await unit.save();
+    res.json({ message: "Payment verified and room allocated.", tenantId: occupant._id, application });
+  } catch (error) {
+    if (error.code === 11000) return res.status(409).json({ error: "This room was allocated by another request. Review availability before continuing." });
+    res.status(500).json({ error: serverError(error) });
+  }
+});
 
 module.exports = router;

@@ -45,6 +45,7 @@ function loginPath(kind) {
 function requiredSessionForPath(pathname) {
   if ((pathname.startsWith("/platform") && pathname !== "/platform/login") || pathname.startsWith("/operator")) return "platform";
   if (pathname.startsWith("/admin") || pathname === "/delete") return "admin";
+  if (pathname === "/tenant/application") return "tenant-account";
   if (pathname === "/profile") return "tenant";
   return null;
 }

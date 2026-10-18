@@ -16,10 +16,12 @@ import PlatformLayout from "./pages/platform/PlatformLayout.jsx";
 import PlatformOverview from "./pages/platform/PlatformOverview.jsx";
 import PlatformClients from "./pages/platform/PlatformClients.jsx";
 import PlatformSettings from "./pages/platform/PlatformSettings.jsx";
+import PlatformApplications from "./pages/platform/PlatformApplications.jsx";
 import LandingPage from "./pages/LandingPage.jsx";
 import RoomSearchPage from "./pages/RoomSearchPage.jsx";
 import RoomDetailsPage from "./pages/RoomDetailsPage.jsx";
 import TenantAccountPortal from "./pages/TenantAccountPortal.jsx";
+import TenantApplicationForm from "./pages/TenantApplicationForm.jsx";
 import TenantApplicationsReview from "./pages/TenantApplicationsReview.jsx";
 import { getJSON } from "./api.js";
 
@@ -91,6 +93,7 @@ export default function App() {
       <Route path="/tenant/dashboard" element={<TenantPortal />} />
       <Route path="/tenant/signup" element={<TenantAccountPortal />} />
       <Route path="/tenant/account" element={<TenantAccountPortal />} />
+      <Route path="/tenant/application" element={<TenantApplicationForm />} />
       <Route path="/receipt" element={<Receipt />} />
       <Route path="/terms" element={<Terms />} />
       <Route path="/profile" element={<TenantProfile />} />
@@ -108,6 +111,7 @@ export default function App() {
       <Route path="/platform" element={<PlatformLayout />}>
         <Route index element={<PlatformOverview />} />
         <Route path="clients" element={<PlatformClients />} />
+        <Route path="applications" element={<PlatformApplications />} />
         <Route path="settings" element={<PlatformSettings />} />
       </Route>
       {/* Old approval-queue links now enter the unified operator dashboard. */}
