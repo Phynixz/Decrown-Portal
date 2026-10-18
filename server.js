@@ -72,6 +72,7 @@ const resolveTenant = require("./utils/tenantContext");
 const getReceiptAccessError = require("./utils/receiptAccess");
 const upload = require("./multer");
 const { rateLimit } = require("./utils/rateLimit");
+const { createAuthToken, touchAuthSession } = require("./utils/authSessions");
 
 // Brute-force protection for credential and verification endpoints.
 const adminLoginLimiter = rateLimit({
@@ -83,6 +84,13 @@ const tenantLoginLimiter = rateLimit({
   name: "tenant-login",
   windowMs: 15 * 60 * 1000,
   max: 10,
+});
+// Shared ceiling for API traffic, including the overall platform. Auth and
+// verification endpoints retain their stricter dedicated limits above.
+const apiRateLimiter = rateLimit({
+  name: "api-global",
+  windowMs: 15 * 60 * 1000,
+  max: 900,
 });
 
 app.use(cookieParser());
@@ -111,6 +119,19 @@ const CLIENT_INDEX = path.join(CLIENT_DIST, "index.html");
 if (fs.existsSync(CLIENT_DIST)) {
   app.use(express.static(CLIENT_DIST));
 }
+app.use(apiRateLimiter);
+app.post("/session/heartbeat", (req, res) => {
+  const token = (req.headers.authorization || "").replace(/^Bearer\s+/i, "").trim();
+  if (!token) return res.status(401).json({ error: "Sign in to continue" });
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    if (!decoded.jti || !touchAuthSession(decoded))
+      return res.status(401).json({ error: "Session expired. Please sign in again." });
+    return res.status(204).end();
+  } catch {
+    return res.status(401).json({ error: "Session expired. Please sign in again." });
+  }
+});
 app.use(platformRoutes);
 app.use(resolveTenant);
 function getSession() {
@@ -128,6 +149,8 @@ function verifyAdmin(req, res, next) {
   if (!token) return res.status(403).json({ error: "No token" });
   try {
     const d = jwt.verify(token, JWT_SECRET);
+    if (!touchAuthSession(d, { allowLegacy: NODE_ENV !== "production" }))
+      return res.status(401).json({ error: "Session expired. Please sign in again." });
     if (!['admin', 'owner', 'superadmin'].includes(d.role))
       return res.status(403).json({ error: "Not authorized" });
     const tokenClientId = String(d.clientId || "");
@@ -280,6 +303,8 @@ function verifyTenant(req, res, next) {
   if (!token) return res.status(403).json({ error: "No token" });
   try {
     const d = jwt.verify(token, JWT_SECRET);
+    if (!touchAuthSession(d, { allowLegacy: NODE_ENV !== "production" }))
+      return res.status(401).json({ error: "Session expired. Please sign in again." });
     if (d.type !== "tenant")
       return res.status(403).json({ error: "Not a tenant token" });
     const tokenClientId = String(d.clientId || "");
@@ -300,6 +325,8 @@ function verifyTenantAccount(req, res, next) {
   if (!token) return res.status(401).json({ error: "Sign in to continue" });
   try {
     const d = jwt.verify(token, JWT_SECRET);
+    if (!touchAuthSession(d, { allowLegacy: NODE_ENV !== "production" }))
+      return res.status(401).json({ error: "Session expired. Please sign in again." });
     if (d.type !== "tenant-account") return res.status(403).json({ error: "Not a tenant account session" });
     if (String(d.clientId || "") !== String(req.tenantClient?._id || "")) {
       return res.status(403).json({ error: "Not authorized for this platform" });
@@ -330,7 +357,7 @@ app.post("/admin/login", adminLoginLimiter, async (req, res) => {
     if (!admin) return res.status(401).json({ error: "Invalid credentials" });
     const valid = await admin.comparePassword(password);
     if (!valid) return res.status(401).json({ error: "Invalid credentials" });
-    const token = jwt.sign(
+    const token = createAuthToken(
       {
         id: admin._id,
         email: admin.email,
@@ -339,7 +366,7 @@ app.post("/admin/login", adminLoginLimiter, async (req, res) => {
         ...(req.tenantClient && { clientId: String(req.tenantClient._id) }),
       },
       JWT_SECRET,
-      { expiresIn: "30m" },
+      "8h",
     );
     res.json({ token, name: admin.name, role: admin.role });
   } catch (e) {
@@ -401,7 +428,7 @@ app.post("/tenant/account/signup", tenantLoginLimiter, async (req, res) => {
     const existing = await TenantAccount.findOne({ email });
     if (existing) return res.status(409).json({ error: "An account with this email already exists. Please sign in." });
     const account = await new TenantAccount({ name, email, passwordHash: await bcrypt.hash(password, 12) }).save();
-    const token = jwt.sign({ id: String(account._id), email, name, type: "tenant-account", ...(req.tenantClient && { clientId: String(req.tenantClient._id) }) }, JWT_SECRET, { expiresIn: "24h" });
+    const token = createAuthToken({ id: String(account._id), email, name, type: "tenant-account", ...(req.tenantClient && { clientId: String(req.tenantClient._id) }) }, JWT_SECRET, "8h");
     res.status(201).json({ token, account: { id: String(account._id), name: account.name, email: account.email } });
   } catch (e) {
     if (e.code === 11000) return res.status(409).json({ error: "An account with this email already exists. Please sign in." });
@@ -416,7 +443,7 @@ app.post("/tenant/account/login", tenantLoginLimiter, async (req, res) => {
     if (!isValidEmail(email) || !password) return res.status(400).json({ error: "Enter a valid email and password." });
     const account = await TenantAccount.findOne({ email });
     if (!account || !(await bcrypt.compare(password, account.passwordHash))) return res.status(401).json({ error: "Invalid email or password." });
-    const token = jwt.sign({ id: String(account._id), email, name: account.name, type: "tenant-account", ...(req.tenantClient && { clientId: String(req.tenantClient._id) }) }, JWT_SECRET, { expiresIn: "24h" });
+    const token = createAuthToken({ id: String(account._id), email, name: account.name, type: "tenant-account", ...(req.tenantClient && { clientId: String(req.tenantClient._id) }) }, JWT_SECRET, "8h");
     res.json({ token, account: { id: String(account._id), name: account.name, email: account.email } });
   } catch (e) {
     res.status(500).json({ error: serverError(e) });
@@ -620,7 +647,7 @@ app.post("/tenant/login", tenantLoginLimiter, async (req, res) => {
           "Your access has been revoked by management" +
           (user.revokeReason ? `: ${user.revokeReason}` : "."),
       });
-    const token = jwt.sign(
+    const token = createAuthToken(
       {
         id: user._id,
         email: user.email,
@@ -628,7 +655,7 @@ app.post("/tenant/login", tenantLoginLimiter, async (req, res) => {
         ...(req.tenantClient && { clientId: String(req.tenantClient._id) }),
       },
       JWT_SECRET,
-      { expiresIn: "24h" },
+      "8h",
     );
     res.json({
       token,

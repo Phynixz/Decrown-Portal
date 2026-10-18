@@ -58,7 +58,7 @@ export default function TenantPortal() {
   // Login form
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [loginErr, setLoginErr] = useState("");
+  const [loginErr, setLoginErr] = useState(() => new URLSearchParams(window.location.search).get("session") === "expired" ? "Your session expired due to inactivity. Please sign in again." : "");
   const [loginBusy, setLoginBusy] = useState(false);
   const registrationParams = new URLSearchParams(window.location.search);
   const registrationSubmitted = registrationParams.get("registered") === "1";

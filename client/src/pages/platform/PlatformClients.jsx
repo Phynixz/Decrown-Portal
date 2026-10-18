@@ -460,6 +460,7 @@ export default function PlatformClients() {
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
+  const [notice, setNotice] = useState("");
   const [busyId, setBusyId] = useState("");
   const [drawerClient, setDrawerClient] = useState(null);
   const [pendingHostels, setPendingHostels] = useState([]);
@@ -486,7 +487,8 @@ export default function PlatformClients() {
     try {
       const qs = filter === "all" ? "" : "?status=" + filter;
       const data = await getJSON("/platform/clients" + qs, getPlatformToken());
-      setClients(data);
+      setClients(Array.isArray(data) ? data : []);
+      if (!Array.isArray(data)) setErr("The server returned an unexpected client-list response. Please refresh or sign in again.");
     } catch (e) {
       setErr(e.message);
     } finally {
@@ -538,18 +540,18 @@ export default function PlatformClients() {
     if (confirmBusinessName !== client.businessName) return;
     setBusyId(client._id);
     try {
-      await fetch(`/platform/clients/${client._id}`, {
+      const response = await fetch(`/platform/clients/${client._id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${getPlatformToken()}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ confirmBusinessName }),
-      }).then(async (response) => {
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(data.error || "Could not delete client");
-        return data;
       });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || "Could not delete client");
+      setNotice(data.databaseCleanupWarning || data.message || "Landlord account deleted.");
+      setErr("");
       await load();
     } catch (e) {
       alert("Error: " + e.message);
@@ -568,6 +570,13 @@ export default function PlatformClients() {
           Manage landlord accounts and review every hostel before it becomes public.
         </p>
       </div>
+
+      {notice && (
+        <div role="status" className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
+          {notice}
+          <button type="button" onClick={() => setNotice("")} className="ml-3 font-semibold underline">Dismiss</button>
+        </div>
+      )}
 
       {isOwner && (
         <section className="mb-7 rounded-xl2 border border-border bg-card p-5 shadow-card dark:border-border-dark dark:bg-card-dark">

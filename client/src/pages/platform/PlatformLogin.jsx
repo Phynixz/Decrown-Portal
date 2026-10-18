@@ -22,7 +22,7 @@ export default function PlatformLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
-  const [err, setErr] = useState("");
+  const [err, setErr] = useState(() => new URLSearchParams(window.location.search).get("session") === "expired" ? "Your session expired due to inactivity. Please sign in again." : "");
   const [busy, setBusy] = useState(false);
 
   async function doLogin(e) {

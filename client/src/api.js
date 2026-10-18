@@ -3,8 +3,8 @@
  * vanilla-JS app, so existing sessions stay valid.
  */
 
-export const ADMIN_SESSION_TIMEOUT_MS = 30 * 60 * 1000;
-export const ADMIN_REMEMBER_TIMEOUT_MS = 30 * 24 * 60 * 60 * 1000;
+export const ADMIN_SESSION_TIMEOUT_MS = 8 * 60 * 60 * 1000;
+export const ADMIN_REMEMBER_TIMEOUT_MS = 8 * 60 * 60 * 1000;
 
 export function getToken() {
   const token =
@@ -47,6 +47,8 @@ export function getAdminRole() {
 
 export function setAdminAuth(token, name, role, remember) {
   const store = remember ? localStorage : sessionStorage;
+  const otherStore = remember ? sessionStorage : localStorage;
+  ["token", "adminName", "adminRole", "adminSessionExpiresAt"].forEach((key) => otherStore.removeItem(key));
   const expiry =
     Date.now() +
     (remember ? ADMIN_REMEMBER_TIMEOUT_MS : ADMIN_SESSION_TIMEOUT_MS);

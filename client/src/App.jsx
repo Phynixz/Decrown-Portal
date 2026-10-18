@@ -24,6 +24,7 @@ import TenantApplicationsReview from "./pages/TenantApplicationsReview.jsx";
 import { getJSON } from "./api.js";
 
 import { TenantProvider } from "./tenantContext.jsx";
+import SessionGuard from "./SessionGuard.jsx";
 
 function DirectorWorkspaceRoute() {
   const { clientId } = useParams();
@@ -71,6 +72,7 @@ function DirectorWorkspaceRoute() {
 export default function App() {
   return (
     <TenantProvider>
+      <SessionGuard />
       <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/rooms" element={<RoomSearchPage />} />

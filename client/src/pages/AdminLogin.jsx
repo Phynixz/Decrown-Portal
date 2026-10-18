@@ -17,7 +17,7 @@ export default function AdminLogin() {
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
-  const [err, setErr] = useState("");
+  const [err, setErr] = useState(() => new URLSearchParams(window.location.search).get("session") === "expired" ? "Your session expired due to inactivity. Please sign in again." : "");
   const [busy, setBusy] = useState(false);
   const [shaking, setShaking] = useState(false);
 
@@ -210,7 +210,7 @@ export default function AdminLogin() {
                       onChange={(e) => setRemember(e.target.checked)}
                     />
                     <label className="remember-label" htmlFor="dc-remember">
-                      Remember me for 30 days
+                      Remember me on this device (maximum 8 hours)
                     </label>
                   </div>
 

@@ -31,7 +31,7 @@ export default function TenantAccountPortal() {
   const [passport, setPassport] = useState(null);
   const [idCard, setIdCard] = useState(null);
   const [termsAccepted, setTermsAccepted] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState(() => new URLSearchParams(window.location.search).get("session") === "expired" ? "Your session expired due to inactivity. Please sign in again." : "");
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
 

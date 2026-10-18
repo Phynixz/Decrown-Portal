@@ -18,6 +18,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const NODE_ENV = process.env.NODE_ENV || "development";
 
 const { rateLimit } = require("../utils/rateLimit");
+const { createAuthToken, touchAuthSession } = require("../utils/authSessions");
 
 // Brute-force protection for credential and verification endpoints.
 const platformLoginLimiter = rateLimit({
@@ -39,6 +40,11 @@ const resendCodeLimiter = rateLimit({
   name: "resend-code",
   windowMs: 15 * 60 * 1000,
   max: 5,
+});
+const clientDeletionLimiter = rateLimit({
+  name: "platform-client-delete",
+  windowMs: 60 * 60 * 1000,
+  max: 10,
 });
 
 // Log server errors with detail, but never leak internals to clients in
@@ -114,6 +120,8 @@ async function verifyPlatformAdmin(req, res, next) {
   if (!token) return res.status(403).json({ error: "No token" });
   try {
     const d = jwt.verify(token, JWT_SECRET);
+    if (!touchAuthSession(d, { allowLegacy: NODE_ENV !== "production" }))
+      return res.status(401).json({ error: "Session expired. Please sign in again." });
     if (
       d.type !== "platform" ||
       !["owner", "reviewer", "viewer"].includes(d.role)
@@ -380,7 +388,7 @@ router.post("/platform/login", platformLoginLimiter, async (req, res) => {
       await account.save();
     }
 
-    const token = jwt.sign(
+    const token = createAuthToken(
       {
         id: account._id,
         email: account.email,
@@ -389,7 +397,7 @@ router.post("/platform/login", platformLoginLimiter, async (req, res) => {
         type: "platform",
       },
       JWT_SECRET,
-      { expiresIn: "2h" },
+      "8h",
     );
     await recordAudit(req, {
       actorId: account._id,
@@ -604,6 +612,7 @@ router.put(
 // legacy database name (for example, a shared database named "test").
 router.delete(
   "/platform/clients/:id",
+  clientDeletionLimiter,
   verifyPlatformAdmin,
   requirePlatformOwner,
   async (req, res) => {
@@ -633,11 +642,31 @@ router.delete(
         resource: "client",
         resourceId: client._id,
       });
+      // Delete the platform account first. If database cleanup fails, do not
+      // leave a broken landlord record that crashes the dashboard on refresh.
+      const removal = await Client.deleteOne({ _id: client._id });
+      if (!removal.deletedCount)
+        return res.status(409).json({ error: "Client was already removed. Refresh the client list." });
+      let databaseCleanupWarning = null;
       if (client.dbName && !preserveDatabase) {
-        const tenantModels = getTenantModels(client.dbName);
-        await tenantModels.Admin.db.dropDatabase();
+        try {
+          const tenantModels = getTenantModels(client.dbName);
+          await tenantModels.Admin.db.dropDatabase();
+        } catch (cleanupError) {
+          databaseCleanupWarning = "The landlord account was deleted, but its database could not be cleaned up automatically. Contact support to remove the orphaned database safely.";
+          console.error("Tenant database cleanup failed after client deletion:", cleanupError.message);
+          await recordAudit(req, {
+            actorId: req.platformAdmin.id,
+            actorName: req.platformAdmin.name,
+            actorEmail: req.platformAdmin.email,
+            actorRole: "owner",
+            action: "client.database-cleanup.failed",
+            resource: "client-database",
+            resourceId: client._id,
+            success: false,
+          });
+        }
       }
-      await Client.deleteOne({ _id: client._id });
       await recordAudit(req, {
         actorId: req.platformAdmin.id,
         actorName: req.platformAdmin.name,
@@ -648,12 +677,13 @@ router.delete(
         resourceId: client._id,
       });
       res.json({
-        message: preserveDatabase
+        message: databaseCleanupWarning || (preserveDatabase
           ? "Client account deleted. Its legacy/shared database was preserved and was not changed."
-          : "Client and its provisioned tenant database were deleted.",
+          : "Client and its provisioned tenant database were deleted."),
         deletedClientId: String(client._id),
-        deletedDatabase: preserveDatabase ? null : client.dbName || null,
+        deletedDatabase: preserveDatabase || databaseCleanupWarning ? null : client.dbName || null,
         preservedDatabase: preserveDatabase ? client.dbName : null,
+        databaseCleanupWarning,
       });
     } catch (error) {
       res.status(500).json({ error: serverError(error) });

@@ -552,4 +552,10 @@ test("owner/staff permissions and platform audit are enforced", async () => {
   assert.equal(sharedDeletion.status, 200, JSON.stringify(sharedDeletion.body));
   assert.equal(await Client.findById(sharedTarget._id), null);
   assert.equal(sharedDeletion.body.preservedDatabase, "test");
+  const repeatedSharedDeletion = await request(`/platform/clients/${sharedTarget._id}`, {
+    method: "DELETE",
+    token: ownerToken,
+    body: { confirmBusinessName: "Shared Database Client" },
+  });
+  assert.equal(repeatedSharedDeletion.status, 404, "repeated deletion should return a controlled JSON error");
 });

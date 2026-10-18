@@ -277,6 +277,13 @@ test("tenant account application gates agreement, payment, and allocation", asyn
   const signupBody = await signup.json();
   assert.equal(signup.status, 201, JSON.stringify(signupBody));
   assert.ok(signupBody.token);
+  const heartbeat = await fetch(`${baseUrl}/session/heartbeat`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${signupBody.token}` },
+  });
+  assert.equal(heartbeat.status, 204, "an active authenticated session can refresh its idle activity");
+  const unauthenticatedHeartbeat = await fetch(`${baseUrl}/session/heartbeat`, { method: "POST" });
+  assert.equal(unauthenticatedHeartbeat.status, 401, "heartbeat must require a valid authenticated session");
 
   const duplicateSignup = await fetch(`${baseUrl}/tenant/account/signup`, {
     method: "POST", headers: { "Content-Type": "application/json" },
