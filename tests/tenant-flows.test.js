@@ -266,7 +266,7 @@ function documentUpload(fields, fileFields) {
 test("tenant account application gates agreement, payment, and allocation", async () => {
   const suffix = Date.now().toString();
   const email = `account-${suffix}@example.test`;
-  const signup = await fetch(`${baseUrl}/tenant/account/signup`, {
+  const signup = await fetch(`${baseUrl}/tenant/account/signup?client=stale-landlord-subdomain`, {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name: "Account Test Tenant", email, password: "secure-test-password-123" }),
   });
@@ -330,4 +330,18 @@ test("tenant account application gates agreement, payment, and allocation", asyn
   assert.equal((await require("../models/TenantApplication").findById(application._id)).status, "allocated");
   assert.equal((await User.findOne({ email })).roomNo, "Room A1");
   assert.equal((await Unit.findById(unit._id)).status, "inactive");
+});
+
+test("landlord can sign in after email verification", async () => {
+  const email = `verified-${Date.now()}@example.test`;
+  const payload = { contactName: "Verified Landlord", email, password: "landlord-password-123" };
+  const signup = await fetch(`${baseUrl}/client/signup`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+  const created = await signup.json();
+  assert.equal(signup.status, 200, JSON.stringify(created));
+  const verify = await fetch(`${baseUrl}/client/verify-email`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ clientId: created.clientId, code: created.developmentCode }) });
+  assert.equal(verify.status, 200);
+  const login = await fetch(`${baseUrl}/admin/login?client=${created.subdomain}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password: payload.password }) });
+  const result = await login.json();
+  assert.equal(login.status, 200, JSON.stringify(result));
+  assert.equal(result.role, "owner");
 });

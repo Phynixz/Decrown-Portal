@@ -525,4 +525,23 @@ test("owner/staff permissions and platform audit are enforced", async () => {
   assert.equal(deletion.status, 200, JSON.stringify(deletion.body));
   assert.equal(await Client.findById(deletionTarget._id), null);
   assert.equal(deletion.body.deletedDatabase, "tenant_disposable-test-client");
+
+  const sharedTarget = await Client.create({
+    businessName: "Shared Database Client",
+    contactName: "Shared Contact",
+    email: "shared-database-client@example.test",
+    passwordHash: "unused-test-hash",
+    subdomain: "shared-database-client",
+    status: "active",
+    verified: true,
+    dbName: "test",
+  });
+  const sharedDeletion = await request(`/platform/clients/${sharedTarget._id}`, {
+    method: "DELETE",
+    token: ownerToken,
+    body: { confirmBusinessName: "Shared Database Client" },
+  });
+  assert.equal(sharedDeletion.status, 200, JSON.stringify(sharedDeletion.body));
+  assert.equal(await Client.findById(sharedTarget._id), null);
+  assert.equal(sharedDeletion.body.preservedDatabase, "test");
 });

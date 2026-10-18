@@ -10,6 +10,19 @@ function normalizeRootDomain(value) {
 }
 
 async function resolveTenant(req, res, next) {
+  // Tenant accounts and the public De-Crown room catalogue belong to the
+  // centrally managed workspace. A stale tenantSubdomain cookie/query must
+  // not prevent a student from creating an account or browsing active rooms.
+  // In particular, keep these requests on the default/shared database rather
+  // than routing them into a landlord-specific database.
+  if (
+    req.path === "/tenant-config" ||
+    req.path === "/tenant/account" ||
+    req.path.startsWith("/tenant/account/")
+  ) {
+    return next();
+  }
+
   // A browser document navigation must be able to load the React SPA even if
   // the browser still has a tenantSubdomain cookie from a different database
   // or an inactive tenant. Resolve tenant context on API requests instead;

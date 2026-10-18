@@ -617,10 +617,12 @@ router.delete(
           error: "Type the exact business name to confirm client deletion",
         });
       const expectedDbName = `tenant_${client.subdomain}`;
-      if (client.dbName && client.dbName !== expectedDbName)
-        return res.status(409).json({
-          error: "This client uses a legacy/nonstandard database name. Review and back up that database before removing the client.",
-        });
+      // Only drop a database created under the tenant naming convention.
+      // Legacy/shared databases (for example, "test") must be preserved, but
+      // their Client account can still be removed after explicit confirmation.
+      const preserveDatabase = Boolean(
+        client.dbName && client.dbName !== expectedDbName,
+      );
 
       await recordAudit(req, {
         actorId: req.platformAdmin.id,
@@ -631,7 +633,7 @@ router.delete(
         resource: "client",
         resourceId: client._id,
       });
-      if (client.dbName) {
+      if (client.dbName && !preserveDatabase) {
         const tenantModels = getTenantModels(client.dbName);
         await tenantModels.Admin.db.dropDatabase();
       }
@@ -646,9 +648,12 @@ router.delete(
         resourceId: client._id,
       });
       res.json({
-        message: "Client and its provisioned tenant database were deleted.",
+        message: preserveDatabase
+          ? "Client account deleted. Its legacy/shared database was preserved and was not changed."
+          : "Client and its provisioned tenant database were deleted.",
         deletedClientId: String(client._id),
-        deletedDatabase: client.dbName || null,
+        deletedDatabase: preserveDatabase ? null : client.dbName || null,
+        preservedDatabase: preserveDatabase ? client.dbName : null,
       });
     } catch (error) {
       res.status(500).json({ error: serverError(error) });

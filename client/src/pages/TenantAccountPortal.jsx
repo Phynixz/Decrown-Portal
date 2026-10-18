@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { validateEmail, validateName, validatePassword, validatePhone } from "../utils/validation.js";
-import { getJSON, withTenantContext } from "../api.js";
+import { getJSON } from "../api.js";
 
 const TOKEN_KEY = "tenantAccountToken";
 const statusLabels = {
@@ -36,7 +36,7 @@ export default function TenantAccountPortal() {
   const [busy, setBusy] = useState(false);
 
   async function loadAccount(authToken) {
-    const response = await fetch(withTenantContext("/tenant/account/me"), { headers: { Authorization: `Bearer ${authToken}` } });
+    const response = await fetch("/tenant/account/me", { headers: { Authorization: `Bearer ${authToken}` } });
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || "Could not load your account.");
     setAccount(data.account);
@@ -72,7 +72,7 @@ export default function TenantAccountPortal() {
     if (!password) return setError("Enter your password.");
     setBusy(true); setError("");
     try {
-      const response = await fetch(withTenantContext(`/tenant/account/${mode === "signup" ? "signup" : "login"}`), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: name.trim(), email: cleanEmail, password }) });
+      const response = await fetch(`/tenant/account/${mode === "signup" ? "signup" : "login"}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: name.trim(), email: cleanEmail, password }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Could not authenticate.");
       sessionStorage.setItem(TOKEN_KEY, data.token);
@@ -95,7 +95,7 @@ export default function TenantAccountPortal() {
     form.append("termsAccepted", "true"); form.append("passport", passport); form.append("idCard", idCard);
     setBusy(true); setError("");
     try {
-      const response = await fetch(withTenantContext("/tenant/account/applications"), { method: "POST", headers: { Authorization: `Bearer ${token}` }, body: form });
+      const response = await fetch("/tenant/account/applications", { method: "POST", headers: { Authorization: `Bearer ${token}` }, body: form });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Application could not be submitted.");
       setNotice(data.message); setSelectedRoom(null); setPassport(null); setIdCard(null); setTermsAccepted(false);
@@ -110,7 +110,7 @@ export default function TenantAccountPortal() {
     if (paymentDate) form.append("paymentDate", paymentDate);
     setBusy(true); setError("");
     try {
-      const response = await fetch(withTenantContext(`/tenant/account/applications/${applicationId}/${kind}`), { method: "POST", headers: { Authorization: `Bearer ${token}` }, body: form });
+      const response = await fetch(`/tenant/account/applications/${applicationId}/${kind}`, { method: "POST", headers: { Authorization: `Bearer ${token}` }, body: form });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Upload failed.");
       setNotice(data.message); await loadAccount(token);
